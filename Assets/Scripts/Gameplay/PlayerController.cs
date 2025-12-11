@@ -4,8 +4,9 @@ using UnityEngine.InputSystem;
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
-    /// Controls player movement and basic input handling.
-    /// Uses Unity's new Input System for cross-platform support (keyboard, gamepad, touch).
+    /// Controls player movement with platform-aware input.
+    /// Desktop: Input Actions (WASD/Gamepad)
+    /// Mobile: VirtualJoystick (touch)
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
@@ -13,13 +14,17 @@ namespace PixelVanguard.Gameplay
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 5f;
 
-        [Header("Input Actions")]
+        [Header("Input Actions (Desktop)")]
         [SerializeField] private InputActionAsset inputActions;
+
+        [Header("Virtual Joystick (Mobile)")]
+        [SerializeField] private UI.VirtualJoystick virtualJoystick;
 
         private Rigidbody2D rb;
         private SpriteRenderer spriteRenderer;
         private Vector2 moveDirection;
         private InputAction moveAction;
+        private bool useMobileControls = false;
 
         private void Awake()
         {
@@ -27,6 +32,38 @@ namespace PixelVanguard.Gameplay
             rb = GetComponent<Rigidbody2D>();
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
+            // Determine control scheme
+            if (Core.PlatformDetector.Instance != null)
+            {
+                useMobileControls = Core.PlatformDetector.Instance.IsMobile();
+                Debug.Log($"[PlayerController] Platform: {(useMobileControls ? "Mobile" : "Desktop")}");
+            }
+
+            // Setup desktop input if not mobile
+            if (!useMobileControls)
+            {
+                SetupDesktopInput();
+            }
+            else
+            {
+                // Auto-find joystick if not assigned
+                if (virtualJoystick == null)
+                {
+                    virtualJoystick = FindObjectOfType<UI.VirtualJoystick>();
+                    if (virtualJoystick == null)
+                    {
+                        Debug.LogWarning("[PlayerController] VirtualJoystick not found! Create one in Canvas for mobile controls.");
+                    }
+                    else
+                    {
+                        Debug.Log("[PlayerController] VirtualJoystick found!");
+                    }
+                }
+            }
+        }
+
+        private void SetupDesktopInput()
+        {
             // Setup Input Actions
             if (inputActions == null)
             {
@@ -53,7 +90,7 @@ namespace PixelVanguard.Gameplay
 
         private void OnEnable()
         {
-            if (moveAction != null)
+            if (moveAction != null && !useMobileControls)
             {
                 moveAction.Enable();
             }
@@ -61,7 +98,7 @@ namespace PixelVanguard.Gameplay
 
         private void OnDisable()
         {
-            if (moveAction != null)
+            if (moveAction != null && !useMobileControls)
             {
                 moveAction.Disable();
             }
@@ -79,28 +116,47 @@ namespace PixelVanguard.Gameplay
 
         private void GetInput()
         {
-            if (moveAction != null)
+            if (useMobileControls)
             {
-                // Read input from new Input System (works for keyboard, gamepad, touch)
-                moveDirection = moveAction.ReadValue<Vector2>();
+                // Mobile: Read from virtual joystick
+                if (virtualJoystick != null)
+                {
+                    moveDirection = virtualJoystick.Direction;
+                }
+                else
+                {
+                    moveDirection = Vector2.zero;
+                }
             }
             else
             {
-                // No input if action not configured
-                moveDirection = Vector2.zero;
-                Debug.LogWarning("[PlayerController] Move action is null! Check InputActions configuration.");
+                // Desktop: Read from Input System
+                if (moveAction != null)
+                {
+                    moveDirection = moveAction.ReadValue<Vector2>();
+                }
+                else
+                {
+                    moveDirection = Vector2.zero;
+                }
             }
         }
 
         private void Move()
         {
-            // Apply movement
-            rb.linearVelocity = moveDirection * moveSpeed;
+            // Normalize input to prevent diagonal speed boost
+            // WASD diagonal = (1,1) magnitude 1.414, joystick already normalized
+            Vector2 normalizedDirection = moveDirection.magnitude > 1f 
+                ? moveDirection.normalized 
+                : moveDirection;
 
-            // Flip sprite based on movement direction (optional visual polish)
-            if (spriteRenderer != null && moveDirection.x != 0)
+            // Apply movement with consistent speed in all directions
+            rb.linearVelocity = normalizedDirection * moveSpeed;
+
+            // Flip sprite based on movement direction
+            if (spriteRenderer != null && normalizedDirection.x != 0)
             {
-                spriteRenderer.flipX = moveDirection.x < 0;
+                spriteRenderer.flipX = normalizedDirection.x < 0;
             }
         }
 

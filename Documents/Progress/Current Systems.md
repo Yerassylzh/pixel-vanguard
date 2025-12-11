@@ -14,9 +14,20 @@
 
 ## PlayerController
 - **Purpose:** Player movement
-- **Input:** New Input System (WASD, gamepad, touch)
+- **Desktop Input:** New Input System (WASD, gamepad)
+- **Mobile Input:** VirtualJoystick (touch)
+- **Platform Detection:** Auto-switches control scheme
 - **Speed:** 5.0 units/sec (from CharacterData)
 - **Does:** Applies velocity, flips sprite
+
+---
+
+## VirtualJoystick
+- **Purpose:** Touch controls for mobile
+- **Type:** Floating joystick (appears at touch, hides when released)
+- **Output:** Normalized direction vector (-1 to 1)
+- **Auto-hide:** Invisible until touched, disappears on release
+- **Handle Range:** 50 units (configurable)
 
 ---
 
@@ -86,12 +97,40 @@
 
 ---
 
+## UpgradeManager
+- **Purpose:** Select and apply upgrades on level up
+- **Selection:** Random 3 from pool of UpgradeData assets
+- **Types:** Move speed, max HP, weapon orbit speed, weapon damage
+- **Application:** Uses reflection to modify player/weapon stats
+- **Data-driven:** ScriptableObject-based upgrade definitions
+
+---
+
 ## LevelUpPanel
 - **Purpose:** Pause game and show upgrade choices
 - **Trigger:** OnPlayerLevelUp event
-- **Options:** 3 buttons (1 functional, 2 placeholders)
-- **Upgrade:** Increases greatsword orbit speed by 30°/sec
+- **Options:** 3 random upgrades from UpgradeManager
+- **Display:** Shows name + description on buttons
 - **Pauses:** Calls GameManager.PauseGame(), resumes with GameManager.ResumeGame()
+
+---
+
+## PlatformDetector
+- **Purpose:** Detect platform (desktop/mobile)
+- **Manual Override:** For dev, assign platform in Inspector
+- **Auto-Detect:** Runtime detection for production builds
+- **Types:** Desktop, Native Mobile, Web Mobile
+- **Singleton:** Global access via Instance
+
+---
+
+## PauseMenu
+- **Purpose:** Pause game with platform-appropriate controls
+- **Desktop:** ESC key (Keyboard.current fallback if InputActions not setup)
+- **Mobile:** UI pause button visible
+- **Input:** Tries InputActionAsset → Falls back to Keyboard.current
+- **Configuration:** Auto-hides/shows button based on platform
+- **Uses:** GameManager.PauseGame/ResumeGame
 
 ---
 

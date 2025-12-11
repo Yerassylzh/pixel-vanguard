@@ -105,6 +105,17 @@ namespace PixelVanguard.Gameplay
             invincibilityTimer = duration;
         }
 
+        /// <summary>
+        /// Increase max health and heal by the same amount.
+        /// Used by upgrade system.
+        /// </summary>
+        public void IncreaseMaxHealth(float amount)
+        {
+            maxHealth += amount;
+            currentHealth += amount; // Also heal by the same amount
+            Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
+        }
+
         private void Die()
         {
             UnityEngine.Debug.Log("Player Died");

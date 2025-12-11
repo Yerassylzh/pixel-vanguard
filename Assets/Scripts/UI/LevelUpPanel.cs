@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using PixelVanguard.Gameplay;
 
 namespace PixelVanguard.UI
 {
@@ -24,7 +25,12 @@ namespace PixelVanguard.UI
         [SerializeField] private TextMeshProUGUI option3Text;
 
         [Header("Upgrade Settings")]
-        [SerializeField] private float orbitSpeedIncrease = 30f; // Degrees per second
+        [SerializeField] private UpgradeManager upgradeManager;
+
+        // Currently displayed upgrades
+        private Data.UpgradeData option1Upgrade;
+        private Data.UpgradeData option2Upgrade;
+        private Data.UpgradeData option3Upgrade;
 
         private void Awake()
         {
@@ -32,6 +38,12 @@ namespace PixelVanguard.UI
             if (panelRoot != null)
             {
                 panelRoot.SetActive(false);
+            }
+
+            // Auto-find UpgradeManager if not assigned
+            if (upgradeManager == null)
+            {
+                upgradeManager = FindObjectOfType<UpgradeManager>();
             }
 
             // Setup button listeners
@@ -64,10 +76,40 @@ namespace PixelVanguard.UI
                 Time.timeScale = 0f;
             }
 
-            // Set button labels
-            if (option1Text != null) option1Text.text = "Increase Greatsword Speed";
-            if (option2Text != null) option2Text.text = "Placeholder Option";
-            if (option3Text != null) option3Text.text = "Placeholder Option";
+            // Get 3 random upgrades from manager
+            if (upgradeManager != null)
+            {
+                var upgrades = upgradeManager.GetRandomUpgrades(3);
+
+                // Assign upgrades
+                option1Upgrade = upgrades.Count > 0 ? upgrades[0] : null;
+                option2Upgrade = upgrades.Count > 1 ? upgrades[1] : null;
+                option3Upgrade = upgrades.Count > 2 ? upgrades[2] : null;
+
+                // Set button labels
+                if (option1Text != null && option1Upgrade != null)
+                {
+                    option1Text.text = $"{option1Upgrade.upgradeName}\n<size=14>{option1Upgrade.description}</size>";
+                }
+
+                if (option2Text != null && option2Upgrade != null)
+                {
+                    option2Text.text = $"{option2Upgrade.upgradeName}\n<size=14>{option2Upgrade.description}</size>";
+                }
+
+                if (option3Text != null && option3Upgrade != null)
+                {
+                    option3Text.text = $"{option3Upgrade.upgradeName}\n<size=14>{option3Upgrade.description}</size>";
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[LevelUpPanel] UpgradeManager not found!");
+                // Fallback labels
+                if (option1Text != null) option1Text.text = "No upgrades available";
+                if (option2Text != null) option2Text.text = "No upgrades available";
+                if (option3Text != null) option3Text.text = "No upgrades available";
+            }
 
             // Show panel
             if (panelRoot != null)
@@ -78,36 +120,28 @@ namespace PixelVanguard.UI
 
         private void OnOption1Selected()
         {
-            // Find the orbiting weapon and increase its speed
-            var weapon = FindObjectOfType<Gameplay.OrbitingWeapon>();
-            if (weapon != null)
+            if (option1Upgrade != null && upgradeManager != null)
             {
-                // Access the weapon via reflection to modify orbitSpeed
-                var type = typeof(Gameplay.OrbitingWeapon);
-                var field = type.GetField("orbitSpeed", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                
-                if (field != null)
-                {
-                    float currentSpeed = (float)field.GetValue(weapon);
-                    field.SetValue(weapon, currentSpeed + orbitSpeedIncrease);
-                    Debug.Log($"[LevelUpPanel] Greatsword speed increased to {currentSpeed + orbitSpeedIncrease}");
-                }
+                upgradeManager.ApplyUpgrade(option1Upgrade);
             }
-
             ClosePanel();
         }
 
         private void OnOption2Selected()
         {
-            // Placeholder - does nothing yet
-            Debug.Log("[LevelUpPanel] Option 2 selected (not implemented)");
+            if (option2Upgrade != null && upgradeManager != null)
+            {
+                upgradeManager.ApplyUpgrade(option2Upgrade);
+            }
             ClosePanel();
         }
 
         private void OnOption3Selected()
         {
-            // Placeholder - does nothing yet
-            Debug.Log("[LevelUpPanel] Option 3 selected (not implemented)");
+            if (option3Upgrade != null && upgradeManager != null)
+            {
+                upgradeManager.ApplyUpgrade(option3Upgrade);
+            }
             ClosePanel();
         }
 
