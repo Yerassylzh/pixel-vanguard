@@ -3,17 +3,17 @@ using UnityEngine;
 namespace PixelVanguard.Core
 {
     /// <summary>
-    /// Detects and stores current platform type.
-    /// For development: manually assignable in Inspector.
-    /// For production: auto-detects at runtime.
+    /// Detects and manages current platform type.
+    /// Defaults to Mobile for testing.
+    /// Production: Auto-detects platform at runtime.
     /// </summary>
     public class PlatformDetector : MonoBehaviour
     {
         public static PlatformDetector Instance { get; private set; }
 
-        [Header("Platform Override (Dev)")]
-        [SerializeField] private bool useManualOverride = true;
-        [SerializeField] private PlatformType manualPlatform = PlatformType.Desktop;
+        [Header("Platform Configuration")]
+        [SerializeField] private PlatformMode mode = PlatformMode.AutoDetect;
+        [SerializeField] private PlatformType forcedPlatform = PlatformType.NativeMobile;
 
         public PlatformType CurrentPlatform { get; private set; }
 
@@ -29,19 +29,36 @@ namespace PixelVanguard.Core
             DontDestroyOnLoad(gameObject);
 
             // Determine platform
-            if (useManualOverride)
+            DeterminePlatform();
+        }
+
+        private void DeterminePlatform()
+        {
+            switch (mode)
             {
-                CurrentPlatform = manualPlatform;
-                Debug.Log($"[PlatformDetector] Manual override: {CurrentPlatform}");
-            }
-            else
-            {
-                CurrentPlatform = DetectPlatform();
-                Debug.Log($"[PlatformDetector] Auto-detected: {CurrentPlatform}");
+                case PlatformMode.AutoDetect:
+                    CurrentPlatform = AutoDetectPlatform();
+                    Debug.Log($"[PlatformDetector] Auto-detected: {CurrentPlatform}");
+                    break;
+
+                case PlatformMode.AlwaysMobile:
+                    CurrentPlatform = PlatformType.NativeMobile;
+                    Debug.Log($"[PlatformDetector] Forced: Mobile (default for testing)");
+                    break;
+
+                case PlatformMode.AlwaysDesktop:
+                    CurrentPlatform = PlatformType.Desktop;
+                    Debug.Log($"[PlatformDetector] Forced: Desktop");
+                    break;
+
+                case PlatformMode.ForceSpecific:
+                    CurrentPlatform = forcedPlatform;
+                    Debug.Log($"[PlatformDetector] Forced: {forcedPlatform}");
+                    break;
             }
         }
 
-        private PlatformType DetectPlatform()
+        private PlatformType AutoDetectPlatform()
         {
             // Check if running on mobile device
             if (Application.isMobilePlatform)
@@ -68,6 +85,26 @@ namespace PixelVanguard.Core
         {
             return CurrentPlatform == PlatformType.Desktop;
         }
+
+        /// <summary>
+        /// Force platform change at runtime (for testing only).
+        /// </summary>
+        public void ForcePlatform(PlatformType platform)
+        {
+            CurrentPlatform = platform;
+            Debug.Log($"[PlatformDetector] Runtime force: {platform}");
+            
+            // Notify listeners to refresh UI/input
+            GameEvents.TriggerPlatformChanged(platform);
+        }
+    }
+
+    public enum PlatformMode
+    {
+        AutoDetect,      // Production: Auto-detect at runtime
+        AlwaysMobile,    // Testing: Always mobile (default)
+        AlwaysDesktop,   // Testing: Always desktop
+        ForceSpecific    // Testing: Use forcedPlatform value
     }
 
     public enum PlatformType

@@ -82,9 +82,9 @@ namespace PixelVanguard.UI
                 var upgrades = upgradeManager.GetRandomUpgrades(3);
 
                 // Assign upgrades
-                option1Upgrade = upgrades.Count > 0 ? upgrades[0] : null;
-                option2Upgrade = upgrades.Count > 1 ? upgrades[1] : null;
-                option3Upgrade = upgrades.Count > 2 ? upgrades[2] : null;
+                option1Upgrade = upgrades.Length > 0 ? upgrades[0] : null;
+                option2Upgrade = upgrades.Length > 1 ? upgrades[1] : null;
+                option3Upgrade = upgrades.Length > 2 ? upgrades[2] : null;
 
                 // Set button labels
                 if (option1Text != null && option1Upgrade != null)
@@ -118,29 +118,15 @@ namespace PixelVanguard.UI
             }
         }
 
-        private void OnOption1Selected()
-        {
-            if (option1Upgrade != null && upgradeManager != null)
-            {
-                upgradeManager.ApplyUpgrade(option1Upgrade);
-            }
-            ClosePanel();
-        }
+        private void OnOption1Selected() => SelectOption(option1Upgrade);
+        private void OnOption2Selected() => SelectOption(option2Upgrade);
+        private void OnOption3Selected() => SelectOption(option3Upgrade);
 
-        private void OnOption2Selected()
+        private void SelectOption(Data.UpgradeData upgrade)
         {
-            if (option2Upgrade != null && upgradeManager != null)
+            if (upgrade != null && upgradeManager != null)
             {
-                upgradeManager.ApplyUpgrade(option2Upgrade);
-            }
-            ClosePanel();
-        }
-
-        private void OnOption3Selected()
-        {
-            if (option3Upgrade != null && upgradeManager != null)
-            {
-                upgradeManager.ApplyUpgrade(option3Upgrade);
+                upgradeManager.ApplyUpgrade(upgrade);
             }
             ClosePanel();
         }

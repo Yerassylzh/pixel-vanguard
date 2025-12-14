@@ -1,74 +1,139 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
+using PixelVanguard.Data;
 
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
     /// Manages upgrade selection and application.
-    /// Provides random upgrades on level up and applies chosen effects.
+    /// Generates 3 random upgrade cards on level up.
+    /// Applies upgrades to ALL equipped weapons via WeaponManager.
     /// </summary>
     public class UpgradeManager : MonoBehaviour
     {
         [Header("Available Upgrades")]
-        [SerializeField] private List<Data.UpgradeData> allUpgrades = new List<Data.UpgradeData>();
+        [SerializeField] private UpgradeData[] allUpgrades;
 
         [Header("References (Auto-Find)")]
         private PlayerController playerController;
         private PlayerHealth playerHealth;
-        private OrbitingWeapon orbitingWeapon;
+        private WeaponManager weaponManager;
 
         private void Start()
         {
-            // Auto-find references
             playerController = FindObjectOfType<PlayerController>();
             playerHealth = FindObjectOfType<PlayerHealth>();
-            orbitingWeapon = FindObjectOfType<OrbitingWeapon>();
+            weaponManager = FindObjectOfType<WeaponManager>();
         }
 
         /// <summary>
-        /// Get 3 random upgrades for level up choices.
+        /// Get 3 random unique upgrades for level-up panel.
+        /// Filters out weapons that are already equipped.
         /// </summary>
-        public List<Data.UpgradeData> GetRandomUpgrades(int count = 3)
+        public UpgradeData[] GetRandomUpgrades(int count = 3)
         {
-            if (allUpgrades.Count == 0)
+            if (allUpgrades == null || allUpgrades.Length == 0)
             {
                 Debug.LogWarning("[UpgradeManager] No upgrades available!");
-                return new List<Data.UpgradeData>();
+                return new UpgradeData[0];
             }
 
-            // Shuffle and take first 'count' items
-            var shuffled = allUpgrades.OrderBy(x => Random.value).Take(count).ToList();
-            return shuffled;
+            // Filter out invalid upgrades
+            var validUpgrades = new System.Collections.Generic.List<UpgradeData>();
+            foreach (var upgrade in allUpgrades)
+            {
+                if (upgrade == null) continue;
+
+                // Filter weapon upgrades
+                if (upgrade.type == UpgradeType.NewWeapon)
+                {
+                    // Skip if weapon not assigned
+                    if (upgrade.weaponToEquip == null) continue;
+
+                    // Skip if weapon already equipped
+                    if (weaponManager != null && weaponManager.IsWeaponEquipped(upgrade.weaponToEquip.weaponID))
+                    {
+                        continue;
+                    }
+
+                    // Skip if already have max weapons (4)
+                    if (weaponManager != null && weaponManager.GetEquippedWeapons().Count >= 4)
+                    {
+                        continue;
+                    }
+                }
+
+                validUpgrades.Add(upgrade);
+            }
+
+            // If no valid upgrades, return empty
+            if (validUpgrades.Count == 0)
+            {
+                Debug.LogWarning("[UpgradeManager] No valid upgrades available after filtering!");
+                return new UpgradeData[0];
+            }
+
+            // Ensure we don't request more upgrades than available
+            count = Mathf.Min(count, validUpgrades.Count);
+
+            // Shuffle valid upgrades
+            for (int i = 0; i < validUpgrades.Count; i++)
+            {
+                var temp = validUpgrades[i];
+                int randomIndex = Random.Range(i, validUpgrades.Count);
+                validUpgrades[i] = validUpgrades[randomIndex];
+                validUpgrades[randomIndex] = temp;
+            }
+
+            // Return first 'count' upgrades
+            var result = new UpgradeData[count];
+            for (int i = 0; i < count; i++)
+            {
+                result[i] = validUpgrades[i];
+            }
+
+            return result;
         }
 
         /// <summary>
-        /// Apply the chosen upgrade to the game.
+        /// Apply selected upgrade to player.
         /// </summary>
-        public void ApplyUpgrade(Data.UpgradeData upgrade)
+        public void ApplyUpgrade(UpgradeData upgrade)
         {
             if (upgrade == null)
             {
-                Debug.LogError("[UpgradeManager] Tried to apply null upgrade!");
+                Debug.LogWarning("[UpgradeManager] Null upgrade selected!");
                 return;
             }
 
             switch (upgrade.type)
             {
-                case Data.UpgradeType.PlayerMoveSpeed:
-                    ApplyMoveSpeedUpgrade(upgrade.value);
+                case UpgradeType.PlayerMoveSpeed:
+                    // Value is percentage (e.g., 15 = +15% speed)
+                    float speedMultiplier = 1.0f + (upgrade.value / 100f);
+                    ApplySpeedUpgrade(speedMultiplier);
                     break;
 
-                case Data.UpgradeType.PlayerMaxHP:
-                    ApplyMaxHPUpgrade(upgrade.value);
+                case UpgradeType.PlayerMaxHP:
+                    ApplyHealthUpgrade(upgrade.value);
                     break;
 
-                case Data.UpgradeType.WeaponOrbitSpeed:
-                    ApplyWeaponOrbitSpeedUpgrade(upgrade.value);
+                case UpgradeType.WeaponAttackSpeed:
+                    // Value is percentage (e.g., 10 = +10% faster)
+                    // For attack speed: DECREASE cooldown (inverse multiplier)
+                    float attackSpeedMultiplier = 1.0f - (upgrade.value / 100f);
+                    ApplyWeaponSpeedUpgrade(attackSpeedMultiplier);
                     break;
 
-                case Data.UpgradeType.WeaponDamage:
-                    ApplyWeaponDamageUpgrade(upgrade.value);
+                case UpgradeType.WeaponDamage:
+                    // Value is percentage (e.g., 20 = +20% damage)
+                    float damageMultiplier = 1.0f + (upgrade.value / 100f);
+                    ApplyWeaponDamageUpgrade(damageMultiplier);
+                    break;
+
+                case UpgradeType.NewWeapon:
+                    ApplyNewWeaponUpgrade(upgrade.weaponToEquip);
                     break;
 
                 default:
@@ -79,80 +144,104 @@ namespace PixelVanguard.Gameplay
             Debug.Log($"[UpgradeManager] Applied upgrade: {upgrade.upgradeName}");
         }
 
-        private void ApplyMoveSpeedUpgrade(float percentIncrease)
+        private void ApplySpeedUpgrade(float multiplier)
         {
-            if (playerController == null)
+            if (playerController != null)
             {
-                Debug.LogWarning("[UpgradeManager] PlayerController not found!");
-                return;
-            }
-
-            // Access moveSpeed using reflection
-            var type = typeof(PlayerController);
-            var field = type.GetField("moveSpeed", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (field != null)
-            {
-                float currentSpeed = (float)field.GetValue(playerController);
-                float newSpeed = currentSpeed * (1f + percentIncrease / 100f);
-                field.SetValue(playerController, newSpeed);
-                Debug.Log($"[UpgradeManager] Move speed: {currentSpeed:F1} → {newSpeed:F1}");
+                // Get current speed via reflection (PlayerController doesn't expose moveSpeed)
+                var field = typeof(PlayerController).GetField("moveSpeed", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (field != null)
+                {
+                    float currentSpeed = (float)field.GetValue(playerController);
+                    float newSpeed = currentSpeed * multiplier;
+                    playerController.SetMoveSpeed(newSpeed);
+                    Debug.Log($"⚡ [PLAYER] SPEED: {currentSpeed:F1} → {newSpeed:F1} (+{(newSpeed - currentSpeed):F1}, +{((multiplier - 1) * 100):F0}%)");
+                }
             }
         }
 
-        private void ApplyMaxHPUpgrade(float hpIncrease)
+        private void ApplyHealthUpgrade(float additionalHealth)
         {
-            if (playerHealth == null)
+            if (playerHealth != null)
             {
-                Debug.LogWarning("[UpgradeManager] PlayerHealth not found!");
-                return;
-            }
-
-            // Increase max HP and heal by the same amount
-            playerHealth.IncreaseMaxHealth(hpIncrease);
-            Debug.Log($"[UpgradeManager] Max HP increased by {hpIncrease}");
-        }
-
-        private void ApplyWeaponOrbitSpeedUpgrade(float speedIncrease)
-        {
-            if (orbitingWeapon == null)
-            {
-                Debug.LogWarning("[UpgradeManager] OrbitingWeapon not found!");
-                return;
-            }
-
-            // Access orbitSpeed using reflection
-            var type = typeof(OrbitingWeapon);
-            var field = type.GetField("orbitSpeed", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (field != null)
-            {
-                float currentSpeed = (float)field.GetValue(orbitingWeapon);
-                float newSpeed = currentSpeed + speedIncrease;
-                field.SetValue(orbitingWeapon, newSpeed);
-                Debug.Log($"[UpgradeManager] Orbit speed: {currentSpeed:F0}°/s → {newSpeed:F0}°/s");
+                int amount = (int)additionalHealth;
+                playerHealth.IncreaseMaxHealth(amount);
+                Debug.Log($"❤️ [PLAYER] MAX HP increased by +{amount}");
             }
         }
 
-        private void ApplyWeaponDamageUpgrade(float damageIncrease)
+        private void ApplyWeaponSpeedUpgrade(float multiplier)
         {
-            if (orbitingWeapon == null)
+            ApplyToAllWeapons(w => w.IncreaseAttackSpeed(multiplier));
+        }
+
+        private void ApplyWeaponDamageUpgrade(float multiplier)
+        {
+            ApplyToAllWeapons(w => w.IncreaseDamage(multiplier));
+        }
+
+        private void ApplyNewWeaponUpgrade(Data.WeaponData weaponData)
+        {
+            if (weaponManager == null)
             {
-                Debug.LogWarning("[UpgradeManager] OrbitingWeapon not found!");
+                Debug.LogWarning("[UpgradeManager] WeaponManager not found!");
                 return;
             }
 
-            // Call public method to increase level (which increases damage)
-            // For now, we'll use reflection to directly increase damage
-            var type = typeof(OrbitingWeapon);
-            var field = type.GetField("damage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (field != null)
+            if (weaponData == null)
             {
-                float currentDamage = (float)field.GetValue(orbitingWeapon);
-                float newDamage = currentDamage + damageIncrease;
-                field.SetValue(orbitingWeapon, newDamage);
-                Debug.Log($"[UpgradeManager] Weapon damage: {currentDamage:F0} → {newDamage:F0}");
+                Debug.LogWarning("[UpgradeManager] No weapon assigned to NewWeapon upgrade!");
+                return;
+            }
+
+            // Check if already equipped
+            if (weaponManager.IsWeaponEquipped(weaponData.weaponID))
+            {
+                Debug.LogWarning($"🗡️ [UPGRADE] {weaponData.displayName} already equipped!");
+                return;
+            }
+
+            // Check max weapons (4)
+            var currentWeapons = weaponManager.GetEquippedWeapons();
+            if (currentWeapons.Count >= 4)
+            {
+                Debug.LogWarning($"🗡️ [UPGRADE] Cannot equip {weaponData.displayName} - Max weapons (4) already equipped!");
+                return;
+            }
+
+            // Equip the weapon
+            bool success = weaponManager.EquipWeapon(weaponData);
+            if (success)
+            {
+                Debug.Log($"🗡️ [UPGRADE] NEW WEAPON ACQUIRED: {weaponData.displayName} ({currentWeapons.Count + 1}/4 weapons)");
+            }
+            else
+            {
+                Debug.LogWarning($"🗡️ [UPGRADE] Failed to equip {weaponData.displayName}");
+            }
+        }
+
+        /// <summary>
+        /// Helper method to apply an action to all equipped weapons.
+        /// Eliminates code duplication in upgrade methods.
+        /// </summary>
+        private void ApplyToAllWeapons(System.Action<WeaponBase> action)
+        {
+            if (weaponManager == null)
+            {
+                Debug.LogWarning("[UpgradeManager] WeaponManager not found!");
+                return;
+            }
+
+            var equippedWeapons = weaponManager.GetEquippedWeapons();
+            foreach (var weapon in equippedWeapons)
+            {
+                if (weapon.weaponScript != null)
+                {
+                    action(weapon.weaponScript);
+                }
             }
         }
     }

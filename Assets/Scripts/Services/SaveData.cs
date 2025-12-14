@@ -6,6 +6,7 @@ namespace PixelVanguard.Services
 {
     /// <summary>
     /// Player save data structure. Serialized to JSON for persistence.
+    /// Uses Lists instead of Dictionaries for Unity JsonUtility compatibility.
     /// </summary>
     [Serializable]
     public class SaveData
@@ -14,8 +15,10 @@ namespace PixelVanguard.Services
         public int totalGold;
         public List<string> unlockedCharacterIDs = new List<string>();
         public string selectedCharacterID = "knight"; // Default starter
-        public Dictionary<string, int> statLevels = new Dictionary<string, int>();
-        public Dictionary<string, int> adWatchProgress = new Dictionary<string, int>();
+        
+        // Unity JsonUtility doesn't support Dictionary, use Lists
+        public List<string> statLevelKeys = new List<string>();
+        public List<int> statLevelValues = new List<int>();
 
         /// <summary>
         /// Create a default save for new players.
@@ -32,13 +35,39 @@ namespace PixelVanguard.Services
             data.unlockedCharacterIDs.Add("knight");
 
             // Initialize stat levels to 0
-            data.statLevels["might"] = 0;
-            data.statLevels["vitality"] = 0;
-            data.statLevels["greaves"] = 0;
-            data.statLevels["magnet"] = 0;
-            data.statLevels["luck"] = 0;
+            data.SetStatLevel("might", 0);
+            data.SetStatLevel("vitality", 0);
+            data.SetStatLevel("greaves", 0);
+            data.SetStatLevel("magnet", 0);
+            data.SetStatLevel("luck", 0);
 
             return data;
+        }
+
+        /// <summary>
+        /// Get stat level by key.
+        /// </summary>
+        public int GetStatLevel(string key)
+        {
+            int index = statLevelKeys.IndexOf(key);
+            return index >= 0 ? statLevelValues[index] : 0;
+        }
+
+        /// <summary>
+        /// Set stat level by key.
+        /// </summary>
+        public void SetStatLevel(string key, int value)
+        {
+            int index = statLevelKeys.IndexOf(key);
+            if (index >= 0)
+            {
+                statLevelValues[index] = value;
+            }
+            else
+            {
+                statLevelKeys.Add(key);
+                statLevelValues.Add(value);
+            }
         }
 
         /// <summary>

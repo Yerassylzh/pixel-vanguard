@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa20ca990183024eb7417ecaf8e3df7, type: 3}
+  m_Name: AutoCrossbow
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.WeaponData
+  weaponID: autocrossbow
+  displayName: AutoCrossbow
+  description: Rapid-fire arrow launcher
+  icon: {fileID: 0}
+  type: 2
+  baseDamage: 10
+  cooldown: 1
+  knockback: 3
+  upgrades:
+  - level: 2
+    damageMultiplier: 1.2
+    cooldownReduction: 1
+    knockbackMultiplier: 1
+    specialUpgrade: Double shot
+  - level: 3
+    damageMultiplier: 1.25
+    cooldownReduction: 0.8
+    knockbackMultiplier: 1
+    specialUpgrade: 'Pierce 1 enemy '
+  - level: 4
+    damageMultiplier: 1.33
+    cooldownReduction: 1
+    knockbackMultiplier: 1
+    specialUpgrade: Triple shot, pierce 2
+  prefab: {fileID: 0}

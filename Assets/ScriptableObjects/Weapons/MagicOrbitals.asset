@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa20ca990183024eb7417ecaf8e3df7, type: 3}
+  m_Name: MagicOrbitals
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.WeaponData
+  weaponID: magicorbitals
+  displayName: MagicOrbitals
+  description: Orbiting shields for defense
+  icon: {fileID: 0}
+  type: 1
+  baseDamage: 8
+  cooldown: 0.5
+  knockback: 3
+  upgrades:
+  - level: 2
+    damageMultiplier: 1.25
+    cooldownReduction: 1
+    knockbackMultiplier: 1
+    specialUpgrade: 2 shields
+  - level: 3
+    damageMultiplier: 1.3
+    cooldownReduction: 1
+    knockbackMultiplier: 1
+    specialUpgrade: 3 shields
+  - level: 4
+    damageMultiplier: 1.38
+    cooldownReduction: 1
+    knockbackMultiplier: 1
+    specialUpgrade: Wider orbit
+  prefab: {fileID: 0}

@@ -14,27 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.WeaponData
   weaponID: greatsword
   displayName: Greatsword
-  description: '"A heavy blade that orbits the wielder, cleaving through enemies
-    with relentless force."'
+  description: Powerful periodic swing attack
   icon: {fileID: 0}
   type: 0
   baseDamage: 15
-  cooldown: 0.3
-  knockback: 10
-  upgrades:
-  - level: 2
-    damageMultiplier: 1.2
-    cooldownReduction: 0.9
-    knockbackMultiplier: 1
-    specialUpgrade: 
-  - level: 2
-    damageMultiplier: 1.2
-    cooldownReduction: 0.9
-    knockbackMultiplier: 1
-    specialUpgrade: 
-  - level: 2
-    damageMultiplier: 1.2
-    cooldownReduction: 0.9
-    knockbackMultiplier: 1
-    specialUpgrade: 
+  cooldown: 0.5
+  knockback: 5
   prefab: {fileID: 0}

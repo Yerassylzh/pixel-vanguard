@@ -1,53 +1,70 @@
 # Implementation Status
 
-**Last Updated:** 2025-12-11
+**Last Updated:** 2025-12-14
 
 ---
 
-## Implemented Scripts (25)
+## Implemented Scripts (35)
 
 ### Core (4)
 - `ServiceLocator.cs` - Dependency injection
-- `GameEvents.cs` - Event system
-- `PlatformDetector.cs` - Platform detection (desktop/mobile)
+- `GameEvents.cs` - Event system + platform change events
+- `PlatformDetector.cs` - Platform detection with force modes (AlwaysMobile default)
 - `SaveData.cs` - Save structure
 
-### Services (4)
+### Services (5)
 - `IAdService.cs`, `ISaveService.cs`, `IPlatformService.cs` - Interfaces
 - `NoAdService.cs` - Fallback ad service
+- `PlayerPrefsSaveService.cs` - Local save implementation
 
-### Data Models (4)
+### Data Models (5)
 - `CharacterData.cs`, `WeaponData.cs`, `EnemyData.cs` - ScriptableObjects
-- `UpgradeData.cs` - Upgrade definitions (4 types)
+- `UpgradeData.cs` - Upgrade definitions (5 types: speed, HP, attack speed, damage, new weapon)
+- `GameSession.cs` - Runtime session stats tracking
 
-### Gameplay (9)
+### Gameplay (16)
 - `GameManager.cs` - Game state controller (Paused/Playing/GameOver)
 - `PlayerController.cs` - Movement (new Input System)
 - `PlayerHealth.cs` - HP, damage cooldown, max HP upgrade support
 - `EnemyHealth.cs` - HP, knockback, XP gem spawning
 - `EnemyAI.cs` - Chase player
 - `EnemySpawner.cs` - Spawns enemies, difficulty scaling
-- `OrbitingWeapon.cs` - Orbits player, damages enemies
+- `WeaponBase.cs` - Abstract weapon class (auto-fire, cooldown)
+- `GreatswordWeapon.cs` - Periodic 360° swing attack
+- `MagicOrbitalsWeapon.cs` - Continuous orbit shield
+- `AutoCrossbowWeapon.cs` - Fires arrows at enemies
+- `ArrowProjectile.cs` - Arrow movement, pierce, damage
+- `HolyWaterWeapon.cs` - Throws flask creating puddle
+- `DamagePuddle.cs` - DoT area damage
+- `WeaponManager.cs` - Manages up to 4 equipped weapons
 - `XPGem.cs` - Magnet pickup, grants XP
-- `UpgradeManager.cs` - Random 3 upgrades, applies effects
+- `UpgradeManager.cs` - Random 3 upgrades, applies effects, weapon acquisition system
 
-### UI (4)
+### UI (5)
 - `HUD.cs` - HP/XP/Level/Timer/Kills display
 - `LevelUpPanel.cs` - Shows 3 random upgrades, pauses game
 - `PauseMenu.cs` - Platform-aware pause (ESC/button)
 - `VirtualJoystick.cs` - Mobile touch joystick
+- `GameOverScreen.cs` - Shows stats, restart/main menu buttons
 
 ---
 
 ## Current State
 
 **Fully Functional:**
-- ✅ Core gameplay loop (move → fight → collect XP → level up)
+- ✅ Core gameplay loop (move → fight → collect XP → level up → die → restart)
 - ✅ Combat system (weapon, enemies, knockback, death)
-- ✅ Progression (4 upgrade types: speed, HP, weapon speed, damage)
+- ✅ **Multi-weapon system (up to 4 weapons, auto-fire)**
+- ✅ **3 weapon types: Orbiting Melee, Projectile, Area Denial**
+- ✅ Progression (5 upgrade types: speed, HP, attack speed, damage, new weapon)
+- ✅ **Weapon acquisition via upgrades (max 4 weapons)**
 - ✅ Visual feedback (HUD with all stats)
-- ✅ Platform detection (desktop/mobile controls)
-- ✅ Pause system (ESC key or UI button)
+- ✅ Platform-aware input (desktop WASD+Arrows, mobile joystick)
+- ✅ Input state management (blocks on pause/level-up/game-over)
+- ✅ Pause system (ESC key or UI button, platform-specific)
+- ✅ Game over screen (displays stats, restart functionality)
+- ✅ Session tracking (time, kills, level, gold)
+- ✅ Save service architecture (PlayerPrefs implementation ready)
 - ✅ XP gem magnet pickup
 - ✅ Enemy spawning with difficulty scaling
 
@@ -56,11 +73,9 @@
 - ⚠️ PauseMenu main menu button (placeholder)
 
 **Not Implemented:**
-- ❌ Game over screen (game freezes, can't restart)
 - ❌ Main menu scene
-- ❌ Scene transitioning
-- ❌ Save/Load system
-- ❌ Platform services (ads, cloud saves)
+- ❌ Save/Load integration (architecture ready, not wired up)
+- ❌ Platform service bootstrap
 - ❌ Sound/Music
 - ❌ Art/Animations
 
@@ -68,9 +83,10 @@
 
 ## Next Priority
 
-### Critical (Game Flow)
-1. **GameOverScreen.cs** - Shows stats, restart button
-2. **Scene transitions** - Load GameScene from menu/restart
+### Critical (Completed Dec 14, 2025)
+1. ✅ **Weapon unlock system** - Integrated (NewWeapon upgrade type)
+2. ✅ **Code refactoring** - DRY improvements, fail-fast error handling
+3. ✅ **Puddle overlap fix** - Minimum cooldown constraint
 
 ### Important (Content)
 3. **More enemy types** - Variety in spawning

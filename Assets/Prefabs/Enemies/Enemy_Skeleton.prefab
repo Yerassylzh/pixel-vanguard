@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 7765320083371716997}
   - component: {fileID: 784359580904439588}
   - component: {fileID: 7451179329571467951}
-  - component: {fileID: 6268030868668814265}
   - component: {fileID: 4670012570637973324}
-  - component: {fileID: 221969210310517202}
+  - component: {fileID: 3877393950228014390}
+  - component: {fileID: 1377515848614260615}
   m_Layer: 6
   m_Name: Enemy_Skeleton
   m_TagString: Enemy
@@ -121,21 +121,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &6268030868668814265
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8627135825830073534}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1e8292a3c124f8488fd28772f36b448, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.EnemyHealth
-  enemyData: {fileID: 11400000, guid: 3dd7ba9ca8a173d40867724f04ae89e9, type: 2}
-  currentHealth: 20
-  isAlive: 1
 --- !u!58 &4670012570637973324
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -172,7 +157,7 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
---- !u!114 &221969210310517202
+--- !u!114 &3877393950228014390
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -181,6 +166,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 8627135825830073534}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3058a95146775cb44935656df33750dd, type: 3}
+  m_Script: {fileID: 11500000, guid: db4f954c39c1a784b945752f65a671f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.EnemyHealth
+  enemyData: {fileID: 11400000, guid: 3dd7ba9ca8a173d40867724f04ae89e9, type: 2}
+  currentHealth: 0
+  isAlive: 1
+--- !u!114 &1377515848614260615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8627135825830073534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 783ccc0944af6c6418b5f7c75368dd7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.EnemyAI

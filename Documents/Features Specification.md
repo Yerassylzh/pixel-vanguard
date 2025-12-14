@@ -47,7 +47,7 @@
 
 Unlocked via **Gold**.
 
-1. **The Knight:** Balanced stats. Starts with Orbiting Greatsword.
+1. **The Knight:** Balanced stats. Starts with Greatsword.
     
 2. **The Pyromancer:** High Area Damage, Low HP. Starts with Molotov.
     
@@ -69,47 +69,29 @@ Unlocked via **Gold**.
 
 Players start with 1, but can hold up to 4 weapons simultaneously.
 
-1. **Orbiting Greatsword:**
+1. **Greatsword:**
     
-    - A melee slash around the player. High knockback.
+    - Periodic 360°swing around the player every 2.5s. High knockback.
         
-    - Upgrade: Attacks faster and covers a wider circle.
+    - Upgrade: Attacks faster (lower cooldown) and deals more damage.
         
-2. **Auto-Crossbow:**
+2. **AutoCrossbow:**
     
-    - Fires projectiles at the nearest enemy.
+    - Fires arrows at the nearest enemy automatically.
         
-    - Upgrade: Fires more arrows (Double shot 
+    - Upgrade: Fires more arrows (Double shot → Triple shot) and pierces through enemies.
         
-        ```
-        →→
-        ```
-        
-         Triple shot) and pierces through enemies.
-        
-3. **Holy Water / Molotov:**
+3. **HolyWater:**
     
     - Throws a flask that creates a damaging puddle on the floor.
         
-    - Upgrade: Puddle lasts longer and grows larger.
+    - Upgrade: Puddle lasts longer and grows larger.
         
-4. **Magic Orbitals:**
+4. **MagicOrbitals:**
     
-    - Shields that rotate around the player to block enemies.
+    - Shields that continuously rotate around the player to block enemies.
         
-    - Upgrade: Adds more shields (1 
-        
-        ```
-        →→
-        ```
-        
-         2 
-        
-        ```
-        →→
-        ```
-        
-         3).
+    - Upgrade: Adds more shields (1 → 2 → 3).
         
 
 ## 4. Main Menu & Metagame (The Shop)

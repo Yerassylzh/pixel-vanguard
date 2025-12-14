@@ -25,13 +25,18 @@ namespace PixelVanguard.Data
         [Header("Effect")]
         [Tooltip("Amount to increase (e.g., 20 for +20% speed, 10 for +10 HP)")]
         public float value;
+
+        [Header("Weapon (only for NewWeapon type)")]
+        [Tooltip("Weapon to equip when this upgrade is selected")]
+        public WeaponData weaponToEquip;
     }
 
     public enum UpgradeType
     {
         PlayerMoveSpeed,    // Increase player movement speed
         PlayerMaxHP,        // Increase player max health
-        WeaponOrbitSpeed,   // Increase greatsword orbit speed
-        WeaponDamage        // Increase weapon damage
+        WeaponAttackSpeed,  // Increase weapon attack speed (lower cooldown) - affects ALL weapons
+        WeaponDamage,       // Increase weapon damage - affects ALL weapons
+        NewWeapon           // Acquire a new weapon (max 4 total)
     }
 }

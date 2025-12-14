@@ -4,79 +4,42 @@ using UnityEngine;
 namespace PixelVanguard.Data
 {
     /// <summary>
-    /// ScriptableObject defining a weapon system.
-    /// Assets stored in: Assets/ScriptableObjects/Weapons/
+    /// Defines a weapon's base stats and identity.
+    /// ScriptableObject pattern allows easy editing in Unity Inspector.
     /// </summary>
     [CreateAssetMenu(fileName = "Weapon", menuName = "PixelVanguard/Weapon Data", order = 2)]
     public class WeaponData : ScriptableObject
     {
         [Header("Identity")]
-        [Tooltip("Unique identifier for this weapon (e.g., 'greatsword')")]
+        [Tooltip("Unique identifier for save system and code references")]
         public string weaponID;
         
-        [Tooltip("Display name shown in UI (e.g., 'Orbiting Greatsword')")]
+        [Tooltip("Name displayed in UI")]
         public string displayName;
         
-        [Tooltip("Description for level-up cards")]
+        [Tooltip("Shown on weapon card and upgrade panel")]
         [TextArea(2, 3)]
         public string description;
         
         public Sprite icon;
 
         [Header("Weapon Type")]
+        [Tooltip("Determines which script/prefab WeaponManager instantiates")]
         public WeaponType type;
 
-        [Header("Base Stats (Level 1)")]
-        [Tooltip("Base damage per hit")]
+        [Header("Base Stats")]
+        [Tooltip("Initial damage value")]
         public float baseDamage = 10f;
         
-        [Tooltip("Seconds between attacks")]
+        [Tooltip("Seconds between auto-fire attacks")]
         public float cooldown = 1f;
         
         [Tooltip("Knockback force applied to enemies")]
-        public float knockback = 5f;
+        public float knockback = 3f;
 
-        [Header("Upgrade Scaling")]
-        [Tooltip("Stat changes per level (Level 2, 3, 4...)")]
-        public UpgradeScaling[] upgrades = new UpgradeScaling[3];
-
-        [Header("Prefab")]
-        [Tooltip("Visual prefab for projectile/effect")]
+        [Header("Optional Override")]
+        [Tooltip("Leave empty to use type-based prefab from WeaponManager")]
         public GameObject prefab;
-
-        /// <summary>
-        /// Get stats for a specific level.
-        /// </summary>
-        public WeaponStats GetStatsForLevel(int level)
-        {
-            if (level == 1)
-            {
-                return new WeaponStats
-                {
-                    damage = baseDamage,
-                    cooldown = cooldown,
-                    knockback = knockback
-                };
-            }
-
-            // Find the upgrade for this level
-            var stats = new WeaponStats
-            {
-                damage = baseDamage,
-                cooldown = cooldown,
-                knockback = knockback
-            };
-
-            for (int i = 0; i < upgrades.Length && i < level - 1; i++)
-            {
-                var upgrade = upgrades[i];
-                stats.damage *= upgrade.damageMultiplier;
-                stats.cooldown *= upgrade.cooldownReduction;
-                stats.knockback *= upgrade.knockbackMultiplier;
-            }
-
-            return stats;
-        }
 
         private void OnValidate()
         {
@@ -99,37 +62,9 @@ namespace PixelVanguard.Data
 
     public enum WeaponType
     {
-        OrbitingMelee,  // Greatsword, Magic Orbitals
-        Projectile,     // Crossbow
-        AreaDenial      // Molotov
-    }
-
-    [Serializable]
-    public class UpgradeScaling
-    {
-        [Tooltip("Level this upgrade applies to (2, 3, 4...)")]
-        public int level = 2;
-        
-        [Tooltip("Damage multiplier (1.2 = +20% damage)")]
-        public float damageMultiplier = 1.2f;
-        
-        [Tooltip("Cooldown reduction (0.9 = -10% cooldown)")]
-        public float cooldownReduction = 0.9f;
-        
-        [Tooltip("Knockback multiplier (1.1 = +10% knockback)")]
-        public float knockbackMultiplier = 1.0f;
-        
-        [Tooltip("Special upgrade description (e.g., 'Adds 1 more orbital')")]
-        public string specialUpgrade;
-    }
-
-    /// <summary>
-    /// Runtime weapon stats calculated from base + upgrades.
-    /// </summary>
-    public struct WeaponStats
-    {
-        public float damage;
-        public float cooldown;
-        public float knockback;
+        Greatsword,      // Periodic swing attack
+        MagicOrbitals,   // Continuous orbit shields
+        Crossbow,        // Fires arrows
+        HolyWater        // Throws puddle flask
     }
 }

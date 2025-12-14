@@ -28,6 +28,9 @@ namespace PixelVanguard.Core
         public static event Action<string> OnWeaponEquipped; // weaponID
         public static event Action<string, int> OnWeaponUpgraded; // weaponID, newLevel
 
+        // Platform Events
+        public static event Action<PlatformType> OnPlatformChanged;
+
         // Invoke methods
         public static void TriggerGameStart() => OnGameStart?.Invoke();
         public static void TriggerGamePause() => OnGamePause?.Invoke();
@@ -44,6 +47,8 @@ namespace PixelVanguard.Core
         
         public static void TriggerWeaponEquipped(string weaponID) => OnWeaponEquipped?.Invoke(weaponID);
         public static void TriggerWeaponUpgraded(string weaponID, int newLevel) => OnWeaponUpgraded?.Invoke(weaponID, newLevel);
+
+        public static void TriggerPlatformChanged(PlatformType platform) => OnPlatformChanged?.Invoke(platform);
 
         /// <summary>
         /// Clear all event subscribers. Call when changing scenes.
@@ -62,6 +67,7 @@ namespace PixelVanguard.Core
             OnGoldCollected = null;
             OnWeaponEquipped = null;
             OnWeaponUpgraded = null;
+            OnPlatformChanged = null;
         }
     }
 

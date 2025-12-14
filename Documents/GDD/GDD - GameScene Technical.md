@@ -114,39 +114,43 @@ Every N seconds (based on difficulty):
 
 ### 2. Weapon System Architecture
 
-**Script:** `WeaponManager.cs`, `WeaponBase.cs`
+**Scripts:** `WeaponManager.cs`, `WeaponBase.cs`, weapon-specific scripts
 
 **Weapon Lifecycle:**
 ```
 Player levels up → Selects weapon card → WeaponManager.EquipWeapon() → 
-Weapon instance added to equipped list → Weapon.StartAutoFire()
+Weapon instance added to equipped list → Weapon starts auto-firing
 ```
 
 **Weapon Types & Behavior:**
 
-#### A. Orbiting Melee (Greatsword)
-- **Visual**: Sprite rotates around player in circle
-- **Hit Detection**: Uses Area2D rotating with sprite
-- **Upgrade**: Increases rotation speed + hitbox size
+#### A. Greatsword (Periodic Swing)
+- **Script**: GreatswordWeapon.cs
+- **Visual**: Sprite rests at side, swings 360° periodically
+- **Hit Detection**: CircleCollider2D active only during swing
+- **Upgrade**: Faster cooldown (2.5s → 1.0s), increased damage
 
-#### B. Projectile (Crossbow)
+#### B. AutoCrossbow (Projectile)
+- **Script**: AutoCrossbowWeapon.cs
 - **Auto-Fire**: Every X seconds, spawn arrow toward nearest enemy
-- **Projectile**: Moves in straight line, pierces N enemies (upgradeable)
+- **Projectile**: ArrowProjectile.cs - moves in straight line, pierces N enemies (upgradeable)
 - **Upgrade**: Multi-shot (1→2→3 arrows), increased pierce
 
-#### C. Area Denial (Molotov)
-- **Auto-Fire**: Throw flask at random position near player
-- **Effect**: Creates damaging zone (Area2D) that persists for Y seconds
+#### C. HolyWater (Area Denial)
+- **Script**: HolyWaterWeapon.cs
+- **Auto-Fire**: Throw flask at position near player
+- **Effect**: DamagePuddle.cs - damaging zone persists for Y seconds
 - **Upgrade**: Larger radius, longer duration
 
-#### D. Orbital Shield (Magic Orbitals)
-- **Visual**: Orbs rotate around player similar to greatsword
-- **Behavior**: Blocks enemy projectiles, damages on contact
+#### D. MagicOrbitals (Orbital Shield)
+- **Script**: MagicOrbitalsWeapon.cs
+- **Visual**: Orbs rotate continuously around player
+- **Behavior**: Constant damage on contact, blocks projectiles
 - **Upgrade**: Add more orbs (1→2→3)
 
 **Damage Calculation:**
 ```
-Final Damage = (Weapon Base Damage × Weapon Level Multiplier) × Player Might Stat × (Crit Chance ? 2 : 1)
+Final Damage = Base Damage × Level Multiplier × Player Stat Multipliers
 ```
 
 ### 3. Level Up System

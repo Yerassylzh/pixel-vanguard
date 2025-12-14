@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: SpinningFury
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
-  upgradeName: Spinning Fury
-  description: "Greatsword spins 30\xB0 faster"
+  upgradeName: Rapid Attack
+  description: All Weapons Attack 30% faster
   icon: {fileID: 0}
   type: 2
   value: 30
+  weaponToEquip: {fileID: 0}

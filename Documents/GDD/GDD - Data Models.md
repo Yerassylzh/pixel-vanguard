@@ -89,9 +89,10 @@ public class WeaponData : ScriptableObject {
 }
 
 public enum WeaponType {
-    OrbitingMelee, // Greatsword, Magic Orbitals
-    Projectile,    // Crossbow
-    AreaDenial     // Molotov
+    Greatsword,      // Periodic swing attack
+    MagicOrbitals,   // Continuous orbit shields
+    Crossbow,        // Fires arrows
+    HolyWater        // Throws puddle flask/Molotov
 }
 
 [Serializable]
@@ -99,18 +100,117 @@ public class UpgradeScaling {
     public int level; // 2, 3, 4...
     public float damageMultiplier = 1.2f; // +20% damage
     public float cooldownReduction = 0.9f; // -10% cooldown
-    public string specialUpgrade; // "Adds 1 more orbital"
+    public string specialUpgrade; // Description of special effect
 }
 ```
 
-**Example Asset (Greatsword):**
+---
 
-| Level | Damage Mult | Cooldown | Special |
-|-------|-------------|----------|---------|
-| 1 | 1.0x | 1.0s | Base |
-| 2 | 1.2x | 0.9s | Wider arc |
-| 3 | 1.5x | 0.8s | +10% knockback |
-| 4 | 2.0x | 0.7s | Double swing |
+## Weapon Roster
+
+**Max Equipped:** 4 weapons simultaneously  
+**Starting Weapon:** Orbiting Greatsword (always)
+
+### 1. Greatsword
+
+**Type:** Greatsword  
+**Script:** GreatswordWeapon.cs  
+**Behavior:** Periodic 360° swing attack  
+**Attack Pattern:** Rests at side → Swings → Returns to rest  
+**Damage:** 15 (high)  
+**Cooldown:** 2.5s (between swings)  
+**Knockback:** 5 (high)
+
+| Level | Damage | Cooldown | Special Effect |
+|-------|--------|----------|----------------|
+| 1 | 15 | 1.5s | Basic 180° arc |
+| 2 | 18 (+20%) | 1.3s | Wider 240° arc |
+| 3 | 23 (+25%) | 1.1s | Full 360° coverage |
+| 4 | 30 (+30%) | 0.9s | Double spin speed |
+
+**Upgrade Path:** Faster attacks → Wider coverage → Full circle protection
+
+---
+
+### 2. AutoCrossbow
+
+**Type:** Crossbow  
+**Script:** AutoCrossbowWeapon.cs  
+**Projectile:** ArrowProjectile.cs  
+**Behavior:** Fires arrows at nearest enemy  
+**Damage:** 10 (medium)  
+**Cooldown:** 1.0s  
+**Knockback:** 3 (medium)
+
+| Level | Damage | Cooldown | Arrows | Pierce |
+|-------|--------|----------|--------|--------|
+| 1 | 10 | 1.0s | 1 | 0 |
+| 2 | 12 (+20%) | 1.0s | 2 (Double shot) | 0 |
+| 3 | 15 (+25%) | 0.8s | 2 | 1 enemy |
+| 4 | 20 (+33%) | 0.8s | 3 (Triple shot) | 2 enemies |
+
+**Upgrade Path:** More arrows → Pierce enemies → Triple shot
+
+---
+
+### 3. HolyWater
+
+**Type:** HolyWater  
+**Script:** HolyWaterWeapon.cs  
+**Puddle:** DamagePuddle.cs  
+**Behavior:** Throws flask creating damage puddle  
+**Damage:** 5/tick (DoT)  
+**Cooldown:** 3.0s  
+**Knockback:** 0
+
+| Level | Damage/Tick | Duration | Puddle Radius | Tick Rate |
+|-------|-------------|----------|---------------|-----------|
+| 1 | 5 | 3s | 1.5m | 0.5s |
+| 2 | 7 (+40%) | 4s | 2.0m | 0.5s |
+| 3 | 10 (+43%) | 5s | 2.5m | 0.4s |
+| 4 | 15 (+50%) | 6s | 3.0m | 0.3s |
+
+**Upgrade Path:** Longer duration → Larger puddle → Faster damage ticks
+
+---
+
+### 4. MagicOrbitals
+
+**Type:** MagicOrbitals  
+**Script:** MagicOrbitalsWeapon.cs  
+**Behavior:** Shields continuously orbit player  
+**Damage:** 8 (low-medium)  
+**Cooldown:** 0.5s  
+**Knockback:** 3 (medium)
+
+| Level | Damage | Shield Count | Orbit Speed | Orbit Radius |
+|-------|--------|--------------|-------------|--------------|
+| 1 | 8 | 1 | 90°/s | 2.0m |
+| 2 | 10 (+25%) | 2 | 90°/s | 2.0m |
+| 3 | 13 (+30%) | 3 | 120°/s | 2.2m |
+| 4 | 18 (+38%) | 3 | 150°/s | 2.5m |
+
+**Upgrade Path:** More shields (1→2→3) → Faster rotation → Wider coverage
+
+---
+
+## Weapon System Rules
+
+**Acquisition:**
+- Player starts with **Orbiting Greatsword** (always equipped)
+- Can hold up to **4 weapons simultaneously**
+- New weapons offered via level-up cards
+- Cannot unequip weapons during a run
+
+**Auto-Fire:**
+- All weapons fire automatically based on individual cooldowns
+- No player input required (mobile-friendly)
+- Weapons operate independently
+
+**Upgrade Priority:**
+- If player has < 4 weapons: Level-up offers new weapon cards
+- If player has weapons: Level-up offers upgrade cards for existing weapons
+- Each weapon maxes at Level 4
 
 ---
 
@@ -337,7 +437,7 @@ Assets/
 │   ├── Weapons/
 │   │   ├── OrbitalGreatsword.asset
 │   │   ├── AutoCrossbow.asset
-│   │   ├── Molotov.asset
+│   │   ├── HolyWater.asset
 │   │   └── MagicOrbitals.asset
 │   ├── Enemies/
 │   │   ├── Skeleton.asset

@@ -13,20 +13,22 @@
 ---
 
 ## PlayerController
-- **Purpose:** Player movement
-- **Desktop Input:** New Input System (WASD, gamepad)
+- **Purpose:** Player movement with platform-aware input
+- **Desktop Input:** WASD + Arrow keys via Input Actions
 - **Mobile Input:** VirtualJoystick (touch)
-- **Platform Detection:** Auto-switches control scheme
-- **Speed:** 5.0 units/sec (from CharacterData)
-- **Does:** Applies velocity, flips sprite
+- **State Management:** Blocks input when paused/level-up/game-over
+- **Speed:** 5.0 units/sec, diagonal normalized (no speed boost)
+- **Platform Switching:** Responds to OnPlatformChanged event
 
 ---
 
 ## VirtualJoystick
 - **Purpose:** Touch controls for mobile
-- **Type:** Floating joystick (appears at touch, hides when released)
+- **Type:** Floating (appears at touch, hides when released)
+- **State Blocking:** Disabled during pause/level-up/game-over
+- **Raycast Management:** Disables raycastTarget when blocked (allows pause menu clicks)
 - **Output:** Normalized direction vector (-1 to 1)
-- **Auto-hide:** Invisible until touched, disappears on release
+- **Auto-hide:** Invisible on desktop, responds to platform changes
 - **Handle Range:** 50 units (configurable)
 
 ---
@@ -100,8 +102,9 @@
 ## UpgradeManager
 - **Purpose:** Select and apply upgrades on level up
 - **Selection:** Random 3 from pool of UpgradeData assets
-- **Types:** Move speed, max HP, weapon orbit speed, weapon damage
-- **Application:** Uses reflection to modify player/weapon stats
+- **Smart Filtering:** Won't show already-equipped weapons or when max (4) reached
+- **Types:** Move speed, max HP, weapon attack speed, weapon damage, new weapon
+- **Application:** Applies to player stats OR all equipped weapons
 - **Data-driven:** ScriptableObject-based upgrade definitions
 
 ---
@@ -116,20 +119,20 @@
 ---
 
 ## PlatformDetector
-- **Purpose:** Detect platform (desktop/mobile)
-- **Manual Override:** For dev, assign platform in Inspector
-- **Auto-Detect:** Runtime detection for production builds
+- **Purpose:** Detect and manage platform type
+- **Modes:** AutoDetect, AlwaysMobile (default), AlwaysDesktop, ForceSpecific
 - **Types:** Desktop, Native Mobile, Web Mobile
+- **Runtime Switching:** ForcePlatform() method triggers OnPlatformChanged event
 - **Singleton:** Global access via Instance
+- **Testing:** Set to AlwaysMobile for development, AutoDetect for production
 
 ---
 
 ## PauseMenu
-- **Purpose:** Pause game with platform-appropriate controls
-- **Desktop:** ESC key (Keyboard.current fallback if InputActions not setup)
-- **Mobile:** UI pause button visible
-- **Input:** Tries InputActionAsset → Falls back to Keyboard.current
-- **Configuration:** Auto-hides/shows button based on platform
+- **Purpose:** Platform-aware pause with proper input management
+- **Desktop:** ESC key only (Input Actions + Keyboard fallback), no pause button
+- **Mobile:** Pause button visible, ESC disabled
+- **Platform Switching:** Responds to OnPlatformChanged event
 - **Uses:** GameManager.PauseGame/ResumeGame
 
 ---
@@ -144,6 +147,7 @@
 ## ServiceLocator
 - **Purpose:** Dependency injection
 - **Usage:** `ServiceLocator.Get<IAdService>()`
+- **Error Handling:** Throws exception on duplicate registration (fail-fast)
 - **Status:** Ready, no services registered yet
 
 ---
@@ -156,7 +160,7 @@
 
 **WeaponData:**
 - Type, damage, cooldown, knockback
-- `GetStatsForLevel(int)` for upgrades
+- **No per-weapon upgrades** (universal only)
 
 **EnemyData:**
 - HP, speed, damage, resistance

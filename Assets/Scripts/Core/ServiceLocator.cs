@@ -23,9 +23,12 @@ namespace PixelVanguard.Core
             var type = typeof(T);
             if (services.ContainsKey(type))
             {
-                Debug.LogWarning($"[ServiceLocator] Service {type.Name} already registered. Overwriting.");
+                throw new System.InvalidOperationException(
+                    $"[ServiceLocator] Service {type.Name} already registered! " +
+                    $"This indicates a duplicate registration bug."
+                );
             }
-            services[type] = implementation;
+            services.Add(type, implementation);
         }
 
         /// <summary>

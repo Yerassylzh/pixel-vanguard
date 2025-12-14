@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: SharpBlade
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
-  upgradeName: Sharp Blade
-  description: Increase weapon damage by 5
+  upgradeName: Increase Damage
+  description: Increase weapon damage by 5 HP
   icon: {fileID: 0}
   type: 0
   value: 5
+  weaponToEquip: {fileID: 0}

@@ -7,9 +7,9 @@ using PixelVanguard.Gameplay;
 namespace PixelVanguard.UI
 {
     /// <summary>
-    /// Pause menu with platform-aware controls.
-    /// Desktop: ESC key to pause (new Input System), no UI button
-    /// Mobile: UI pause button, no keyboard
+    /// Platform-aware pause menu.
+    /// Desktop: ESC key only, no pause button
+    /// Mobile: Pause button visible, ESC disabled
     /// </summary>
     public class PauseMenu : MonoBehaviour
     {
@@ -20,7 +20,7 @@ namespace PixelVanguard.UI
         [SerializeField] private Button mainMenuButton;
 
         [Header("Input (Optional)")]
-        [SerializeField] private InputActionAsset inputActions; // Optional: assign same as PlayerController
+        [SerializeField] private InputActionAsset inputActions;
 
         private bool isPaused = false;
         private InputAction pauseAction;
@@ -28,7 +28,6 @@ namespace PixelVanguard.UI
 
         private void Start()
         {
-            // Hide pause panel initially
             if (pausePanel != null)
             {
                 pausePanel.SetActive(false);
@@ -39,19 +38,29 @@ namespace PixelVanguard.UI
             if (mainMenuButton != null) mainMenuButton.onClick.AddListener(ReturnToMainMenu);
             if (pauseButton != null) pauseButton.onClick.AddListener(Pause);
 
-            // Try to setup Input Actions (optional)
             SetupInputActions();
+            ConfigurePlatformControls();
+        }
 
-            // Show/hide pause button based on platform
+        private void OnEnable()
+        {
+            GameEvents.OnPlatformChanged += OnPlatformChanged;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnPlatformChanged -= OnPlatformChanged;
+        }
+
+        private void OnPlatformChanged(PlatformType newPlatform)
+        {
             ConfigurePlatformControls();
         }
 
         private void SetupInputActions()
         {
-            // Try assigned asset first
             if (inputActions == null)
             {
-                // Try to load from Resources as fallback
                 inputActions = Resources.Load<InputActionAsset>("InputSystem_Actions");
             }
 
@@ -79,7 +88,7 @@ namespace PixelVanguard.UI
 
         private void Update()
         {
-            // Fallback: Direct keyboard check if InputActions not configured
+            // Desktop-only: ESC key fallback if InputActions not configured
             if (!useInputActions && PlatformDetector.Instance != null && PlatformDetector.Instance.IsDesktop())
             {
                 if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -98,7 +107,6 @@ namespace PixelVanguard.UI
 
         private void OnDestroy()
         {
-            // Unsubscribe from input
             if (pauseAction != null)
             {
                 pauseAction.performed -= OnPauseInput;
@@ -107,7 +115,7 @@ namespace PixelVanguard.UI
 
         private void OnPauseInput(InputAction.CallbackContext context)
         {
-            // Only on desktop
+            // Desktop only
             if (PlatformDetector.Instance != null && PlatformDetector.Instance.IsDesktop())
             {
                 if (isPaused)
@@ -123,7 +131,7 @@ namespace PixelVanguard.UI
 
         private void ConfigurePlatformControls()
         {
-            if (Core.PlatformDetector.Instance == null)
+            if (PlatformDetector.Instance == null)
             {
                 Debug.LogWarning("[PauseMenu] PlatformDetector not found! Defaulting to desktop.");
                 if (pauseButton != null) pauseButton.gameObject.SetActive(false);
@@ -131,7 +139,7 @@ namespace PixelVanguard.UI
             }
 
             // Mobile: Show pause button
-            if (Core.PlatformDetector.Instance.IsMobile())
+            if (PlatformDetector.Instance.IsMobile())
             {
                 if (pauseButton != null)
                 {
@@ -150,11 +158,11 @@ namespace PixelVanguard.UI
 
         public void Pause()
         {
-            if (Gameplay.GameManager.Instance == null) return;
-            if (Gameplay.GameManager.Instance.CurrentState != GameState.Playing) return;
+            if (GameManager.Instance == null) return;
+            if (GameManager.Instance.CurrentState != GameState.Playing) return;
 
             isPaused = true;
-            Gameplay.GameManager.Instance.PauseGame();
+            GameManager.Instance.PauseGame();
 
             if (pausePanel != null)
             {
@@ -164,10 +172,10 @@ namespace PixelVanguard.UI
 
         public void Resume()
         {
-            if (Gameplay.GameManager.Instance == null) return;
+            if (GameManager.Instance == null) return;
 
             isPaused = false;
-            Gameplay.GameManager.Instance.ResumeGame();
+            GameManager.Instance.ResumeGame();
 
             if (pausePanel != null)
             {
