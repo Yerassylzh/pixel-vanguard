@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ce624c9a560b214a95f622319756acb, type: 3}
+  m_Name: Ranger
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.CharacterData
+  characterID: ranger
+  displayName: The Ranger
+  description: Fast archer with precision
+  portrait: {fileID: 0}
+  idleSprite: {fileID: 0}
+  characterPrefab: {fileID: 0}
+  maxHealth: 85
+  moveSpeed: 6
+  baseDamageMultiplier: 0.9
+  starterWeapon: {fileID: 11400000, guid: 6f0c5959fa6f3b44d99a7be7fe8d195c, type: 2}
+  unlockType: 1
+  goldCost: 10000
+  adWatchCount: 5

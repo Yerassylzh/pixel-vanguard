@@ -15,7 +15,7 @@ namespace PixelVanguard.Gameplay
         public static PlayerController Instance { get; private set; }
 
         [Header("Movement")]
-        [SerializeField] private float moveSpeed = 5f;
+        private float moveSpeed = 5f;
 
         [Header("Input Actions (Desktop)")]
         [SerializeField] private InputActionAsset inputActions;
@@ -47,6 +47,9 @@ namespace PixelVanguard.Gameplay
             {
                 virtualJoystick = FindAnyObjectByType<UI.VirtualJoystick>();
             }
+
+            // Load move speed from selected character
+            LoadCharacterStats();
 
             DeterminePlatform();
             SetupInput();
@@ -209,6 +212,26 @@ namespace PixelVanguard.Gameplay
         public void SetMoveSpeed(float speed)
         {
             moveSpeed = speed;
+        }
+
+        /// <summary>
+        /// Load stats from selected character.
+        /// Called in Awake() to initialize character-specific values.
+        /// </summary>
+        private void LoadCharacterStats()
+        {
+            var selectedCharacter = Core.CharacterManager.SelectedCharacter;
+            if (selectedCharacter != null)
+            {
+                moveSpeed = selectedCharacter.moveSpeed;
+                Debug.Log($"[PlayerController] Loaded character stats: Speed={moveSpeed}");
+            }
+            else
+            {
+                // Fallback to default if no character selected
+                moveSpeed = 5f;
+                Debug.LogWarning("[PlayerController] No character selected, using default speed: 5.0");
+            }
         }
     }
 }

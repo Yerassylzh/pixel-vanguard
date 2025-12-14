@@ -1,7 +1,7 @@
 # Pixel Vanguard - System Architecture Overview
 
 **Purpose:** Quick context recovery for AI/developers returning to project  
-**Last Updated:** 2025-12-14
+**Last Updated:** 2025-12-15
 
 ---
 
@@ -20,15 +20,16 @@
 Spawn → Fight → Collect XP → Level Up → Choose Upgrade → Repeat → Die → Stats → Restart
 ```
 
-### Systems (8 Core)
+### Systems (9 Core)
 1. **Player** - Movement, health, singleton reference
-2. **Weapons** - 4 types, auto-fire, upgrades via WeaponManager
-3. **Enemies** - AI chase, spawning, health, XP drops
-4. **Progression** - XP collection, leveling, upgrade selection
-5. **UI** - HUD, level-up panel, pause, game over
-6. **Input** - Platform-aware (WASD/arrows + joystick)
-7. **Services** - Save/load, platform detection, ads (架構)
-8. **Camera** - Cinemachine follow
+2. **Characters** - Selection, stat loading, prefab spawning via CharacterManager
+3. **Weapons** - 4 types, auto-fire, upgrades via WeaponManager
+4. **Enemies** - AI chase, spawning, health, XP drops
+5. **Progression** - XP collection, leveling, upgrade selection
+6. **UI** - HUD, level-up panel, pause, game over
+7. **Input** - Platform-aware (WASD/arrows + joystick)
+8. **Services** - Save/load, platform detection, ads (架構)
+9. **Camera** - Cinemachine follow
 
 ---
 
@@ -141,6 +142,42 @@ State Checking:
 
 ---
 
+## 🎭 CHARACTER SYSTEM
+
+### CharacterManager
+```csharp
+// Static access to selected character
+CharacterManager.SelectedCharacter → CharacterData
+CharacterManager.SpawnedPlayer → GameObject
+
+// Spawns player prefab from CharacterData.characterPrefab
+// Validates: tags, layers, components, sprite sorting
+// Auto-assigns: Cinemachine camera target
+```
+
+### CharacterData (ScriptableObjects)
+```
+Location: Assets/ScriptableObjects/Characters/
+
+Structure:
+- characterID: string (unique identifier)
+- displayName: string (UI display)
+- Max HP, Move Speed, Damage Multiplier
+- Starter Weapon: WeaponData reference
+- Character Prefab: GameObject with all player components
+- Unlock Type: FreeStarter / Gold / Ads
+```
+
+### Stat Loading
+```csharp
+PlayerController.LoadCharacterStats() → sets moveSpeed
+PlayerHealth.LoadCharacterStats() → sets maxHealth
+WeaponManager.Start() → equips starterWeapon
+WeaponBase.GetFinalDamage() → applies baseDamageMultiplier
+```
+
+---
+
 ## 👾 ENEMY SYSTEM
 
 ### EnemyAI
@@ -171,8 +208,19 @@ State Checking:
 ### XPGem
 ```csharp
 // Magnet: Attracted to player when in range
-// Collection: Triggers PlayerController.AddXP()
-// Visual: Particle effect on collect
+// Collection: Triggers GameEvents.TriggerXPGained()
+// Visual: All gems identical (cyan square) - NO size/color differentiation by value
+// Note: Future enhancement - differentiate by size/particles/color based on XP amount
+```
+
+### Loot Drops (Current Implementation)
+```
+✅ XP Gems: Fully implemented (spawns visual GameObject, magnet pickup)
+⚠️ Gold Drops: Event-only (fires TriggerGoldCollected but NO visual coin spawns)
+❌ Health Potions: NOT implemented (TODO in EnemyHealth.cs)
+
+Note: When implementing gold coins & health potions, create pickup GameObjects
+similar to XPGem.cs with sprites, colliders, and collection logic.
 ```
 
 ### Leveling
@@ -384,25 +432,28 @@ Assets/Prefabs/Weapons/
 
 ### ✅ Complete (Core Gameplay)
 - Player movement & health
+- **Character system** (selection, stat loading, spawning)
 - 4 weapon types (all functional)
 - Enemy AI & spawning
 - XP & leveling system
 - Upgrade system (4 types)
 - HUD, pause, game over
 - Platform-aware input
-- Camera follow
+- Camera follow (Cinemachine auto-assignment)
 
 ### 🔨 Code Only (Unity Setup Needed)
-- Multi-weapon system (prefabs/assets created, needs inspector assignment)
+- Character variety (create 3 CharacterData assets)
 
 ### ⏳ Not Started
 - Main menu scene
-- Persistent upgrades
+- Persistent upgrades / meta-progression
 - Achievement system
 - Sound/Music
-- Enemy variety (only 1 type exists)
+- Enemy variety (only 1 type exists - plan created for 4 types)
 - Map bounds
 - Visual polish (VFX/particles)
+- Gold coin visual drops
+- Health potion drops
 
 ---
 

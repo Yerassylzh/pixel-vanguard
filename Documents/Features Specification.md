@@ -1,22 +1,29 @@
+```
 ## 1. Gameplay Loop & Session Logic
 
-1. **Start:** Player enters map with **1 Starter Weapon** (Default: Greatsword).
+> [!NOTE]
+> **Current Implementation Status**
+> - **XP Gems:** Fully implemented but all look identical (cyan squares). Future: differentiate by size, particles, or color based on XP value.
+> - **Gold Coins:** Event fires (`TriggerGoldCollected`) but NO visual coin spawns yet. Need to create GameObject with sprite & pickup logic similar to XPGem.
+> - **Health Potions:** Not implemented (TODO in `EnemyHealth.cs`).
+
+1. **Start:** Player enters map with **1 Starter Weapon** (Default: Greatsword).
     
-2. **Combat:** Player kites enemies. Weapons auto-fire.
+2. **Combat:** Player kites enemies. Weapons auto-fire.
     
 3. **Loot:**
     
-    - **XP Gems (Blue):** Fill the Level Up bar.
+    - **XP Gems (Blue):** Fill the Level Up bar.
         
-    - **Gold Coins (Yellow):** Added to end-game reward.
+    - **Gold Coins (Yellow):** Added to end-game reward.
         
-    - **Health Potions (Red):** Restore HP.
+    - **Health Potions (Red):** Restore HP.
         
 4. **The Level Up Event:**
     
     - When the XP bar fills, the game pauses.
         
-    - The player is presented with **3 Cards**.
+    - The player is presented with **3 Cards**.
         
     - **Card Types:**
         
@@ -55,6 +62,9 @@ Unlocked via **Gold**.
     
 
 ### The Enemies (The "Horde")
+
+> [!WARNING]
+> **Current Implementation:** Only 1 placeholder enemy type exists (red square). System is ready for multiple types via EnemyData ScriptableObjects. Need to create 4 enemy type assets with different stats.
 
 1. **Skeleton Grunt:** Slow, weak, numerous.
     

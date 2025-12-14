@@ -66,8 +66,12 @@ namespace PixelVanguard.Gameplay
 
         private void DamageEnemiesInPuddle()
         {
+            // Create a copy to iterate over to avoid collection modification errors
+            // (enemies can die and trigger OnTriggerExit2D during iteration)
+            var enemiesCopy = new HashSet<EnemyHealth>(enemiesInPuddle);
+            
             // Damage all enemies currently in the puddle
-            foreach (var enemy in enemiesInPuddle)
+            foreach (var enemy in enemiesCopy)
             {
                 if (enemy != null && enemy.IsAlive)
                 {

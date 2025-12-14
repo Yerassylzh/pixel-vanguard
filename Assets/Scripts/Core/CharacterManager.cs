@@ -1,0 +1,249 @@
+using UnityEngine;
+
+namespace PixelVanguard.Core
+{
+    /// <summary>
+    /// Manages the selected character for the current game session.
+    /// Stores the selected character and spawns the player prefab.
+    /// </summary>
+    public class CharacterManager : MonoBehaviour
+    {
+        [Header("Default Character")]
+        [Tooltip("Character to use if no selection made (The Knight)")]
+        [SerializeField] private Data.CharacterData defaultCharacter;
+
+        [Header("Spawn Settings")]
+        [Tooltip("Where to spawn the player (leave empty for (0,0,0))")]
+        [SerializeField] private Transform spawnPoint;
+
+        [Tooltip("Cinemachine camera to follow player (optional - auto-detects if empty)")]
+        [SerializeField] private MonoBehaviour cinemachineCamera;
+
+        /// <summary>
+        /// Currently selected character. Set by Main Menu or defaults to Knight.
+        /// </summary>
+        public static Data.CharacterData SelectedCharacter { get; set; }
+
+        /// <summary>
+        /// Reference to spawned player GameObject.
+        /// </summary>
+        public static GameObject SpawnedPlayer { get; private set; }
+
+        private void Awake()
+        {
+            // If no character selected (e.g., playing directly from GameScene), use default
+            if (SelectedCharacter == null)
+            {
+                if (defaultCharacter != null)
+                {
+                    SelectedCharacter = defaultCharacter;
+                    Debug.Log($"[CharacterManager] Using default character: {defaultCharacter.displayName}");
+                }
+                else
+                {
+                    Debug.LogError("[CharacterManager] No default character assigned!");
+                    return;
+                }
+            }
+            else
+            {
+                Debug.Log($"[CharacterManager] Selected character: {SelectedCharacter.displayName}");
+            }
+
+            // Spawn the player
+            SpawnPlayer();
+        }
+
+        private void SpawnPlayer()
+        {
+            if (SelectedCharacter == null)
+            {
+                Debug.LogError("[CharacterManager] Cannot spawn player - no character selected!");
+                return;
+            }
+
+            // Determine spawn position
+            Vector3 spawnPosition = spawnPoint != null ? spawnPoint.position : Vector3.zero;
+
+            GameObject playerPrefab = SelectedCharacter.characterPrefab;
+
+            // If no prefab assigned, try to find existing player in scene (fallback)
+            if (playerPrefab == null)
+            {
+                Debug.LogWarning("[CharacterManager] No character prefab assigned. Looking for existing Player in scene...");
+                SpawnedPlayer = GameObject.FindGameObjectWithTag("Player");
+                if (SpawnedPlayer != null)
+                {
+                    Debug.Log("[CharacterManager] Found existing Player in scene.");
+                    SetupCameraFollow(SpawnedPlayer.transform);
+                    return;
+                }
+                else
+                {
+                    Debug.LogError("[CharacterManager] No character prefab AND no existing Player found!");
+                    return;
+                }
+            }
+
+            // Instantiate player prefab
+            SpawnedPlayer = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
+            SpawnedPlayer.name = $"Player ({SelectedCharacter.displayName})";
+
+            // Verify and fix critical components
+            ValidatePlayerSetup(SpawnedPlayer);
+
+            // Set camera to follow the spawned player
+            SetupCameraFollow(SpawnedPlayer.transform);
+
+            Debug.Log($"[CharacterManager] Spawned player: {SelectedCharacter.displayName} at {spawnPosition}");
+        }
+
+        private void SetupCameraFollow(Transform playerTransform)
+        {
+            // If user assigned a camera in Inspector, use that
+            if (cinemachineCamera != null)
+            {
+                SetCameraTarget(cinemachineCamera, playerTransform);
+                return;
+            }
+
+            // Otherwise, auto-detect Cinemachine camera in scene
+            MonoBehaviour[] allMonoBehaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            
+            foreach (var component in allMonoBehaviours)
+            {
+                string typeName = component.GetType().Name;
+                
+                if (typeName.Contains("Cinemachine") && typeName.Contains("Camera"))
+                {
+                    if (SetCameraTarget(component, playerTransform))
+                    {
+                        return;
+                    }
+                }
+            }
+
+            Debug.Log("[CharacterManager] No Cinemachine camera found");
+        }
+
+        private bool SetCameraTarget(MonoBehaviour camera, Transform target)
+        {
+            var type = camera.GetType();
+            
+            // Try common Cinemachine property names
+            string[] properties = { "Follow", "m_Follow", "TrackingTarget" };
+            
+            foreach (string propName in properties)
+            {
+                var prop = type.GetProperty(propName);
+                if (prop != null && prop.CanWrite)
+                {
+                    prop.SetValue(camera, target);
+                    Debug.Log($"[CharacterManager] Set {type.Name} to follow player");
+                    return true;
+                }
+                
+                var field = type.GetField(propName);
+                if (field != null)
+                {
+                    field.SetValue(camera, target);
+                    Debug.Log($"[CharacterManager] Set {type.Name} to follow player");
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        private void ValidatePlayerSetup(GameObject player)
+        {
+            // Ensure Player tag is set
+            if (player.tag != "Player")
+            {
+                player.tag = "Player";
+                Debug.LogWarning("[CharacterManager] Fixed missing 'Player' tag");
+            }
+
+            // Ensure layer is correct (Default or Player layer)
+            if (player.layer != LayerMask.NameToLayer("Default") && player.layer != LayerMask.NameToLayer("Player"))
+            {
+                player.layer = LayerMask.NameToLayer("Default");
+                Debug.LogWarning("[CharacterManager] Set player to Default layer");
+            }
+
+            // Verify PlayerController component exists
+            var controller = player.GetComponent<Gameplay.PlayerController>();
+            if (controller == null)
+            {
+                Debug.LogError("[CharacterManager] Player prefab missing PlayerController component!");
+            }
+
+            // Verify PlayerHealth component exists
+            var health = player.GetComponent<Gameplay.PlayerHealth>();
+            if (health == null)
+            {
+                Debug.LogError("[CharacterManager] Player prefab missing PlayerHealth component!");
+            }
+
+            // Verify Rigidbody2D exists and is configured
+            var rb = player.GetComponent<Rigidbody2D>();
+            if (rb == null)
+            {
+                Debug.LogError("[CharacterManager] Player prefab missing Rigidbody2D component!");
+            }
+            else
+            {
+                // Ensure correct Rigidbody2D settings
+                rb.gravityScale = 0f;
+                rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            }
+
+            // Verify Collider2D exists
+            var collider = player.GetComponent<Collider2D>();
+            if (collider == null)
+            {
+                Debug.LogError("[CharacterManager] Player prefab missing Collider2D component!");
+            }
+
+            // Verify SpriteRenderer and set sorting layer
+            var spriteRenderer = player.GetComponentInChildren<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                // Set to appropriate sorting layer (usually "Player" or "Default")
+                if (SortingLayer.IsValid(SortingLayer.NameToID("Player")))
+                {
+                    spriteRenderer.sortingLayerName = "Player";
+                }
+                else
+                {
+                    spriteRenderer.sortingLayerName = "Default";
+                }
+                spriteRenderer.sortingOrder = 10; // Above ground, below UI
+            }
+            else
+            {
+                Debug.LogWarning("[CharacterManager] No SpriteRenderer found on player or children");
+            }
+
+            // Verify WeaponManager component
+            var weaponManager = player.GetComponent<Gameplay.WeaponManager>();
+            if (weaponManager == null)
+            {
+                Debug.LogError("[CharacterManager] Player prefab missing WeaponManager component!");
+            }
+        }
+
+        /// <summary>
+        /// Reset character selection (call when returning to main menu).
+        /// </summary>
+        public static void ResetSelection()
+        {
+            SelectedCharacter = null;
+            if (SpawnedPlayer != null)
+            {
+                Destroy(SpawnedPlayer);
+                SpawnedPlayer = null;
+            }
+        }
+    }
+}

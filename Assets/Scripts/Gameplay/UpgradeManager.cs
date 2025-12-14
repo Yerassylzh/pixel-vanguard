@@ -22,9 +22,9 @@ namespace PixelVanguard.Gameplay
 
         private void Start()
         {
-            playerController = FindObjectOfType<PlayerController>();
-            playerHealth = FindObjectOfType<PlayerHealth>();
-            weaponManager = FindObjectOfType<WeaponManager>();
+            playerController = FindAnyObjectByType<PlayerController>();
+            playerHealth = FindAnyObjectByType<PlayerHealth>();
+            weaponManager = FindAnyObjectByType<WeaponManager>();
         }
 
         /// <summary>

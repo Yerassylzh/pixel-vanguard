@@ -43,7 +43,7 @@ namespace PixelVanguard.UI
             // Auto-find UpgradeManager if not assigned
             if (upgradeManager == null)
             {
-                upgradeManager = FindObjectOfType<UpgradeManager>();
+                upgradeManager = FindAnyObjectByType<UpgradeManager>();
             }
 
             // Setup button listeners

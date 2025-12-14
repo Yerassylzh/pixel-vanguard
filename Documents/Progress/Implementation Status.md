@@ -1,107 +1,154 @@
 # Implementation Status
 
-**Last Updated:** 2025-12-14
+**Last Updated:** 2025-12-15
 
 ---
 
-## Implemented Scripts (35)
+## Implemented Scripts (36)
 
-### Core (4)
-- `ServiceLocator.cs` - Dependency injection
-- `GameEvents.cs` - Event system + platform change events
-- `PlatformDetector.cs` - Platform detection with force modes (AlwaysMobile default)
-- `SaveData.cs` - Save structure
+### Core (3)
+- `ServiceLocator.cs` - Dependency injection with fail-fast error handling (throws exception on duplicate registration)
+- `GameEvents.cs` - Event system (player death, enemy killed, XP gained, gold collected, platform changes)
+- `PlatformDetector.cs` - Platform detection (Desktop, Native Mobile, Web Mobile) with force modes
 
-### Services (5)
-- `IAdService.cs`, `ISaveService.cs`, `IPlatformService.cs` - Interfaces
-- `NoAdService.cs` - Fallback ad service
-- `PlayerPrefsSaveService.cs` - Local save implementation
+### Services (6)
+- `IAdService.cs` - Ad service interface
+- `ISaveService.cs` - Save service interface
+- `IPlatformService.cs` - Platform service interface
+- `NoAdService.cs` - Fallback ad service (no-op implementation)
+- `PlayerPrefsSaveService.cs` - Local save implementation using PlayerPrefs
+- `SaveData.cs` - Save data structure (character level, total gold, game sessions)
 
-### Data Models (5)
-- `CharacterData.cs`, `WeaponData.cs`, `EnemyData.cs` - ScriptableObjects
-- `UpgradeData.cs` - Upgrade definitions (5 types: speed, HP, attack speed, damage, new weapon)
-- `GameSession.cs` - Runtime session stats tracking
+### Data Models (4)
+- `CharacterData.cs` - ScriptableObject for character stats (HP, speed, damage multiplier, starter weapon)
+- `WeaponData.cs` - ScriptableObject for weapon stats (damage, cooldown, knockback)
+- `EnemyData.cs` - ScriptableObject for enemy stats (HP, speed, damage, weight resistance, loot drops)
+- `UpgradeData.cs` - ScriptableObject for upgrades (5 types: MoveSpeed, MaxHealth, WeaponAttackSpeed, WeaponDamage, NewWeapon)
+- `GameSession.cs` - Runtime session stats tracking (time, kills, level, gold)
 
-### Gameplay (16)
-- `GameManager.cs` - Game state controller (Paused/Playing/GameOver)
-- `PlayerController.cs` - Movement (new Input System)
-- `PlayerHealth.cs` - HP, damage cooldown, max HP upgrade support
-- `EnemyHealth.cs` - HP, knockback, XP gem spawning
-- `EnemyAI.cs` - Chase player
-- `EnemySpawner.cs` - Spawns enemies, difficulty scaling
-- `WeaponBase.cs` - Abstract weapon class (auto-fire, cooldown)
-- `GreatswordWeapon.cs` - Periodic 360° swing attack
-- `MagicOrbitalsWeapon.cs` - Continuous orbit shield
-- `AutoCrossbowWeapon.cs` - Fires arrows at enemies
-- `ArrowProjectile.cs` - Arrow movement, pierce, damage
-- `HolyWaterWeapon.cs` - Throws flask creating puddle
-- `DamagePuddle.cs` - DoT area damage
-- `WeaponManager.cs` - Manages up to 4 equipped weapons
-- `XPGem.cs` - Magnet pickup, grants XP
-- `UpgradeManager.cs` - Random 3 upgrades, applies effects, weapon acquisition system
+### Gameplay (18)
+
+#### Core Management
+- `GameManager.cs` - Master game state controller (Initializing → Playing → GameOver → Paused)
+- `UpgradeManager.cs` - Random upgrade selection, smart filtering (excludes equipped weapons), applies stat changes
+  - DRY refactored with `ApplyToAllWeapons` helper method
+  - Supports weapon acquisition system (NewWeapon upgrade type)
+
+#### Player
+- `PlayerController.cs` - Platform-aware movement (WASD + Arrow keys, VirtualJoystick), input blocking
+  - Cleaned up warning logic (removed frame throttling)
+- `PlayerHealth.cs` - HP management, damage cooldown, max HP upgrade support
+
+#### Enemies
+- `EnemyHealth.cs` - HP, knockback physics, XP gem spawning, gold drop events
+- `EnemyAI.cs` - Chase player behavior, stops when paused or dead
+- `EnemySpawner.cs` - Spawns enemies at screen edges, difficulty scaling, weighted random selection, max 100 enemies
+
+#### Weapons (8 scripts)
+- `WeaponBase.cs` - Abstract base class with auto-fire, cooldown, damage/knockback/speed modifiers
+- `WeaponManager.cs` - Manages up to 4 equipped weapons simultaneously
+- **Greatsword** (Melee):
+  - `GreatswordWeapon.cs` - Periodic 360° swing attack, unparented from player for world-space positioning
+- **Auto Crossbow** (Projectile):
+  - `AutoCrossbowWeapon.cs` - Fires arrows at nearest enemy, multi-shot spread pattern
+  - `ArrowProjectile.cs` - Arrow movement, pierce count, lifetime, knockback application
+- **Holy Water** (Area Denial):
+  - `HolyWaterWeapon.cs` - Throws flask creating damage puddle, prevents overlap (cooldown ≥ puddle duration)
+  - `DamagePuddle.cs` - DoT area damage, tracks enemies in HashSet, **fixed collection modification bug** (creates copy for iteration)
+- **Magic Orbitals** (Shield):
+  - `MagicOrbitalsWeapon.cs` - Orbiting shields that damage on contact, collision-based damage with cooldown
+
+#### Pickups
+- `XPGem.cs` - Magnet pull (3 unit radius), trigger collection, grants XP to HUD
 
 ### UI (5)
-- `HUD.cs` - HP/XP/Level/Timer/Kills display
-- `LevelUpPanel.cs` - Shows 3 random upgrades, pauses game
-- `PauseMenu.cs` - Platform-aware pause (ESC/button)
-- `VirtualJoystick.cs` - Mobile touch joystick
-- `GameOverScreen.cs` - Shows stats, restart/main menu buttons
+- `HUD.cs` - Displays HP bar, XP bar, level, timer, kill count; tracks XP locally, fires level-up event
+- `LevelUpPanel.cs` - Shows 3 random upgrades, pauses game, applies selected upgrade
+  - DRY refactored with `SelectOption` method (50% code reduction)
+- `PauseMenu.cs` - Platform-aware pause (ESC for desktop, button for mobile), blocks input appropriately
+- `VirtualJoystick.cs` - Floating touch joystick for mobile, auto-hides on desktop, disables raycast when blocked
+- `GameOverScreen.cs` - **FULLY IMPLEMENTED** - Shows stats (survival time, kills, level), restart button, placeholder main menu button
 
 ---
 
 ## Current State
 
 **Fully Functional:**
-- ✅ Core gameplay loop (move → fight → collect XP → level up → die → restart)
-- ✅ Combat system (weapon, enemies, knockback, death)
-- ✅ **Multi-weapon system (up to 4 weapons, auto-fire)**
-- ✅ **3 weapon types: Orbiting Melee, Projectile, Area Denial**
-- ✅ Progression (5 upgrade types: speed, HP, attack speed, damage, new weapon)
-- ✅ **Weapon acquisition via upgrades (max 4 weapons)**
-- ✅ Visual feedback (HUD with all stats)
+- ✅ Complete gameplay loop (move → fight → collect XP → level up → die → see stats → restart)
+- ✅ Multi-weapon system (up to 4 weapons auto-firing simultaneously)
+- ✅ 4 weapon types fully implemented:
+  - Greatsword (melee swing)
+  - Auto Crossbow (projectile)
+  - Holy Water (area denial)
+  - Magic Orbitals (orbiting shield)
+- ✅ Weapon acquisition via upgrade system (NewWeapon type, max 4 weapons enforced)
+- ✅ Combat system (damage, knockback physics, death)
+- ✅ 5 upgrade types: MoveSpeed, MaxHealth, WeaponAttackSpeed, WeaponDamage, NewWeapon
+- ✅ XP gem magnet pickup system
+- ✅ Enemy spawning with difficulty scaling
 - ✅ Platform-aware input (desktop WASD+Arrows, mobile joystick)
 - ✅ Input state management (blocks on pause/level-up/game-over)
 - ✅ Pause system (ESC key or UI button, platform-specific)
-- ✅ Game over screen (displays stats, restart functionality)
-- ✅ Session tracking (time, kills, level, gold)
-- ✅ Save service architecture (PlayerPrefs implementation ready)
-- ✅ XP gem magnet pickup
-- ✅ Enemy spawning with difficulty scaling
+- ✅ **Game Over screen (displays time, kills, level) with restart**
+- ✅ Session stat tracking (time, kills, level, gold)
+- ✅ Visual feedback (HUD with all stats)
 
 **Partially Complete:**
-- ⚠️ Input System setup (works with Keyboard.current fallback)
-- ⚠️ PauseMenu main menu button (placeholder)
+- ⚠️ Save service architecture exists but not wired up to game loop
+- ⚠️ Game Over main menu button is placeholder (no Main Menu scene exists yet)
 
 **Not Implemented:**
-- ❌ Main menu scene
-- ❌ Save/Load integration (architecture ready, not wired up)
-- ❌ Platform service bootstrap
+- ❌ Main Menu scene (character selection, navigation)
+- ❌ Results scene (separate scene for end-of-run)
+- ❌ Bootstrap scene (service initialization)
+- ❌ Save/Load integration (save after each run)
+- ❌ Meta-progression (shop, permanent upgrades, character unlocks)
+- ❌ Multiple character types (only one character exists)
+- ❌ Enemy variety (only one enemy type exists)
 - ❌ Sound/Music
-- ❌ Art/Animations
+- ❌ Art/Animations (using placeholder sprites)
+
+---
+
+## Recent Code Quality Improvements (Dec 14, 2025)
+
+### Bug Fixes
+1. **Holy Water Puddle Overlap** - Added minimum cooldown constraint to prevent puddles spawning before old ones despawn
+2. **DamagePuddle Collection Modification** - Fixed `InvalidOperationException` by iterating over HashSet copy when enemies die
+
+### Refactoring
+1. **ServiceLocator Fail-Fast** - Changed duplicate registration from warning to exception
+2. **UpgradeManager DRY** - Extracted `ApplyToAllWeapons` helper (40% code reduction)
+3. **LevelUpPanel DRY** - Extracted `SelectOption` method (50% code reduction)
+4. **PlayerController Cleanup** - Removed frame throttling warning logic
+
+### Naming
+1. **WeaponOrbitSpeed → WeaponAttackSpeed** - Renamed to reflect that it affects ALL weapons, not just orbitals
 
 ---
 
 ## Next Priority
 
-### Critical (Completed Dec 14, 2025)
-1. ✅ **Weapon unlock system** - Integrated (NewWeapon upgrade type)
-2. ✅ **Code refactoring** - DRY improvements, fail-fast error handling
-3. ✅ **Puddle overlap fix** - Minimum cooldown constraint
+### Critical Core Systems (User Priority)
+1. **Character System** - Enable multiple playable heroes with different stats and starter weapons
+2. **Enemy Variety** - Implement 2-3 additional enemy types (Crawler, Armored Orc, Boss)
 
-### Important (Content)
-3. **More enemy types** - Variety in spawning
-4. **More weapons** - Dual-weapon system
-5. **Boss enemies** - Periodic challenges
+### Important (Deferred)
+3. Main Menu scene (simple version: start game + character selection)
+4. More content (additional weapons, enemies, upgrades)
 
-### Polish
-6. **Sound effects** - Combat feedback
-7. **Particle effects** - Visual juice
-8. **Sprite art** - Replace placeholders
+### Polish (Later)
+5. Sound effects and music
+6. Particle effects
+7. Replace placeholder sprites with actual art
+8. Animations
 
 ---
 
-## Game can be played, but:
-- ✅ Playable loop exists (move, fight, level up, upgrade)
-- ⚠️ Can't restart after death without Unity restart
-- ⚠️ No persistence (lose progress on quit)
-- ℹ️ Using placeholder graphics (squares/circles)
+## Notes
+
+- Game is fully playable with complete core loop
+- Restart works via scene reload (no Main Menu needed yet)
+- All weapon knockback fully functional and tested
+- Platform detection defaults to AlwaysMobile for development
+- Service architecture ready but services not registered/used yets)

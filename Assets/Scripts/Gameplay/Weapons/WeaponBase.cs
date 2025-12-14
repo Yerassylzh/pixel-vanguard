@@ -157,5 +157,16 @@ namespace PixelVanguard.Gameplay
         /// Get weapon data reference.
         /// </summary>
         public Data.WeaponData GetWeaponData() => weaponData;
+
+        /// <summary>
+        /// Get final damage with character multiplier applied.
+        /// Use this method when dealing damage to enemies.
+        /// </summary>
+        protected float GetFinalDamage()
+        {
+            var selectedCharacter = Core.CharacterManager.SelectedCharacter;
+            float characterMultiplier = selectedCharacter != null ? selectedCharacter.baseDamageMultiplier : 1f;
+            return damage * characterMultiplier;
+        }
     }
 }

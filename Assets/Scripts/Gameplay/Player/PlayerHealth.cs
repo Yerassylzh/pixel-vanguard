@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using UnityEngine;
 
 namespace PixelVanguard.Gameplay
@@ -10,8 +9,8 @@ namespace PixelVanguard.Gameplay
     public class PlayerHealth : MonoBehaviour
     {
         [Header("Stats")]
-        [SerializeField] private float maxHealth = 100f;
-        [SerializeField] private float currentHealth;
+        private float maxHealth = 100f;
+        private float currentHealth;
 
         [Header("Damage Cooldown")]
         [SerializeField] private float damageCooldown = 1f; // Seconds between taking damage
@@ -32,6 +31,9 @@ namespace PixelVanguard.Gameplay
 
         private void Start()
         {
+            // Load max health from selected character
+            LoadCharacterStats();
+
             currentHealth = maxHealth;
             Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
         }
@@ -143,6 +145,26 @@ namespace PixelVanguard.Gameplay
                 {
                     TakeDamage(enemyHealth.ContactDamage);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Load stats from selected character.
+        /// Called in Start() to initialize character-specific values.
+        /// </summary>
+        private void LoadCharacterStats()
+        {
+            var selectedCharacter = Core.CharacterManager.SelectedCharacter;
+            if (selectedCharacter != null)
+            {
+                maxHealth = selectedCharacter.maxHealth;
+                Debug.Log($"[PlayerHealth] Loaded character stats: MaxHP={maxHealth}");
+            }
+            else
+            {
+                // Fallback to default if no character selected
+                maxHealth = 100f;
+                Debug.LogWarning("[PlayerHealth] No character selected, using default max HP: 100");
             }
         }
     }

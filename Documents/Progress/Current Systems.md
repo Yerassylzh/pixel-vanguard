@@ -65,12 +65,16 @@
 
 ---
 
-## OrbitingWeapon
-- **Purpose:** Player's weapon
-- **Does:** Orbits player using sin/cos math, damages enemies on contact
-- **Orbit:** Radius 2.0, speed 180°/sec
-- **Damage:** From WeaponData, has cooldown between hits
-- **Stops:** When game paused
+## Weapon System
+- **Purpose:** Multi-weapon auto-fire combat
+- **Types:** 4 weapon types, up to 4 equipped simultaneously
+  - **Greatsword**: Periodic 360° swing attack (melee)
+  - **Auto Crossbow**: Fires arrows at nearest enemy (projectile)
+  - **Holy Water**: Throws flask creating damage puddle (area denial)
+  - **Magic Orbitals**: Orbiting shields that damage on contact
+- **Auto-fire:** All weapons fire automatically based on cooldown
+- **Upgrades:** Damage, attack speed, knockback modifiers
+- **Acquisition:** Obtain new weapons via level-up upgrades (max 4)
 
 ---
 
@@ -115,6 +119,15 @@
 - **Options:** 3 random upgrades from UpgradeManager
 - **Display:** Shows name + description on buttons
 - **Pauses:** Calls GameManager.PauseGame(), resumes with GameManager.ResumeGame()
+
+---
+
+## GameOverScreen
+- **Purpose:** Display session results when player dies
+- **Trigger:** OnGameOver event from GameManager
+- **Stats Displayed:** Survival time, kill count, level reached
+- **Actions:** Restart button (reloads scene), main menu button (placeholder)
+- **Session Data:** Reads from GameManager.CurrentSession
 
 ---
 

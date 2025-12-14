@@ -50,6 +50,7 @@ namespace PixelVanguard.Gameplay
             {
                 float actualKnockback = knockbackForce * (1f - enemyData.weightResistance);
                 rb.AddForce(knockbackDirection * actualKnockback, ForceMode2D.Impulse);
+                Debug.Log("GOT KNOCKBACK");
             }
 
             // Check for death
