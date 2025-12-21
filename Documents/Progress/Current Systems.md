@@ -1,180 +1,165 @@
 # Current Systems
 
-**Brief overview of implemented systems.**
+**Implemented system overview - concise technical reference**
 
 ---
 
-## GameManager
-- **Purpose:** Master game state controller
-- **State:** Initializing → Playing → GameOver
-- **Does:** Tracks time, kills, gold; pauses game on death/level-up
+## Core Managers
+
+### GameManager
+- Master game state controller (Singleton, DontDestroyOnLoad)
+- **States:** Initializing → Playing → Paused → LevelUp → GameOver
+- **Tracks:** Time, kills, gold
 - **Events:** Listens to OnPlayerDeath, OnEnemyKilled, OnGoldCollected
 
+### PlayerController
+- Platform-aware movement with auto-detection
+- **Desktop:** WASD + Arrow keys (Input Actions)
+- **Mobile:** VirtualJoystick (floating touch)
+- **Speed:** 5.0 units/sec, diagonal normalized
+- **State Blocking:** Pauses input during level-up/game-over
+
+### WeaponManager
+- Manages up to 4 equipped weapons simultaneously
+- **Spawning:** Instantiates weapon prefabs, initializes with WeaponData
+- **API:** `EquipWeapon(WeaponData)`, `GetEquippedWeapons()`, `IsWeaponEquipped(WeaponType)`
+
+### UpgradeManager
+- Applies universal upgrades to ALL equipped weapons + player stats
+- **Formula Conversion:**
+  - Attack Speed: `cooldown *= (1.0 - value/100)` (10% = faster)
+  - Damage: `damage *= (1.0 + value/100)` (10% = +10% dmg)
+  - Speed: `speed *= (1.0 + value/100)`
+- **Method:** `ApplyUpgrade(UpgradeData)` distributes to weapons or player
+
 ---
 
-## PlayerController
-- **Purpose:** Player movement with platform-aware input
-- **Desktop Input:** WASD + Arrow keys via Input Actions
-- **Mobile Input:** VirtualJoystick (touch)
-- **State Management:** Blocks input when paused/level-up/game-over
-- **Speed:** 5.0 units/sec, diagonal normalized (no speed boost)
-- **Platform Switching:** Responds to OnPlatformChanged event
+## Player Systems
 
----
-
-## VirtualJoystick
-- **Purpose:** Touch controls for mobile
-- **Type:** Floating (appears at touch, hides when released)
-- **State Blocking:** Disabled during pause/level-up/game-over
-- **Raycast Management:** Disables raycastTarget when blocked (allows pause menu clicks)
-- **Output:** Normalized direction vector (-1 to 1)
-- **Auto-hide:** Invisible on desktop, responds to platform changes
-- **Handle Range:** 50 units (configurable)
-
----
-
-## PlayerHealth
-- **Purpose:** HP management
-- **HP:** 100 (default)
+### PlayerHealth
+- **HP:** 100 default (from CharacterData.maxHealth)
 - **Damage Cooldown:** 1 second
-- **Does:** Takes damage from enemy contact, fires OnPlayerDeath when HP = 0
+- **Triggers:** OnPlayerDeath when HP ≤ 0
+
+### VirtualJoystick
+- Floating touch controls (appears at touch, hides on release)
+- **Range:** 50 units (configurable)
+- **State Management:** Auto-disables during pause/level-up
+- **Platform:** Invisible on desktop, responds to platform changes
 
 ---
 
-## EnemyAI
-- **Purpose:** Make enemies chase player
-- **Does:** Finds Player by tag, moves toward player
-- **Speed:** From EnemyData.moveSpeed (should be 2.5-3.0)
-- **Stops:** When game paused or enemy dead
+## Weapon System
+
+### Universal Architecture
+- **WeaponBase** - Abstract base class
+  - Auto-fire system (cooldown timer in Update())
+  - Stats: `damage`, `cooldown`, `knockback`, `duration`, `tickRate`
+  - `FindNearestEnemy(range)` helper
+  - `GetFinalDamage()` applies character damage multiplier
+
+### Utility Classes
+- **EnemyDamageUtility** - Centralizes enemy tag check + damage application
+- **ShaderHelper** - Creates reveal material instances for VFX
+
+### Weapon Implementations
+
+**Greatsword** - Grand Cleave (Melee Slash)
+- Horizontal slash VFX (Left/Right based on PlayerController movement)
+- SpriteReveal shader with AnimationCurve opacity fade
+- Multi-hit tracking (HashSet<int> prevents duplicate kills per swing)
+- No physical rotation; visual-only effect
+
+**Auto Crossbow** - Firework Bolt (Projectile)
+- Finds nearest enemy via Physics2D.OverlapCircleAll (15m range)
+- Spawns spinning arrow projectile with pierce capability
+- Multi-shot support (spread pattern)
+- ArrowProjectile handles movement, lifetime, pierce count
+
+**Holy Water** - Sanctified Ground (Area Denial)
+- Spawns blue fire zone at random offset (3.5m radius)
+- RadialReveal shader (center-outward expansion)
+- Animation: Rune expands → Fire particles → DoT → Rune shrinks → Destroy
+- DamagePuddle tracks enemies in HashSet, applies DoT every `tickRate`
+
+**Magic Orbitals** - Ethereal Shields (Orbital)
+- Spawns 3 balls (OrbitalBall instances)
+- Radius animation: 0 → targetRadius → 0 (unified AnimateRadius coroutine)
+- Per-enemy damage cooldown (Dictionary<int, float>)
+- Damages ALL touched enemies simultaneously (no global cooldown)
+- Visibility delays (Invoke) prevent overlap at spawn/despawn
 
 ---
 
-## EnemyHealth
-- **Purpose:** Enemy HP and loot
-- **Does:** Takes damage, applies knockback, drops XP/gold (events)
-- **Knockback:** Based on `weightResistance` (0-1)
+## Enemy Systems
 
----
+### EnemyAI
+- Simple chase behavior (moves toward player via normalized delta)
+- **Speed:** From EnemyData.moveSpeed (typically 2.5-3.0)
+- **Pathfinding:** Direct vector (no nav mesh)
+- **Pauses:** When game paused or dead
 
-## EnemySpawner
-- **Purpose:** Spawn enemies continuously
-- **Spawning:** At screen edges, outside camera view
-- **Difficulty:** Scales with GameManager.GameTime (centralized)
+### EnemyHealth
+- **HP Management:** Takes damage, applies knockback, triggers death
+- **Knockback:** Scaled by `weightResistance` (0-1, heavier = less knockback)
+- **Loot:** Fires events OnEnemyKilled (XP, gold) via GameEvents
+
+### EnemySpawner
+- Continuous spawning at screen edges (outside camera view)
+- **Difficulty Scaling:** Spawn rate increases with GameManager.GameTime
 - **Selection:** Weighted random based on EnemyData.spawnWeight
 - **Limit:** Max 100 enemies on screen
 
 ---
 
-## Weapon System
-- **Purpose:** Multi-weapon auto-fire combat
-- **Types:** 4 weapon types, up to 4 equipped simultaneously
-  - **Greatsword**: Periodic 360° swing attack (melee)
-  - **Auto Crossbow**: Fires arrows at nearest enemy (projectile)
-  - **Holy Water**: Throws flask creating damage puddle (area denial)
-  - **Magic Orbitals**: Orbiting shields that damage on contact
-- **Auto-fire:** All weapons fire automatically based on cooldown
-- **Upgrades:** Damage, attack speed, knockback modifiers
-- **Acquisition:** Obtain new weapons via level-up upgrades (max 4)
+## Loot & Progression
 
----
-
-## XPGem
-- **Purpose:** XP pickup from dead enemies
-- **Magnet:** Pulls toward player within 3 units
-- **Collection:** Trigger collision with player
-- **Speed:** 10 units/sec when pulled
+### XPGem
+- Magnet behavior (pulls toward player within 3 units)
+- **Speed:** 10 units/sec when attracted
 - **Value:** Set by EnemyData.xpDrop
+- **Collection:** OnTriggerEnter2D with player
+
+### Level-Up Flow
+1. XP bar fills → `GameEvents.OnPlayerLevelUp` fires
+2. `LevelUpPanel` shows 3 random upgrades (no duplicates, smart filtering)
+3. Player selects → `UpgradeManager.ApplyUpgrade(UpgradeData)`
+4. Multiplier conversion applied → All weapons + player updated
 
 ---
 
-## Camera
-- **Solution:** Cinemachine Virtual Camera (Unity built-in)
-- **Follow:** Player with damping
-- **No custom code needed**
+## UI Systems
+
+### HUD
+- Real-time display: HP bar, XP bar, level, timer, kill count
+- Event-driven updates (subscribes to GameEvents)
+
+### LevelUpPanel
+- Shows 3 random UpgradeData cards
+- **Filtering:** Excludes already-equipped weapons
+- **Smart Selection:** Prevents duplicate cards
+
+### PauseMenu / GameOverScreen
+- Standard overlay panels
+- State transitions via GameManager.SetState()
 
 ---
 
-## HUD
-- **Purpose:** Visual feedback during gameplay
-- **Displays:** HP bar, XP bar, level, timer, kill count
-- **Updates:** Listens to GameEvents for real-time changes
-- **XP Tracking:** Tracks XP locally, fires level-up event
-- **Scaling:** XP requirement increases per level (1.2x multiplier)
+## Technical Notes
 
----
+### Platform Detection
+- PlatformDetector Singleton (MUST have only 1 in scene)
+- Auto-detects Mobile/Desktop/Editor
+- Fires OnPlatformChanged event
+- Desktop: Hides joystick, enables Input Actions
 
-## UpgradeManager
-- **Purpose:** Select and apply upgrades on level up
-- **Selection:** Random 3 from pool of UpgradeData assets
-- **Smart Filtering:** Won't show already-equipped weapons or when max (4) reached
-- **Types:** Move speed, max HP, weapon attack speed, weapon damage, new weapon
-- **Application:** Applies to player stats OR all equipped weapons
-- **Data-driven:** ScriptableObject-based upgrade definitions
+### Save System
+- ServiceLocator pattern (fail-fast on duplicates)
+- PlayerPrefs-based persistence
+- SaveData model (serializable)
 
----
-
-## LevelUpPanel
-- **Purpose:** Pause game and show upgrade choices
-- **Trigger:** OnPlayerLevelUp event
-- **Options:** 3 random upgrades from UpgradeManager
-- **Display:** Shows name + description on buttons
-- **Pauses:** Calls GameManager.PauseGame(), resumes with GameManager.ResumeGame()
-
----
-
-## GameOverScreen
-- **Purpose:** Display session results when player dies
-- **Trigger:** OnGameOver event from GameManager
-- **Stats Displayed:** Survival time, kill count, level reached
-- **Actions:** Restart button (reloads scene), main menu button (placeholder)
-- **Session Data:** Reads from GameManager.CurrentSession
-
----
-
-## PlatformDetector
-- **Purpose:** Detect and manage platform type
-- **Modes:** AutoDetect, AlwaysMobile (default), AlwaysDesktop, ForceSpecific
-- **Types:** Desktop, Native Mobile, Web Mobile
-- **Runtime Switching:** ForcePlatform() method triggers OnPlatformChanged event
-- **Singleton:** Global access via Instance
-- **Testing:** Set to AlwaysMobile for development, AutoDetect for production
-
----
-
-## PauseMenu
-- **Purpose:** Platform-aware pause with proper input management
-- **Desktop:** ESC key only (Input Actions + Keyboard fallback), no pause button
-- **Mobile:** Pause button visible, ESC disabled
-- **Platform Switching:** Responds to OnPlatformChanged event
-- **Uses:** GameManager.PauseGame/ResumeGame
-
----
-
-## GameEvents
-- **Purpose:** Decoupled communication
-- **Pattern:** Publish-subscribe
-- **Events:** OnPlayerDeath, OnEnemyKilled, OnXPGained, OnGoldCollected, etc.
-
----
-
-## ServiceLocator
-- **Purpose:** Dependency injection
-- **Usage:** `ServiceLocator.Get<IAdService>()`
-- **Error Handling:** Throws exception on duplicate registration (fail-fast)
-- **Status:** Ready, no services registered yet
-
----
-
-## Data Models
-
-**CharacterData:**
-- Stats: HP, moveSpeed, baseDamageMultiplier
-- Starter weapon, unlock requirements
-
-**WeaponData:**
-- Type, damage, cooldown, knockback
-- **No per-weapon upgrades** (universal only)
-
-**EnemyData:**
-- HP, speed, damage, resistance
-- Loot: XP, gold, potion drop chance
+### Common Pitfalls
+1. **Weapon Update Override:** MUST call `base.Update()` first
+2. **Upgrade Multipliers:** Use conversion formulas (value/100)
+3. **Weapon Parenting:** Weapons unparent themselves (world-space positioning)
+4. **Singleton Duplicates:** Only ONE PlatformDetector/GameManager allowed

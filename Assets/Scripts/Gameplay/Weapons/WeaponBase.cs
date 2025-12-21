@@ -16,6 +16,8 @@ namespace PixelVanguard.Gameplay
         protected float damage;
         protected float cooldown;
         protected float knockback;
+        protected float duration;
+        protected float tickRate;
 
         // Auto-fire timing
         protected float fireCooldownTimer = 0f;
@@ -57,8 +59,9 @@ namespace PixelVanguard.Gameplay
             damage = weaponData.baseDamage;
             cooldown = weaponData.cooldown;
             knockback = weaponData.knockback;
-
-            Debug.Log($"[{GetType().Name}] Loaded: {damage} damage, {cooldown}s cooldown, {knockback} knockback");
+            duration = weaponData.baseDuration;
+            tickRate = weaponData.baseTickRate;
+            fireCooldownTimer = cooldown;
         }
 
         /// <summary>
@@ -91,25 +94,32 @@ namespace PixelVanguard.Gameplay
         protected abstract void Fire();
 
         /// <summary>
-        /// Find the nearest enemy within range.
+        /// Find the nearest enemy within range using Physics2D overlap.
+        /// Optimized to avoid GameObject.FindGameObjectsWithTag.
         /// </summary>
         protected Transform FindNearestEnemy(float maxRange = 15f)
         {
-            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            // Use OverlapCircle to find enemies in range (filtered by Layer)
+            // Assuming enemies are on an "Enemy" layer. If not, we can fall back or user needs to set it.
+            // For now, let's use a broad check or specific layer if we know it.
+            // Using a non-alloc version would be even better for GC, but OverlapCircle is already O(N) faster than FindWithTag.
+            
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, maxRange);
             Transform nearest = null;
-            float minDistance = maxRange;
+            float minDistanceSqr = maxRange * maxRange;
 
-            foreach (var enemy in enemies)
+            foreach (var hit in hits)
             {
-                float distance = Vector3.Distance(player.position, enemy.transform.position);
-                if (distance < minDistance)
+                if (hit.CompareTag("Enemy"))
                 {
-                    // Check if enemy is alive
-                    var health = enemy.GetComponent<EnemyHealth>();
-                    if (health != null && health.IsAlive)
+                    float distSqr = (hit.transform.position - transform.position).sqrMagnitude;
+                    if (distSqr < minDistanceSqr)
                     {
-                        minDistance = distance;
-                        nearest = enemy.transform;
+                        if (hit.TryGetComponent<EnemyHealth>(out var health) && health.IsAlive)
+                        {
+                            minDistanceSqr = distSqr;
+                            nearest = hit.transform;
+                        }
                     }
                 }
             }
@@ -123,10 +133,7 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         public virtual void IncreaseDamage(float multiplier)
         {
-            float oldDamage = damage;
             damage *= multiplier;
-            float increase = damage - oldDamage;
-            Debug.Log($"💥 [{weaponData.displayName}] DAMAGE: {oldDamage:F1} → {damage:F1} (+{increase:F1}, +{((multiplier - 1) * 100):F0}%)");
         }
 
         /// <summary>
@@ -135,10 +142,7 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         public virtual void IncreaseAttackSpeed(float multiplier)
         {
-            float oldCooldown = cooldown;
             cooldown *= multiplier; // e.g., 0.9 = 10% faster (shorter cooldown)
-            float reduction = oldCooldown - cooldown;
-            Debug.Log($"⚔️ [{weaponData.displayName}] ATTACK SPEED: Cooldown {oldCooldown:F2}s → {cooldown:F2}s (-{reduction:F2}s, {((1 - multiplier) * 100):F0}% faster)");
         }
 
         /// <summary>
@@ -147,10 +151,7 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         public virtual void IncreaseKnockback(float multiplier)
         {
-            float oldKnockback = knockback;
             knockback *= multiplier;
-            float increase = knockback - oldKnockback;
-            Debug.Log($"💨 [{weaponData.displayName}] KNOCKBACK: {oldKnockback:F1} → {knockback:F1} (+{increase:F1}, +{((multiplier - 1) * 100):F0}%)");
         }
 
         /// <summary>

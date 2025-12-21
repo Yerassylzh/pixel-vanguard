@@ -6,48 +6,71 @@ namespace PixelVanguard.Gameplay
     /// Greatsword weapon with periodic swing attack.
     /// Rests at player's side, then performs fast 360° swing every few seconds.
     /// </summary>
-    [RequireComponent(typeof(CircleCollider2D))]
+    [RequireComponent(typeof(Collider2D))]
     public class GreatswordWeapon : WeaponBase
     {
-        [Header("Swing Settings")]
-        [SerializeField] private float swingRadius = 2f;
-        [SerializeField] private float swingDuration = 0.3f;
+        [Header("Visual Settings")]
+        [SerializeField]
+        private AnimationCurve opacityCurve = new(
+            new Keyframe(0f, 0f),
+            new Keyframe(0.2f, 1f),
+            new Keyframe(1f, 0f)
+        );
 
-        private CircleCollider2D weaponCollider;
-        private float currentAngle = 0f;
-        private float damageTimer = 0f;
-        
+        [Header("Animation")]
+        [Tooltip("How fast the slash 'Fills' (0 to 1). Percentage of swingDuration.")]
+        [Range(0.1f, 1f)]
+        [SerializeField] private float revealSpeedFactor = 0.5f;
+
+        [SerializeField] private float fadeDuration = 0.15f;
+        [SerializeField] private float swingDuration = 0.3f;
+        [SerializeField] private bool revealVertical = false; // Toggle to switch axis
+
+        private SpriteRenderer spriteRenderer;
+        private Material instanceMaterial;
+        private int revealPropID;
+        private int axisPropID;
+
         // Swing state
         private bool isSwinging = false;
         private float swingTimer = 0f;
 
+        // Hit tracking
+        private readonly System.Collections.Generic.HashSet<int> hitEnemies = new();
+
+        // State Machine for the swing: 0 = Revealing, 1 = Fading
+        private enum SwingPhase { Revealing, Fading }
+        private SwingPhase currentPhase;
+
         protected override void Awake()
         {
-            base.Awake(); // Get player from singleton
+            base.Awake(); 
 
-            weaponCollider = GetComponent<CircleCollider2D>();
-            weaponCollider.isTrigger = true;
-            weaponCollider.radius = swingRadius;
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             
-            // CRITICAL FIX: Unparent from player to use world space positioning
-            // Weapons follow player via code (PerformSwing/RestPosition), not hierarchy
+            if (spriteRenderer != null)
+            {
+                (instanceMaterial, revealPropID) = ShaderHelper.CreateRevealMaterial(spriteRenderer);
+                axisPropID = Shader.PropertyToID("_VerticalReveal");
+                
+                // Set Axis
+                instanceMaterial.SetFloat(axisPropID, revealVertical ? 1f : 0f);
+
+                UpdateVisuals(false);
+            }
+
+            // Unparent for world space rotation
             if (transform.parent != null)
             {
-                Debug.Log($"[GreatswordWeapon] Unparenting from {transform.parent.name} to use world space");
                 transform.SetParent(null);
             }
         }
 
         protected override void Update()
         {
-            // CRITICAL: Call base to handle auto-fire cooldown timer
-            base.Update();
+            transform.position = player.position;
 
-            // Don't update if game is paused
-            if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
-            {
-                return;
-            }
+            base.Update();
 
             if (isSwinging)
             {
@@ -55,115 +78,145 @@ namespace PixelVanguard.Gameplay
             }
             else
             {
-                // Rest at player's side
                 RestPosition();
             }
-
-            UpdateDamageTimer();
         }
 
-        /// <summary>
-        /// Fire method - triggers swing attack.
-        /// </summary>
         protected override void Fire()
         {
-            if (!isSwinging)
+            if (isSwinging) return;
+
+            isSwinging = true;
+            swingTimer = 0f;
+
+            // Clear hit list for new swing
+            hitEnemies.Clear();
+
+            currentPhase = SwingPhase.Revealing;
+            
+            // 1. Aim based on last facing direction (Horizontal Only)
+            float rotationAngle = 0f; // Default Right
+            if (player != null)
             {
-                isSwinging = true;
-                swingTimer = 0f;
-                currentAngle = 0f;
+                // Try to get PlayerAnimationController to respect last facing direction
+                if (player.TryGetComponent<PlayerAnimationController>(out var animController))
+                {
+                    // Use last facing direction: -1 = left (180°), 1 = right (0°)
+                    rotationAngle = animController.LastFacingDirection < 0 ? 180f : 0f;
+                }
+                else
+                {
+                    // Fallback to PlayerController movement direction
+                    var pc = player.GetComponent<PlayerController>();
+                    if (pc != null && pc.MoveDirection.x < -0.01f)
+                    {
+                        rotationAngle = 180f;
+                    }
+                }
             }
+            
+            transform.rotation = Quaternion.Euler(0, 0, rotationAngle);
+
+            // 2. Reset Visuals
+            if (instanceMaterial != null)
+            {
+                instanceMaterial.SetFloat(revealPropID, 0f);
+                Color c = spriteRenderer.color;
+                c.a = 1f;
+                spriteRenderer.color = c;
+            }
+            UpdateVisuals(true);
+        
         }
+
 
         private void PerformSwing()
         {
-            if (player == null) return;
-
+            // Position locked in Update(), just handle animation here
             swingTimer += Time.deltaTime;
 
-            // Calculate swing progress (0 to 1)
-            float progress = swingTimer / swingDuration;
-
-            if (progress >= 1f)
+            if (currentPhase == SwingPhase.Revealing)
             {
-                // Swing complete
-                isSwinging = false;
-                return;
+                // Duration of the "Fill" part
+                float revealTime = swingDuration * revealSpeedFactor;
+                float progress = Mathf.Clamp01(swingTimer / revealTime);
+
+                // Animate Shader Property
+                if (instanceMaterial != null)
+                {
+                    // easeOutCubic for a satisfying "Swish" feel
+                    float easedProgress = 1f - Mathf.Pow(1f - progress, 3);
+                    instanceMaterial.SetFloat(revealPropID, easedProgress);
+                }
+
+                if (progress >= 1f)
+                {
+                    // Reveal Complete -> Switch to Fade
+                    currentPhase = SwingPhase.Fading;
+                    swingTimer = 0f; // Reset timer for fade phase
+                }
             }
+            else if (currentPhase == SwingPhase.Fading)
+            {
+                // Fade Phase
+                float progress = Mathf.Clamp01(swingTimer / fadeDuration);
 
-            // Full 360° rotation during swing
-            currentAngle = progress * 360f;
+                if (spriteRenderer != null)
+                {
+                    Color c = spriteRenderer.color;
+                    c.a = Mathf.Lerp(1f, 0f, progress);
+                    spriteRenderer.color = c;
+                }
 
-            // Calculate position
-            float rad = currentAngle * Mathf.Deg2Rad;
-            float x = player.position.x + Mathf.Cos(rad) * swingRadius;
-            float y = player.position.y + Mathf.Sin(rad) * swingRadius;
-
-            transform.position = new Vector3(x, y, player.position.z);
-            
-            // Rotate sprite to face direction of movement
-            transform.rotation = Quaternion.Euler(0, 0, currentAngle - 90f);
+                if (progress >= 1f)
+                {
+                    // Animation Complete
+                    isSwinging = false;
+                    UpdateVisuals(false);
+                }
+            }
         }
 
         private void RestPosition()
         {
-            if (player == null) return;
-
-            // Position at player's right side
-            transform.position = new Vector3(
-                player.position.x + 0.8f,
-                player.position.y,
-                player.position.z
-            );
-            
-            // Face right
+            UpdateVisuals(false);
             transform.rotation = Quaternion.identity;
         }
 
-        private void UpdateDamageTimer()
+        private void UpdateVisuals(bool active)
         {
-            if (damageTimer > 0f)
+            if (spriteRenderer != null)
             {
-                damageTimer -= Time.deltaTime;
+                spriteRenderer.enabled = active;
             }
         }
+
+
 
         private void OnTriggerStay2D(Collider2D collision)
         {
             // Only damage during swing
             if (!isSwinging) return;
-            
-            // Only damage if cooldown is ready
-            if (damageTimer > 0f) return;
 
             // Check if hit an enemy
             if (collision.CompareTag("Enemy"))
             {
-                var enemyHealth = collision.GetComponent<EnemyHealth>();
-                if (enemyHealth != null && enemyHealth.IsAlive)
+                // Get InstanceID for unique tracking per swing
+                int enemyID = collision.gameObject.GetInstanceID();
+
+                // If already hit this swing, ignore
+                if (hitEnemies.Contains(enemyID)) return;
+
+                // Calculate knockback direction (away from weapon center)
+                Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
+
+                // Attempt damage and track if successful
+                if (EnemyDamageUtility.TryDamageEnemy(collision, damage, knockbackDir, knockback))
                 {
-                    // Calculate knockback direction (away from weapon)
-                    Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
-
-                    // Deal damage
-                    enemyHealth.TakeDamage(damage, knockbackDir, knockback);
-
-                    // Start cooldown
-                    damageTimer = cooldown;
+                    hitEnemies.Add(enemyID);
                 }
             }
         }
-
-        private void OnDrawGizmosSelected()
-        {
-            // Draw swing radius in editor
-            if (player != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(player.position, swingRadius);
-            }
-        }
-
-        // Note: IncreaseDamage() and IncreaseAttackSpeed() inherited from WeaponBase
     }
+    // Note: IncreaseDamage() and IncreaseAttackSpeed() inherited from WeaponBase
 }

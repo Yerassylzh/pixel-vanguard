@@ -37,6 +37,12 @@ namespace PixelVanguard.Data
         [Tooltip("Knockback force applied to enemies")]
         public float knockback = 3f;
 
+        [Tooltip("How long the weapon effect lasts (if applicable)")]
+        public float baseDuration = 0f;
+
+        [Tooltip("Time between damage ticks (if applicable)")]
+        public float baseTickRate = 0f;
+
         [Header("Optional Override")]
         [Tooltip("Leave empty to use type-based prefab from WeaponManager")]
         public GameObject prefab;

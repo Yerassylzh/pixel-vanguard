@@ -124,10 +124,11 @@ Weapon instance added to equipped list → Weapon starts auto-firing
 
 **Weapon Types & Behavior:**
 
-#### A. Greatsword (Periodic Swing)
+#### A. Greatsword (Periodic Slash)
 - **Script**: GreatswordWeapon.cs
-- **Visual**: Sprite rests at side, swings 360° periodically
-- **Hit Detection**: CircleCollider2D active only during swing
+- **Visual**: **VFX Only**. Hollow ring/shockwave centered on player.
+- **Animation**: Opacity controlled via `AnimationCurve` (Flash In → Fade Out).
+- **Hit Detection**: CircleCollider2D active only during valid slash window.
 - **Upgrade**: Faster cooldown (2.5s → 1.0s), increased damage
 
 #### B. AutoCrossbow (Projectile)

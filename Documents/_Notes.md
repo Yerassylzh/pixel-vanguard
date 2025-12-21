@@ -11,3 +11,6 @@ It's extremely important to keep documents up to date all of the time
 
 When u start adding some art, always save all the new ideas and enhancements for ur game in GDD documents.
 E.g: XP gems must be differenciated by their size and some effects (m.b particles, colors).
+
+
+Next: Instead of isolating at edges, make entire rectangle an obstacle for spawning

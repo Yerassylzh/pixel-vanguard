@@ -50,11 +50,23 @@ TagManager:
   - name: Ground
     uniqueID: 3942368197
     locked: 0
+  - name: Shadows
+    uniqueID: 2064072027
+    locked: 0
+  - name: Ground Effects
+    uniqueID: 836773745
+    locked: 0
   - name: Enemies
     uniqueID: 3222244529
     locked: 0
   - name: Player
     uniqueID: 3143593325
+    locked: 0
+  - name: Collectibles
+    uniqueID: 441484359
+    locked: 0
+  - name: FlyingObjects
+    uniqueID: 1295782015
     locked: 0
   - name: Weapons
     uniqueID: 884641133

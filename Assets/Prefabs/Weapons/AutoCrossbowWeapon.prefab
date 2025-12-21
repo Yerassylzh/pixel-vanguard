@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1176775491854670030}
   - component: {fileID: 3853048535268403248}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: AutoCrossbowWeapon
-  m_TagString: Untagged
+  m_TagString: Weapon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -45,6 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.ProjectileWeapon
   weaponData: {fileID: 11400000, guid: 6f0c5959fa6f3b44d99a7be7fe8d195c, type: 2}
-  arrowPrefab: {fileID: 8303696087360893766, guid: 618a9fb6bc15e1742badc5101eb08ced, type: 3}
+  arrowPrefab: {fileID: 5965909428901820317, guid: ab945efe699331248bc24f1da69f515d, type: 3}
   projectileSpeed: 10
   maxRange: 15

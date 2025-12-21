@@ -14,8 +14,8 @@ namespace PixelVanguard.Gameplay
         [SerializeField] private float maxRange = 15f;
 
         // Upgrade-dependent values
-        private int arrowCount = 1; // Number of arrows per shot
-        private int pierceCount = 0; // How many enemies arrow can pierce
+        private readonly int arrowCount = 1; // Number of arrows per shot
+        private readonly int pierceCount = 0; // How many enemies arrow can 0
 
         protected override void Fire()
         {
@@ -59,8 +59,7 @@ namespace PixelVanguard.Gameplay
                 arrow.transform.rotation = Quaternion.Euler(0, 0, angle);
 
                 // Initialize arrow with stats
-                var arrowScript = arrow.GetComponent<ArrowProjectile>();
-                if (arrowScript != null)
+                if (arrow.TryGetComponent<ArrowProjectile>(out var arrowScript))
                 {
                     arrowScript.Initialize(direction, projectileSpeed, damage, knockback, pierceCount);
                 }

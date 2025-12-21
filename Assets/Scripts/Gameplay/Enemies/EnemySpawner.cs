@@ -37,6 +37,9 @@ namespace PixelVanguard.Gameplay
 
             // Subscribe to enemy death to track count
             Core.GameEvents.OnEnemyKilled += OnEnemyKilled;
+
+            // Pre-generate placeholder sprite
+            InitializePlaceholderSprite();
         }
 
         private void OnDestroy()
@@ -110,9 +113,15 @@ namespace PixelVanguard.Gameplay
             enemyObj.transform.position = position;
             enemyObj.tag = "Enemy";
 
+            enemyObj.layer = LayerMask.NameToLayer("Enemy");
+
             // Add visual (placeholder sprite)
             var spriteRenderer = enemyObj.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = CreatePlaceholderSprite();
+            
+            // Ensure sprite exists
+            InitializePlaceholderSprite();
+            spriteRenderer.sprite = placeholderSprite;
+            
             spriteRenderer.color = Color.red;
             spriteRenderer.sortingLayerName = "Enemies";
 
@@ -189,6 +198,27 @@ namespace PixelVanguard.Gameplay
 
         private Vector3 GetRandomSpawnPosition()
         {
+            const int maxAttempts = 10; // Try up to 10 times to find valid position
+            Vector3 candidatePosition;
+
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                candidatePosition = CalculateSpawnPosition();
+
+                // Check if this position is valid (not blocked by colliders)
+                if (IsValidSpawnPosition(candidatePosition))
+                {
+                    return candidatePosition;
+                }
+            }
+
+            // If all attempts failed, return last calculated position anyway
+            // (Better to spawn in blocked area than not spawn at all)
+            return CalculateSpawnPosition();
+        }
+
+        private Vector3 CalculateSpawnPosition()
+        {
             // Get camera bounds
             float cameraHeight = mainCamera.orthographicSize * 2f;
             float cameraWidth = cameraHeight * mainCamera.aspect;
@@ -224,8 +254,27 @@ namespace PixelVanguard.Gameplay
             return new Vector3(x, y, 0f);
         }
 
-        private Sprite CreatePlaceholderSprite()
+        private bool IsValidSpawnPosition(Vector3 position)
         {
+            // Check for colliders at spawn position (e.g., walls blocking isolated areas)
+            // Use a small circle to detect if position is blocked
+            float checkRadius = 0.5f;
+
+            // Check on Enemy layer and Default layer (where walls/obstacles usually are)
+            int layerMask = LayerMask.GetMask("Default", "Ground");
+
+            Collider2D hit = Physics2D.OverlapCircle(position, checkRadius, layerMask);
+
+            // Position is valid if NO collider was found
+            return hit == null;
+        }
+
+        private Sprite placeholderSprite;
+
+        private void InitializePlaceholderSprite()
+        {
+            if (placeholderSprite != null) return;
+            
             // Create a simple square sprite (placeholder until art ready)
             Texture2D tex = new Texture2D(32, 32);
             Color[] pixels = new Color[32 * 32];
@@ -233,7 +282,7 @@ namespace PixelVanguard.Gameplay
             tex.SetPixels(pixels);
             tex.Apply();
 
-            return Sprite.Create(tex, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 32f);
+            placeholderSprite = Sprite.Create(tex, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 32f);
         }
 
         private void OnEnemyKilled(int totalKills)
@@ -253,11 +302,11 @@ namespace PixelVanguard.Gameplay
             Vector3 cameraPos = mainCamera.transform.position;
 
             Gizmos.color = Color.yellow;
-            
+
             // Draw spawn boundaries
             float outerWidth = cameraWidth + spawnDistanceFromCamera * 2f;
             float outerHeight = cameraHeight + spawnDistanceFromCamera * 2f;
-            
+
             Gizmos.DrawWireCube(cameraPos, new Vector3(outerWidth, outerHeight, 0f));
         }
     }

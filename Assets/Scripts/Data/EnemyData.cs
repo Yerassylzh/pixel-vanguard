@@ -37,6 +37,10 @@ namespace PixelVanguard.Data
         [Tooltip("Gold dropped on death")]
         public int goldDrop = 1;
         
+        [Tooltip("Chance to drop gold (0-1). If 1, always drops. If 0, never drops.")]
+        [Range(0f, 1f)]
+        public float goldDropChance = 1f; // Default: 100% chance to drop gold
+        
         [Tooltip("Chance to drop health potion (0-1)")]
         [Range(0f, 1f)]
         public float healthPotionDropChance = 0.05f;

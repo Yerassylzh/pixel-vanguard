@@ -15,12 +15,13 @@ MonoBehaviour:
   enemyID: abomination
   displayName: The Abomination
   maxHealth: 200
-  moveSpeed: 3
+  moveSpeed: 1.75
   contactDamage: 20
   weightResistance: 0.9
   xpDrop: 50
   goldDrop: 20
+  goldDropChance: 1
   healthPotionDropChance: 0.5
   spawnWeight: 1
   minGameTimeSeconds: 180
-  prefab: {fileID: 0}
+  prefab: {fileID: 4638536460833975349, guid: 507744c9f889a8847963e2c04792c596, type: 3}

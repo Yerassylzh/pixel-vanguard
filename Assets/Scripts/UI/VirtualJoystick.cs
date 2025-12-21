@@ -112,20 +112,24 @@ namespace PixelVanguard.UI
             if (joystickContainer != null)
             {
                 joystickContainer.gameObject.SetActive(true);
-                
-                Vector2 localPoint;
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRect,
-                    eventData.position,
-                    canvas.worldCamera,
-                    out localPoint
-                );
-                
-                joystickContainer.anchoredPosition = localPoint;
+
+                // Convert touch position to local coordinates relative to joystickContainer's parent
+                RectTransform parentRect = joystickContainer.parent as RectTransform;
+                if (parentRect != null)
+                {
+                    Vector2 localPoint;
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        parentRect,  // Use parent, not canvas!
+                        eventData.position,
+                        canvas.worldCamera,
+                        out localPoint
+                    );
+                    
+                    joystickContainer.anchoredPosition = localPoint;
+                }
             }
             
-            // CRITICAL FIX: Reset handle to center BEFORE OnDrag calculates position
-            // Must happen after joystickContainer is positioned
+            // Reset handle to center when joystick first appears
             if (handle != null)
             {
                 handle.anchoredPosition = Vector2.zero;
@@ -133,9 +137,9 @@ namespace PixelVanguard.UI
             
             // Reset input direction
             inputDirection = Vector2.zero;
-
-            // Now calculate drag from center
-            OnDrag(eventData);
+            
+            // Don't call OnDrag here - Unity's event system will call it automatically when dragging occurs
+            // Calling it immediately causes coordinate space issues
         }
 
         public void OnDrag(PointerEventData eventData)

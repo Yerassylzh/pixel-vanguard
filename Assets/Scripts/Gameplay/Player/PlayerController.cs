@@ -26,6 +26,7 @@ namespace PixelVanguard.Gameplay
         private Rigidbody2D rb;
         private SpriteRenderer spriteRenderer;
         private Vector2 moveDirection;
+        public Vector2 MoveDirection => moveDirection; // Expose for weapons/animators
         private InputAction moveAction;
         private bool useMobileControls = false;
 
@@ -83,11 +84,11 @@ namespace PixelVanguard.Gameplay
             if (Core.PlatformDetector.Instance != null)
             {
                 useMobileControls = Core.PlatformDetector.Instance.IsMobile();
-                Debug.Log($"[PlayerController] Platform: {(useMobileControls ? "Mobile" : "Desktop")}");
+
             }
             else
             {
-                Debug.LogWarning("[PlayerController] PlatformDetector not found! Defaulting to desktop.");
+
                 useMobileControls = false;
             }
         }
@@ -199,11 +200,8 @@ namespace PixelVanguard.Gameplay
             // Apply movement
             rb.linearVelocity = normalizedDirection * moveSpeed;
 
-            // Flip sprite based on movement direction
-            if (spriteRenderer != null && normalizedDirection.x != 0)
-            {
-                spriteRenderer.flipX = normalizedDirection.x < 0;
-            }
+            // Note: Sprite direction is now handled by PlayerAnimationController
+            // using separate WalkLeft and WalkRight animation clips
         }
 
         /// <summary>
@@ -224,13 +222,12 @@ namespace PixelVanguard.Gameplay
             if (selectedCharacter != null)
             {
                 moveSpeed = selectedCharacter.moveSpeed;
-                Debug.Log($"[PlayerController] Loaded character stats: Speed={moveSpeed}");
+
             }
-            else
+             else
             {
                 // Fallback to default if no character selected
                 moveSpeed = 5f;
-                Debug.LogWarning("[PlayerController] No character selected, using default speed: 5.0");
             }
         }
     }

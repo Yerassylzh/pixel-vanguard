@@ -15,12 +15,13 @@ MonoBehaviour:
   enemyID: armored_orc
   displayName: Armored Orc
   maxHealth: 80
-  moveSpeed: 1.5
+  moveSpeed: 1.2
   contactDamage: 10
   weightResistance: 0.7
   xpDrop: 15
   goldDrop: 5
+  goldDropChance: 1
   healthPotionDropChance: 0.05
   spawnWeight: 3
   minGameTimeSeconds: 120
-  prefab: {fileID: 0}
+  prefab: {fileID: 5707255543256080152, guid: d451681a6734b9f42b4d05bffbcbefb0, type: 3}

@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.EnemyData
   enemyID: skeleton_grunt
   displayName: Skeleton Grunt
-  maxHealth: 20
-  moveSpeed: 2
+  maxHealth: 10
+  moveSpeed: 1.25
   contactDamage: 5
   weightResistance: 0
   xpDrop: 5
   goldDrop: 1
+  goldDropChance: 0.04
   healthPotionDropChance: 0.05
   spawnWeight: 10
   minGameTimeSeconds: 0
-  prefab: {fileID: 8627135825830073534, guid: 61fca3afd24dd7a4ca69e32c036e6fb0, type: 3}
+  prefab: {fileID: 8627135825830073534, guid: 47e2eab076b221a44ad1751e28a02e84, type: 3}

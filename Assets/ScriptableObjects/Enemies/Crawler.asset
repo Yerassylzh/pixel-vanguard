@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: crawler
   displayName: Crawler
   maxHealth: 15
-  moveSpeed: 6
+  moveSpeed: 1.6
   contactDamage: 8
   weightResistance: 0.1
   xpDrop: 8
@@ -23,4 +23,4 @@ MonoBehaviour:
   healthPotionDropChance: 0.05
   spawnWeight: 5
   minGameTimeSeconds: 60
-  prefab: {fileID: 0}
+  prefab: {fileID: 8627135825830073534, guid: 61fca3afd24dd7a4ca69e32c036e6fb0, type: 3}

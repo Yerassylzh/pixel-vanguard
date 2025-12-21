@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,57 +6,73 @@ namespace PixelVanguard.Gameplay
 {
     /// <summary>
     /// Damage puddle created by AreaDenialWeapon.
-    /// Continuously damages enemies standing within the area.
+    /// Handles visual expansion (Shader/Particles) and continuous damage.
     /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
     public class DamagePuddle : MonoBehaviour
     {
+        [Header("References")]
+        [SerializeField] private SpriteRenderer runeRenderer;
+        [SerializeField] private ParticleSystem fireParticles;
+
+        [Header("Visual Settings")]
+        [SerializeField] private float fadeInDuration = 0.5f;
+        [SerializeField] private float fadeOutDuration = 0.5f;
+
         private float duration;
-        private float radius;
         private float damagePerTick;
         private float tickRate;
 
         private CircleCollider2D puddleCollider;
         private float lifetimeTimer = 0f;
         private float damageTimer = 0f;
+        private bool isFadingOut = false;
+
+        // Shader Props
+        private Material instanceMaterial;
+        private int revealPropID;
 
         // Track enemies currently in puddle
-        private HashSet<EnemyHealth> enemiesInPuddle = new HashSet<EnemyHealth>();
+        private readonly HashSet<EnemyHealth> enemiesInPuddle = new();
 
         private void Awake()
         {
             puddleCollider = GetComponent<CircleCollider2D>();
             puddleCollider.isTrigger = true;
+            
+            // Setup Shader for "Expansion"
+            if (runeRenderer != null)
+            {
+                (instanceMaterial, revealPropID) = ShaderHelper.CreateRevealMaterial(runeRenderer);
+                instanceMaterial.SetFloat(revealPropID, 0f); // Start hidden
+            }
         }
 
-        /// <summary>
-        /// Initialize puddle with stats from weapon.
-        /// </summary>
-        public void Initialize(float dur, float rad, float dmg, float tick)
+        public void Initialize(float dur, float dmg, float tick)
         {
             duration = dur;
-            radius = rad;
             damagePerTick = dmg;
             tickRate = tick;
+        }
 
-            // Set collider radius
-            puddleCollider.radius = radius;
-
-            // Scale visual to match radius (assuming puddle sprite is 1 unit = 1m)
-            transform.localScale = Vector3.one * radius;
+        private void Start()
+        {
+            StartCoroutine(AnimateExpansion());
         }
 
         private void Update()
         {
-            // Lifetime check
             lifetimeTimer += Time.deltaTime;
-            if (lifetimeTimer >= duration)
+            
+            // Start fade-out when time remaining equals fadeOutDuration
+            float timeRemaining = duration - lifetimeTimer;
+            if (!isFadingOut && timeRemaining <= fadeOutDuration)
             {
-                Destroy(gameObject);
-                return;
+                isFadingOut = true;
+                StartCoroutine(AnimateShrink());
             }
 
-            // Damage tick
+            // Damage tick (continue dealing damage during fade-out)
             damageTimer += Time.deltaTime;
             if (damageTimer >= tickRate)
             {
@@ -64,18 +81,57 @@ namespace PixelVanguard.Gameplay
             }
         }
 
+        private IEnumerator AnimateExpansion()
+        {
+            if (instanceMaterial == null) yield break;
+
+            float currentReveal = 0f;
+            float expandSpeed = 1f / fadeInDuration; // Convert duration to speed
+            
+            while (currentReveal < 1f)
+            {
+                currentReveal += Time.deltaTime * expandSpeed;
+                instanceMaterial.SetFloat(revealPropID, Mathf.Clamp01(currentReveal));
+                yield return null;
+            }
+            instanceMaterial.SetFloat(revealPropID, 1f);
+            
+            // Start fire after expansion
+            if (fireParticles != null) fireParticles.Play();
+        }
+
+        private IEnumerator AnimateShrink()
+        {
+            // Stop particles first (they should fade before rune shrinks)
+            if (fireParticles != null) fireParticles.Stop();
+            
+            if (instanceMaterial == null)
+            {
+                Destroy(gameObject);
+                yield break;
+            }
+
+            float currentReveal = 1f;
+            float shrinkSpeed = 1f / fadeOutDuration; // Shrink over fadeOutDuration seconds
+            
+            while (currentReveal > 0f)
+            {
+                currentReveal -= Time.deltaTime * shrinkSpeed;
+                instanceMaterial.SetFloat(revealPropID, Mathf.Clamp01(currentReveal));
+                yield return null;
+            }
+            instanceMaterial.SetFloat(revealPropID, 0f);
+            
+            Destroy(gameObject);
+        }
+
         private void DamageEnemiesInPuddle()
         {
-            // Create a copy to iterate over to avoid collection modification errors
-            // (enemies can die and trigger OnTriggerExit2D during iteration)
             var enemiesCopy = new HashSet<EnemyHealth>(enemiesInPuddle);
-            
-            // Damage all enemies currently in the puddle
             foreach (var enemy in enemiesCopy)
             {
                 if (enemy != null && enemy.IsAlive)
                 {
-                    // No knockback for puddle damage (enemies stay in puddle)
                     enemy.TakeDamage(damagePerTick, Vector2.zero, 0f);
                 }
             }
@@ -85,11 +141,7 @@ namespace PixelVanguard.Gameplay
         {
             if (collision.CompareTag("Enemy"))
             {
-                var enemyHealth = collision.GetComponent<EnemyHealth>();
-                if (enemyHealth != null)
-                {
-                    enemiesInPuddle.Add(enemyHealth);
-                }
+                if (collision.TryGetComponent<EnemyHealth>(out var enemyHealth)) enemiesInPuddle.Add(enemyHealth);
             }
         }
 
@@ -97,17 +149,13 @@ namespace PixelVanguard.Gameplay
         {
             if (collision.CompareTag("Enemy"))
             {
-                var enemyHealth = collision.GetComponent<EnemyHealth>();
-                if (enemyHealth != null)
-                {
-                    enemiesInPuddle.Remove(enemyHealth);
-                }
+                if (collision.TryGetComponent<EnemyHealth>(out var enemyHealth)) enemiesInPuddle.Remove(enemyHealth);
             }
         }
-
+        
         private void OnDestroy()
         {
-            // Clean up references
+            if (instanceMaterial != null) Destroy(instanceMaterial);
             enemiesInPuddle.Clear();
         }
     }

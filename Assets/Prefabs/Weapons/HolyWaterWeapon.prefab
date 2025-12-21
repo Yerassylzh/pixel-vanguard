@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7272932743187602086}
   - component: {fileID: 424170367124077958}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: HolyWaterWeapon
-  m_TagString: Untagged
+  m_TagString: Weapon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -45,5 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.HolyWaterWeapon
   weaponData: {fileID: 11400000, guid: 693c8a640da667b498c7fb6496de5fb7, type: 2}
-  puddlePrefab: {fileID: 3540281093826058663, guid: 598fe67dd59ac2d4f8afa01a92e1655f, type: 3}
-  throwDistance: 5
+  puddlePrefab: {fileID: 5730739480069252572, guid: beff4af582bfd6c4fa3589f0252a39f4, type: 3}
+  spawnRadius: 3.5
+  puddleDuration: 4
+  puddleRadius: 1.5
+  damageInterval: 0.5

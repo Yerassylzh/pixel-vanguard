@@ -87,7 +87,6 @@ namespace PixelVanguard.Gameplay
             {
                 // Fallback speed if no data found
                 moveSpeed = 3f;
-                Debug.LogWarning("[EnemyAI] No EnemyData assigned, using default speed: 3");
             }
         }
 
@@ -97,6 +96,17 @@ namespace PixelVanguard.Gameplay
         public void SetMoveSpeed(float speed)
         {
             moveSpeed = speed;
+        }
+
+        /// <summary>
+        /// Get the direction vector pointing toward the player.
+        /// Used by EnemyAnimationController to determine facing direction.
+        /// </summary>
+        public Vector2 GetDirectionToPlayer()
+        {
+            if (player == null) return Vector2.right; // Default to right if no player
+
+            return (player.position - transform.position).normalized;
         }
 
         private void OnDrawGizmosSelected()

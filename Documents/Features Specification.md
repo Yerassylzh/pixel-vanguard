@@ -1,154 +1,136 @@
-```
+# Features Specification
+
 ## 1. Gameplay Loop & Session Logic
 
 > [!NOTE]
 > **Current Implementation Status**
-> - **XP Gems:** Fully implemented but all look identical (cyan squares). Future: differentiate by size, particles, or color based on XP value.
-> - **Gold Coins:** Event fires (`TriggerGoldCollected`) but NO visual coin spawns yet. Need to create GameObject with sprite & pickup logic similar to XPGem.
-> - **Health Potions:** Not implemented (TODO in `EnemyHealth.cs`).
+> - **XP Gems:** Fully implemented (cyan squares). All values work correctly.
+> - **Gold Coins:** Event fires (`TriggerGoldCollected`) but NO visual coin spawns yet.
+> - **Health Potions:** Not implemented (TODO).
 
-1. **Start:** Player enters map with **1 Starter Weapon** (Default: Greatsword).
-    
-2. **Combat:** Player kites enemies. Weapons auto-fire.
-    
+1. **Start:** Player enters map with **1 Starter Weapon** (default: Greatsword from CharacterData).
+2. **Combat:** Player kites enemies. Weapons auto-fire independently.
 3. **Loot:**
-    
-    - **XP Gems (Blue):** Fill the Level Up bar.
-        
-    - **Gold Coins (Yellow):** Added to end-game reward.
-        
-    - **Health Potions (Red):** Restore HP.
-        
-4. **The Level Up Event:**
-    
-    - When the XP bar fills, the game pauses.
-        
-    - The player is presented with **3 Cards**.
-        
-    - **Card Types:**
-        
-        - **New Weapon:** (e.g., "Get Auto-Crossbow").
-            
-        - **Upgrade Weapon:** (e.g., "Greatsword Lvl 2 
-            
-            ```
-            →→
-            ```
-            
-             Lvl 3").
-            
-        - **Stat Boost:** (e.g., "Increase Might by 10%").
-            
+   - **XP Gems (Blue):** Fill level-up bar
+   - **Gold Coins (Yellow):** Add to end-game reward
+   - **Health Potions (Red):** Restore HP
+4. **Level Up Event:**
+   - Game pauses when XP bar fills
+   - **3 Random Upgrades** shown:
+     - **New Weapon:** Acquire additional weapon (max 4 total)
+     - **Attack Speed:** Reduce ALL weapon cooldowns (universal)
+     - **Weapon Damage:** Increase ALL weapon damage (universal)
+     - **Player Stats:** Max HP, Move Speed, Knockback
 5. **End Game:**
-    
-    - "Run Complete" or "You Died."
-        
-    - Summary screen shows total Gold earned.
-        
-    - Option: "Watch Ad to Double Gold."
-        
+   - "Run Complete" or "You Died"
+   - Summary shows total Gold earned
+   - Option: "Watch Ad to Double Gold"
+
+---
 
 ## 2. Character & Enemy Roster
 
-### The Heroes (The "Barracks")
+### The Heroes
 
-Unlocked via **Gold**.
+Unlocked via **Gold**.
 
-1. **The Knight:** Balanced stats. Starts with Greatsword.
-    
-2. **The Pyromancer:** High Area Damage, Low HP. Starts with Molotov.
-    
-3. **The Ranger:** Fast movement. Starts with Auto-Crossbow.
-    
+1. **The Knight:** Balanced stats. Starts with Greatsword.
+2. **The Pyromancer:** High Area Damage, Low HP. Starts with Holy Water.
+3. **The Ranger:** Fast movement. Starts with Auto-Crossbow.
 
-### The Enemies (The "Horde")
+### The Enemies
 
 > [!WARNING]
-> **Current Implementation:** Only 1 placeholder enemy type exists (red square). System is ready for multiple types via EnemyData ScriptableObjects. Need to create 4 enemy type assets with different stats.
+> **Current:** Only 1 placeholder enemy (red square). System ready for multiple types via EnemyData ScriptableObjects.
 
-1. **Skeleton Grunt:** Slow, weak, numerous.
-    
-2. **The Crawler (Fast Chaser):** Technical Note: Uses a humanoid "Zombie Crawl" animation to fit the Mixamo workflow. Moves very fast on all fours.
-    
-3. **Armored Orc:** High HP. Hard to knock back.
-    
-4. **The Abomination (Boss):** Huge sprite. Telegraphed charge attacks.
-    
+1. **Skeleton Grunt:** Slow, weak, numerous
+2. **The Crawler:** Fast chaser (humanoid crawl animation)
+3. **Armored Orc:** High HP, knockback resistant
+4. **The Abomination (Boss):** Huge sprite, telegraphed charge attacks
+
+---
 
 ## 3. Weaponry
 
-Players start with 1, but can hold up to 4 weapons simultaneously.
+**Max Weapons:** 4 simultaneous (start with 1)  
+**Auto-Fire:** All weapons fire automatically based on `cooldown` stat  
+**Universal Upgrades:** All weapons share upgrade bonuses
 
-1. **Greatsword:**
-    
-    - Periodic 360°swing around the player every 2.5s. High knockback.
-        
-    - Upgrade: Attacks faster (lower cooldown) and deals more damage.
-        
-2. **AutoCrossbow:**
-    
-    - Fires arrows at the nearest enemy automatically.
-        
-    - Upgrade: Fires more arrows (Double shot → Triple shot) and pierces through enemies.
-        
-3. **HolyWater:**
-    
-    - Throws a flask that creates a damaging puddle on the floor.
-        
-    - Upgrade: Puddle lasts longer and grows larger.
-        
-4. **MagicOrbitals:**
-    
-    - Shields that continuously rotate around the player to block enemies.
-        
-    - Upgrade: Adds more shields (1 → 2 → 3).
-        
+### Greatsword - Grand Cleave
+- **Behavior:** Horizontal slash (Left/Right based on movement direction)
+- **VFX:** SpriteReveal shader with opacity fade curve
+- **Mechanics:** 
+  - No physical rotation; visual-only effect
+  - Multi-hit tracking (HashSet prevents duplicate hits per swing)
+  - Direction-aware aiming
+- **Stats:** High knockback, 2.5s base cooldown
+- **Upgrades:** Faster attacks, more damage
+
+### AutoCrossbow - Firework Bolt
+- **Behavior:** Fires arrows at nearest enemy (15m range)
+- **Projectile:** Spinning arrow sprite with pierce capability
+- **Mechanics:**
+  - Smart targeting (finds nearest alive enemy)
+  - Multi-shot support (spread pattern)
+  - Pierce count (arrow survives X hits)
+- **Stats:** Medium damage, 1.0s base cooldown
+- **Upgrades:** Multi-shot (1→2→3 arrows), pierce through enemies
+
+### HolyWater - Sanctified Ground
+- **Behavior:** Spawns blue fire damage zone at random offset from player
+- **VFX:** RadialReveal shader (center-outward expansion)
+- **Animation Phases:**
+  1. Rune expands (`fadeInDuration` 0.5s)
+  2. Fire particles ignite
+  3. DoT damage every `tickRate` (0.5s)
+  4. Fire stops, rune shrinks (`fadeOutDuration` 0.5s)
+  5. Destroy
+- **Mechanics:**
+  - Tracks enemies in zone (HashSet)
+  - Continuous damage to all enemies inside
+  - No projectile/flask (instant spawn)
+- **Stats:** DoT damage, 3s duration, 3s cooldown
+- **Upgrades:** Longer duration, more damage, multiple zones
+
+### Magic Orbitals - Ethereal Shields
+- **Behavior:** 3 balls orbit player with animated radius
+- **Animation:**
+  - Radius expands 0→targetRadius (`fadeInDuration` 0.5s)
+  - Balls orbit for `baseDuration` (5s)
+  - Radius shrinks targetRadius→0 (`fadeOutDuration` 0.5s)
+  - Destroy and respawn cycle
+- **Mechanics:**
+  - Per-enemy damage cooldown (Dictionary tracking)
+  - Damages ALL enemies touched simultaneously
+  - Ball size constant (only radius animates)
+  - Visibility delays prevent overlap at spawn/despawn
+- **Stats:** Per-ball damage, 0.5s damage interval per enemy
+- **Upgrades:** More balls (3→4→5), longer orbit duration
+
+---
 
 ## 4. Main Menu & Metagame (The Shop)
 
-The Shop is split into two distinct tabs to organize content.
-
 ### Tab A: "The Armory" (Stats)
-
-Permanent upgrades to the character's base stats.
-
-1. **Vitality:** Increases Max HP.
-    
-2. **Might:** Increases Base Damage % (Essential for late game).
-    
-3. **Greaves:** Increases Movement Speed (Essential for dodging bosses).
-    
-4. **Magnet:** Increases the radius at which you attract XP Gems.
-    
-    - Why this matters: If you don't have a Magnet, you have to run into the swarm to get XP, which is dangerous. High Magnet lets you collect XP from a safe distance.
-        
-5. **Luck:** Increases Critical Hit chance.
-    
+Permanent upgrades to base stats:
+1. **Vitality:** Increases Max HP
+2. **Might:** Increases Base Damage %
+3. **Greaves:** Increases Movement Speed
+4. **Magnet:** Increases XP collection radius
+5. **Luck:** Increases Critical Hit chance
 
 ### Tab B: "The Barracks" (Characters)
-
-- Cards showing the locked characters.
-    
-- Button: "Unlock for 10,000 Gold".
-    
+- Locked character cards
+- "Unlock for 10,000 Gold"
 
 ### Tab C: "The Treasury" (Gold Store)
+- **IAP:** Buy 50,000 Gold ($4.99)
+- **Ad:** Watch video → Get 500 Gold
 
-- **IAP:** Buy 50,000 Gold ($4.99).
-    
-- **Ad:** Watch Video 
-    
-    ```
-    →→
-    ```
-    
-     Get 500 Gold.
-    
+---
 
 ## 5. Monetization Points (Ads)
 
-1. **The Treasury Ad:** Player proactively goes to the shop and watches ads to grind Gold for a new character.
-    
-2. **The Multiplier Ad:** Appears **only** at the Game Over screen. "Watch Ad to Double your Run Gold." (Very popular with players).
-    
-3. **The "Desperation" Reroll:** Appears during Level Up. If the player gets 3 items they don't want, they can watch an ad to shuffle the deck. Used by players trying to build specific "God Builds."
+1. **Treasury Ad:** Proactive gold grinding
+2. **Multiplier Ad:** Game Over screen only ("Double Your Gold")
+3. **"Desperation" Reroll:** Level-up upgrade reroll for build optimization

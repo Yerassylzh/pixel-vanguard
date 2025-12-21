@@ -1,7 +1,7 @@
 # Pixel Vanguard - System Architecture Overview
 
 **Purpose:** Quick context recovery for AI/developers returning to project  
-**Last Updated:** 2025-12-15
+**Last Updated:** 2025-12-20
 
 ---
 
@@ -41,7 +41,7 @@ Spawn → Fight → Collect XP → Level Up → Choose Upgrade → Repeat → Di
 |--------|-----------|--------|----------|
 | Greatsword | `Greatsword` | GreatswordWeapon.cs | Periodic 360° swing (2.5s cooldown) |
 | AutoCrossbow | `Crossbow` | AutoCrossbowWeapon.cs | Fires arrows at enemies |
-| HolyWater | `HolyWater` | HolyWaterWeapon.cs | Throws flask → creates puddle |
+| HolyWater | `HolyWater` | HolyWaterWeapon.cs | Spawns "Sanctified Ground" fire zone (area denial) |
 | MagicOrbitals | `MagicOrbitals` | MagicOrbitalsWeapon.cs | Shields orbit continuously |
 
 ### Weapon Architecture
@@ -89,6 +89,8 @@ Structure:
 - displayName: string (UI display)
 - type: WeaponType enum
 - baseDamage, cooldown, knockback
+- baseDuration (for timed effects like HolyWater)
+- baseTickRate (for DoT weapons)
 
 Note: NO per-weapon upgrades! All upgrades are universal.
 ```
@@ -364,6 +366,10 @@ Assets/Scripts/
     ├── LevelUpPanel.cs
     ├── PauseMenu.cs
     └── GameOverScreen.cs
+
+Assets/Shaders/
+├── SpriteReveal.shader     - Horizontal/Vertical clip reveal (Greatsword)
+└── RadialReveal.shader     - Center-outward clip reveal (Holy Water)
 ```
 
 ### Assets
