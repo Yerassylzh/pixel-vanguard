@@ -65,7 +65,7 @@ MainMenu          GameScene
 | Scene | Purpose | Key Scripts | Persistent? |
 |-------|---------|-------------|-------------|
 | **Bootstrap** | Platform detection, service injection, data loading | `Bootstrap`, `ServiceLocator`, `PlatformDetector` | No |
-| **MainMenu** | Character selection, shop, navigation hub | `MainMenuController`, `ShopManager`, `CharacterSelector` | No |
+| **MainMenu** | Character selection, shop, navigation hub | `MainMenuController`, `ShopManager`, `CharacterSelector`   | No |
 | **GameScene** | Combat, progression, level-up events | `GameManager`, `PlayerController`, `EnemySpawner`, `LevelUpManager` | No |
 | **Results** | Game summary, ad monetization, save data | `ResultsController`, `AdRewardHandler`, `SaveWriter` | No |
 

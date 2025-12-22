@@ -35,8 +35,9 @@ graph LR
 ```mermaid
 graph LR
     EnemyAI[EnemyAI] --> EnemyHealth
+    EnemyAI --> EnemyAnimationController
     EnemyHealth -->|OnEnemyKilled| GameManager
-    EnemyHealth -->|OnXPGained| LevelUpManager[future]
+    EnemyHealth -->|OnXPGained| LevelUpManager
     EnemyAI -.->|finds| Player[Player tag]
 ```
 
@@ -65,20 +66,17 @@ graph LR
 
 | Script | Depends On |
 |--------|-----------|
-| PlayerController | Rigidbody2D, InputActions |
+| PlayerController | Rigidbody2D, InputActions, PlayerAnimationController |
 | PlayerHealth | PlayerController |
 | EnemyAI | EnemyHealth, Player (tag) |
 | EnemyHealth | Rigidbody2D, EnemyData |
+| EnemyAnimationController | Animator, EnemyAI |
+| WeaponManager | WeaponData inputs, Projectile prefabs |
 | GameManager | GameEvents |
 
 ---
 
-## Future Integrations
-
-**When adding EnemySpawner:**
+## Weapon Integrations
 - Spawner calls `EnemyHealth.Initialize(EnemyData)`
-- Spawner calls `EnemyAI.SetMoveSpeed(speed)`
-
-**When adding Weapons:**
-- Weapon finds enemies → calls `EnemyHealth.TakeDamage()`
+- Weapons find enemies → call `EnemyHealth.TakeDamage()`
 - Knockback direction: `(enemy.pos - weapon.pos).normalized`

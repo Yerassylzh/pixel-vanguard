@@ -58,6 +58,27 @@ public enum UnlockType {
 
 ---
 
+## Character Roster
+
+**Total Characters:** 5
+
+| Character | ID | HP | Speed | Damage Mult | Starter Weapon | Unlock Type | Cost/Requirement |
+|-----------|----|----|-------|-------------|----------------|-------------|------------------|
+| **The Knight** | `knight` | 100 | 5.0 | 1.0x | Greatsword | FreeStarter | Always unlocked |
+| **The Pyromancer** | `pyromancer` | 80 | 5.0 | 1.2x | HolyWater | Ads | Watch 5 ads |
+| **The Ranger** | `ranger` | 100 | 6.5 | 1.0x | AutoCrossbow | Gold | 1500 gold |
+| **The Zombie** | `zombie` | 130 | 4.0 | 0.9x | Greatsword | Gold | 2500 gold |
+| **Santa Claus** | `santa` | 90 | 6.0 | 1.1x | MagicOrbitals | Ads | Watch 10 ads |
+
+**Design Philosophy:**
+- **Knight**: Balanced starter (HP: 100, Speed: 5.0, Damage: 1.0x)
+- **Pyromancer**: Glass cannon (Low HP, High Damage)
+- **Ranger**: Speed demon (Fast movement, standard damage)
+- **Zombie**: Tank (High HP, Slow, Reduced damage)
+- **Santa**: Agile support (Fast, Gift-themed orbitals)
+
+---
+
 ## Weapon Data
 
 **Asset Type:** `WeaponData.asset`
@@ -254,7 +275,10 @@ public class EnemyData : ScriptableObject {
 |-------|----|----|----|----|----------|
 | Skeleton | 20 | 3 | 5 | 10 | 0:00 |
 | Crawler | 15 | 6 | 8 | 15 | 1:00 |
-| Armored Orc | 50 | 2 | 15 | 5 | 3:00 |
+| **Goblin** | 25 | 5 | 7 | 10 | 1:30 |
+| **Ghost** | 30 | 4 | 12 | 5 | 2:30 |
+| Armored Orc | 50 | 2 | 15 | 5 | 3:30 |
+| **Slime** | 80 | 2 | 20 | 2 | 4:30 |
 | Abomination (Boss) | 500 | 1 | 100 | 2 | 5:00 |
 
 ---
@@ -433,7 +457,9 @@ Assets/
 │   ├── Characters/
 │   │   ├── Knight.asset
 │   │   ├── Pyromancer.asset
-│   │   └── Ranger.asset
+│   │   ├── Ranger.asset
+│   │   ├── Zombie.asset
+│   │   └── Santa.asset
 │   ├── Weapons/
 │   │   ├── OrbitalGreatsword.asset
 │   │   ├── AutoCrossbow.asset

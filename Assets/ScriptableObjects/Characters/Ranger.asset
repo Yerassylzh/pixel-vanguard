@@ -17,11 +17,11 @@ MonoBehaviour:
   description: Fast archer with precision
   portrait: {fileID: 0}
   idleSprite: {fileID: 0}
-  characterPrefab: {fileID: 0}
-  maxHealth: 85
-  moveSpeed: 4
-  baseDamageMultiplier: 0.9
+  characterPrefab: {fileID: 7754090624489383594, guid: 2d087128f8c20284da6e91b85076bfee, type: 3}
+  maxHealth: 100
+  moveSpeed: 6.5
+  baseDamageMultiplier: 1
   starterWeapon: {fileID: 11400000, guid: 6f0c5959fa6f3b44d99a7be7fe8d195c, type: 2}
   unlockType: 1
-  goldCost: 10000
+  goldCost: 1500
   adWatchCount: 5

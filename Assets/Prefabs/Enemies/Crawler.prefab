@@ -226,6 +226,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db4f954c39c1a784b945752f65a671f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.EnemyHealth
+  xpGemPrefab: {fileID: 226711286709867138, guid: cad8dc082a28d834788ee51d60b2d238, type: 3}
+  goldCoinPrefab: {fileID: 3260919468255876515, guid: 6fb0e4cfca856c943a432e41cd36f7ea, type: 3}
+  healthPotionPrefab: {fileID: 72700924762515949, guid: 3d3a46f25d8094849ab1ba3de24dfa6e, type: 3}
   enemyData: {fileID: 11400000, guid: 9417fa86ccb5493438f1c61d42a6983d, type: 2}
   currentHealth: 0
   isAlive: 1
@@ -275,7 +278,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67c2db4d2ada85c4eb2ae3ce10910cb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.EnemyAnimationController
-  velocityThreshold: 0.1
+  directionUpdateThreshold: 0.1
 --- !u!70 &7318530812515752894
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -310,6 +313,6 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.72808385, y: 0.34560502}
-  m_Size: {x: 1.2239064, y: 0.6303609}
+  m_Offset: {x: 0.51992524, y: 0.34348103}
+  m_Size: {x: 1.2409068, y: 0.6261197}
   m_Direction: 1

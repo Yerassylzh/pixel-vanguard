@@ -215,14 +215,11 @@ WeaponBase.GetFinalDamage() → applies baseDamageMultiplier
 // Note: Future enhancement - differentiate by size/particles/color based on XP amount
 ```
 
-### Loot Drops (Current Implementation)
+### Loot Drops
 ```
-✅ XP Gems: Fully implemented (spawns visual GameObject, magnet pickup)
-⚠️ Gold Drops: Event-only (fires TriggerGoldCollected but NO visual coin spawns)
-❌ Health Potions: NOT implemented (TODO in EnemyHealth.cs)
-
-Note: When implementing gold coins & health potions, create pickup GameObjects
-similar to XPGem.cs with sprites, colliders, and collection logic.
+✅ XP Gems: Fully implemented (left-up offset, magnet pickup)
+✅ Gold Drops: Fully implemented (right-up offset, magnet pickup, chance-based)
+✅ Health Potions: Fully implemented (prefab, chance-based, smart pickup)
 ```
 
 ### Leveling
@@ -396,11 +393,18 @@ Assets/ScriptableObjects/
 - Enemies: `"Enemy"`
 - NO tags needed for weapons/projectiles
 
-### Sorting Layers
-- Player: Default (0)
-- Weapons: Default (0)
-- Projectiles: Default (0)
-- DamagePuddle: **Ground** (-1 or separate layer)
+### Sorting Layers (Order 0 unless specified)
+1. **Background**
+2. **Ground** (-1 to 2)
+3. **Shadows** (NEW)
+4. **Ground Effects** (Puddles)
+5. **Enemies**
+6. **Player**
+7. **Collectibles** (XP, Gold)
+8. **Flying Objects** (Trees)
+9. **Weapons** (Arrows=5, Orbitals=8, Slash=10)
+10. **Effects** (VFX)
+11. **UI**
 
 ### Prefabs Structure
 ```
@@ -449,17 +453,16 @@ Assets/Prefabs/Weapons/
 
 ### 🔨 Code Only (Unity Setup Needed)
 - Character variety (create 3 CharacterData assets)
+- Enemy visuals (sprites/animations pending import)
 
 ### ⏳ Not Started
 - Main menu scene
 - Persistent upgrades / meta-progression
 - Achievement system
 - Sound/Music
-- Enemy variety (only 1 type exists - plan created for 4 types)
 - Map bounds
 - Visual polish (VFX/particles)
-- Gold coin visual drops
-- Health potion drops
+
 
 ---
 
@@ -501,7 +504,23 @@ Assets/Prefabs/Weapons/
 3. **Greatsword Behavior:** Redesigned from continuous orbit to periodic swing
 4. **UpgradeManager Fix:** Now upgrades ALL weapons, not just Greatsword
 5. **WeaponBase API:** Added IncreaseDamage(), IncreaseAttackSpeed(), IncreaseKnockback()
-6. **Documentation:** Created FROM_SCRATCH_SETUP.md, UPGRADE_SYSTEM_FIX.md
+### 2025-12-21 Session
+1. **Animation System:**
+   - Player: `IsMoving` + `FacingRight` (4 states)
+   - Enemy: `FacingRight` only (2 states), direction-based (fixes knockback)
+2. **Loot System:**
+   - Implemented GoldCoin spawning with magnet
+   - Added offset system to prevent XP/Gold overlap
+   - Added `goldDropChance` configuration
+3. **Sorting Layers:**
+   - Defined 11-layer hierarchy including Shadows, Ground Effects, Collectibles
+4. **Enemy Spawning:**
+   - Added validation to prevent spawning in isolated/blocked areas
+5. **Health Potions:**
+   - Implemented `HealthPotion.cs` with smart pickup (only if damaged)
+   - Refactored loot system to use Prefabs
+
+
 
 ---
 

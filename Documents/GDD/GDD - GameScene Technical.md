@@ -19,10 +19,11 @@ GameScene (Scene Root)
 │
 ├── 📁 GameplayLayer (Y-Sort Enabled)
 │   ├── Player (CharacterBody2D + Sprite + Camera)
-│   ├── EnemiesContainer (Holds all active enemies)
-│   ├── ProjectilesContainer (Bullets, arrows, etc.)
-│   ├── XPGemsContainer (Loot drops)
-│   └── FloatingTextManager (Damage numbers)
+│   ├── Player (CharacterBody2D + Sprite + Camera)
+│   ├── Enemies (Spawned at root)
+│   ├── Projectiles (Spawned at root)
+│   ├── Loot (XP/Gold - Spawned at root)
+│   └── Floating Text (Spawned at root)
 │
 ├── 📁 Managers (No visuals, pure logic)
 │   ├── GameManager
@@ -76,9 +77,10 @@ stateDiagram-v2
 - **Hit Reaction**: When damaged → knockback physics + flash sprite
 
 #### Loot System
-- **XP Gems**: On enemy death → spawn at death position → float toward player (magnet radius)
-- **Gold Coins**: Same as XP, but contribute to end-game gold instead of XP bar
-- **Health Potions**: Rare drops, instant healing on collection
+#### Loot System
+- **XP Gems**: On enemy death → spawn at offset (left-up) → float toward player (magnet)
+- **Gold Coins**: Spawn at offset (right-up) → chance-based (goldDropChance) → float toward player
+- **Health Potions**: Rare drops → spawn at offset (down) → instant heal
 
 ---
 
@@ -90,6 +92,7 @@ stateDiagram-v2
 
 **Spawning Rules:**
 - Enemies spawn at the **edges of the camera view** (off-screen)
+- **Validity Check:** Spawner checks for colliders to prevent spawning in isolated/blocked areas
 - Spawn rate increases over time based on difficulty curve
 - Enemy types weighted by current game time
 
@@ -210,10 +213,18 @@ Enemy Velocity += Knockback Direction × Knockback Force
 
 This creates the "pushing through a horde" feel - lightweight enemies fly back, heavy enemies barely budge.
 
-**Y-Sorting:**
-- All sprites in GameplayLayer have `Y Sort Enabled = true`
-- Unity automatically renders sprites with lower Y positions on top
-- Creates 2.5D depth illusion (player below enemy = player rendered on top)
+**Sorting Layers (Order 0 unless specified):**
+1. **Background**
+2. **Ground** (-1 to 2) 
+3. **Shadows** (NEW)
+4. **Ground Effects** (Puddles)
+5. **Enemies**
+6. **Player**
+7. **Collectibles** (XP, Gold)
+8. **Flying Objects** (Trees)
+9. **Weapons** (Arrows=5, Orbitals=8, Slash=10)
+10. **Effects** (VFX)
+11. **UI**
 
 ### 5. Camera System
 

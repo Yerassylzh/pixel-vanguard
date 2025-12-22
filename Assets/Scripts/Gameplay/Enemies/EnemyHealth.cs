@@ -8,6 +8,11 @@ namespace PixelVanguard.Gameplay
     [RequireComponent(typeof(Rigidbody2D))]
     public class EnemyHealth : MonoBehaviour
     {
+        [Header("Loot Prefabs")]
+        [SerializeField] private GameObject xpGemPrefab;
+        [SerializeField] private GameObject goldCoinPrefab;
+        [SerializeField] private GameObject healthPotionPrefab;
+
         [Header("Configuration")]
         [SerializeField] private Data.EnemyData enemyData;
 
@@ -112,107 +117,58 @@ namespace PixelVanguard.Gameplay
             // Drop health potion (chance-based)
             if (Random.value < enemyData.healthPotionDropChance)
             {
-               // Vector3 spawnPos = dropPosition + offsets[itemCount % offsets.Length];
-               // SpawnHealthPotion(spawnPos);
-               // TODO: Implement health potion prefab when health system is expanded
+                Vector3 spawnPos = dropPosition + offsets[itemCount % offsets.Length];
+                SpawnHealthPotion(spawnPos);
             }
         }
 
         private void SpawnXPGem(Vector3 position, int xpAmount)
         {
-            // Create XP gem GameObject
-            GameObject gemObj = new GameObject("XPGem");
-            gemObj.transform.position = position;
-            gemObj.tag = "Pickup"; // For organization
+            if (xpGemPrefab == null) 
+            {
+                Debug.LogWarning("[EnemyHealth] XPGem Prefab not assigned!");
+                return;
+            }
 
-            // Add visual (placeholder)
-            var spriteRenderer = gemObj.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = CreateGemSprite();
-            spriteRenderer.color = Color.cyan;
-            spriteRenderer.sortingLayerName = "Collectibles";
-            spriteRenderer.sortingOrder = 1;
-
-            // Add circle collider
-            var collider = gemObj.AddComponent<CircleCollider2D>();
-            collider.radius = 0.3f;
-            collider.isTrigger = true;
-
-            // Add XPGem script
-            var gem = gemObj.AddComponent<XPGem>();
-            gem.SetXPAmount(xpAmount);
+            GameObject gemObj = Instantiate(xpGemPrefab, position, Quaternion.identity);
+            
+            // Configure XP amount
+            var gem = gemObj.GetComponent<XPGem>();
+            if (gem != null)
+            {
+                gem.SetXPAmount(xpAmount);
+            }
         }
 
         private void SpawnGoldCoin(Vector3 position, int goldAmount)
         {
-            // Create gold coin GameObject
-            GameObject coinObj = new GameObject("GoldCoin");
-            coinObj.transform.position = position;
-            coinObj.tag = "Pickup"; // For organization
-
-            // Add visual (placeholder)
-            var spriteRenderer = coinObj.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = CreateCoinSprite();
-            spriteRenderer.color = Color.yellow;
-            spriteRenderer.sortingLayerName = "Collectibles";
-            spriteRenderer.sortingOrder = 1;
-
-            // Add circle collider
-            var collider = coinObj.AddComponent<CircleCollider2D>();
-            collider.radius = 0.3f;
-            collider.isTrigger = true;
-
-            // Add GoldCoin script
-            var coin = coinObj.AddComponent<GoldCoin>();
-            coin.SetGoldValue(goldAmount);
-        }
-
-        private Sprite CreateGemSprite()
-        {
-            // Simple diamond shape (placeholder)
-            Texture2D tex = new Texture2D(16, 16);
-            Color[] pixels = new Color[16 * 16];
-            for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.clear;
-            
-            // Draw diamond
-            for (int x = 0; x < 16; x++)
+            if (goldCoinPrefab == null)
             {
-                for (int y = 0; y < 16; y++)
-                {
-                    int dx = Mathf.Abs(x - 8);
-                    int dy = Mathf.Abs(y - 8);
-                    if (dx + dy < 6) pixels[y * 16 + x] = Color.white;
-                }
+                Debug.LogWarning("[EnemyHealth] GoldCoin Prefab not assigned!");
+                return;
             }
-            
-            tex.SetPixels(pixels);
-            tex.Apply();
 
-            return Sprite.Create(tex, new Rect(0, 0, 16, 16), new Vector2(0.5f, 0.5f), 16f);
-        }
+            GameObject coinObj = Instantiate(goldCoinPrefab, position, Quaternion.identity);
 
-        private Sprite CreateCoinSprite()
-        {
-            // Simple circle shape (placeholder for gold coin)
-            Texture2D tex = new Texture2D(16, 16);
-            Color[] pixels = new Color[16 * 16];
-            for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.clear;
-            
-            // Draw circle
-            for (int x = 0; x < 16; x++)
+            // Configure Gold amount
+            var coin = coinObj.GetComponent<GoldCoin>();
+            if (coin != null)
             {
-                for (int y = 0; y < 16; y++)
-                {
-                    float dx = x - 8;
-                    float dy = y - 8;
-                    if (dx * dx + dy * dy < 25) pixels[y * 16 + x] = Color.white;
-                }
+                coin.SetGoldValue(goldAmount);
             }
-            
-            tex.SetPixels(pixels);
-            tex.Apply();
-
-            return Sprite.Create(tex, new Rect(0, 0, 16, 16), new Vector2(0.5f, 0.5f), 16f);
         }
+
+        private void SpawnHealthPotion(Vector3 position)
+        {
+            if (healthPotionPrefab == null)
+            {
+                // Silent return or warning depending on preference
+                return;
+            }
+
+            Instantiate(healthPotionPrefab, position, Quaternion.identity);
+        }
+
 
         /// <summary>
         /// Set enemy data (called by spawner).

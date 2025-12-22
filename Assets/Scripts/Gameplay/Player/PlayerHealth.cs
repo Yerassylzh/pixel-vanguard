@@ -12,6 +12,9 @@ namespace PixelVanguard.Gameplay
         private float maxHealth = 100f;
         private float currentHealth;
 
+        public float CurrentHealth => currentHealth;
+        public float MaxHealth => maxHealth;
+
         [Header("Damage Cooldown")]
         [SerializeField] private float damageCooldown = 1f; // Seconds between taking damage
         private float lastDamageTime = -999f;
@@ -27,6 +30,9 @@ namespace PixelVanguard.Gameplay
         {
             // Auto-get required component
             playerController = GetComponent<PlayerController>();
+            
+            // Initialize safe default to prevent early access issues
+            currentHealth = maxHealth; 
         }
 
         private void Start()
