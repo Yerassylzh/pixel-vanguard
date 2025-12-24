@@ -1,70 +1,96 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
-    /// Projectile weapon that fires arrows at the nearest enemy.
-    /// Supports multi-shot (level 2+) and pierce (level 3+).
+    /// AutoCrossbow weapon - Fires arrows at enemies.
+    /// REFACTORED: Uses TargetingUtility, cleaner multi-shot logic.
     /// </summary>
     public class AutoCrossbowWeapon : WeaponBase
     {
-        [Header("Projectile Settings")]
+        [Header("Crossbow Settings")]
         [SerializeField] private GameObject arrowPrefab;
-        [SerializeField] private float projectileSpeed = 10f;
-        [SerializeField] private float maxRange = 15f;
+        [SerializeField] private Transform firePoint;
+        [SerializeField] private float projectileSpeed = 15f;
+        [SerializeField] private float targetRange = 15f;
 
-        // Upgrade-dependent values
-        private readonly int arrowCount = 1; // Number of arrows per shot
-        private readonly int pierceCount = 0; // How many enemies arrow can 0
+        [Header("Upgrades")]
+        private int arrowCount = 1; // Dual = 2, Triple = 3
+        private int pierceCount = 0; // Piercing Bolts upgrade
+
+        protected override void Awake()
+        {
+            base.Awake();
+            if (firePoint == null) {
+                firePoint = transform;
+                firePoint.localPosition = Vector3.zero;
+            }
+        }
 
         protected override void Fire()
         {
-            // Find nearest enemy
-            Transform target = FindNearestEnemy(maxRange);
-            if (target == null) return;
-
-            // Fire multiple arrows based on level
-            FireArrows(target);
-        }
-
-        private void FireArrows(Transform target)
-        {
-            if (arrowPrefab == null)
+            if (arrowPrefab == null || firePoint == null)
             {
-                Debug.LogWarning("[ProjectileWeapon] Arrow prefab not assigned!");
+                Debug.LogWarning("[AutoCrossbow] Missing arrow prefab or fire point!");
                 return;
             }
 
-            Vector2 baseDirection = (target.position - player.position).normalized;
+            // Find targets using centralized utility
+            var targets = TargetingUtility.FindUniqueTargets(firePoint.position, arrowCount, targetRange);
 
-            // Fire arrows in a spread pattern if multi-shot
-            for (int i = 0; i < arrowCount; i++)
+            if (targets.Count == 0)
             {
-                // Calculate spread angle
-                float spreadAngle = 0f;
-                if (arrowCount > 1)
-                {
-                    float spreadRange = 15f; // Degrees
-                    spreadAngle = Mathf.Lerp(-spreadRange, spreadRange, i / (float)(arrowCount - 1));
-                }
+                // No enemies in range - this is normal, just skip firing
+                return;
+            }
 
-                // Rotate direction by spread angle
-                Vector2 direction = Quaternion.Euler(0, 0, spreadAngle) * baseDirection;
-
-                // Instantiate arrow
-                GameObject arrow = Instantiate(arrowPrefab, player.position, Quaternion.identity);
-
-                // Set arrow rotation to face direction
-                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-                arrow.transform.rotation = Quaternion.Euler(0, 0, angle);
-
-                // Initialize arrow with stats
-                if (arrow.TryGetComponent<ArrowProjectile>(out var arrowScript))
-                {
-                    arrowScript.Initialize(direction, projectileSpeed, damage, knockback, pierceCount);
-                }
+            // Fire arrow at each target
+            foreach (var target in targets)
+            {
+                FireArrowAt(target);
             }
         }
 
+        private void FireArrowAt(Transform target)
+        {
+            // Calculate direction
+            Vector2 direction = (target.position - firePoint.position).normalized;
+
+            // Spawn arrow
+            GameObject arrowObj = Instantiate(arrowPrefab, firePoint.position, Quaternion.identity);
+            
+            // Rotate arrow to face direction
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            arrowObj.transform.rotation = Quaternion.Euler(0, 0, angle);
+
+            // Initialize arrow
+            var arrowScript = arrowObj.GetComponent<ArrowProjectile>();
+            if (arrowScript != null)
+            {
+                float finalDamage = GetFinalDamage();
+                arrowScript.Initialize(direction, projectileSpeed, finalDamage, knockback, pierceCount);
+            }
+        }
+
+        // === UPGRADE API ===
+        
+        /// <summary>
+        /// Set number of arrows (Dual = 2, Triple = 3).
+        /// </summary>
+        public void SetMultiShot(int count)
+        {
+            arrowCount = count;
+            Debug.Log($"[AutoCrossbow] Multi-shot set to {count} arrows");
+        }
+
+        /// <summary>
+        /// Increment pierce count (Piercing Bolts upgrade).
+        /// </summary>
+        public void IncrementPierce()
+        {
+            pierceCount++;
+            Debug.Log($"[AutoCrossbow] Pierce count: {pierceCount}");
+        }
     }
 }

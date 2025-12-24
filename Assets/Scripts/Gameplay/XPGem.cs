@@ -13,7 +13,7 @@ namespace PixelVanguard.Gameplay
         [SerializeField] private int xpAmount = 5;
 
         [Header("Magnet Behavior")]
-        [SerializeField] private float magnetRange = 3f;
+        [HideInInspector] public float magnetRange = 3f; // NOW PUBLIC for upgrade system
         [SerializeField] private float moveSpeed = 10f;
 
         private Transform player;

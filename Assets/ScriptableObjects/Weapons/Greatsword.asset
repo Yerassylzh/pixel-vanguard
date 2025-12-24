@@ -17,7 +17,9 @@ MonoBehaviour:
   description: Powerful periodic swing attack
   icon: {fileID: 0}
   type: 0
-  baseDamage: 15
+  baseDamage: 10
   cooldown: 2
-  knockback: 5
+  knockback: 100
+  baseDuration: 0
+  baseTickRate: 0
   prefab: {fileID: 0}

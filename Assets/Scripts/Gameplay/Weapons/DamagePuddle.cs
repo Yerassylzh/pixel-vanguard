@@ -22,6 +22,7 @@ namespace PixelVanguard.Gameplay
         private float duration;
         private float damagePerTick;
         private float tickRate;
+        private float hpScalingPercent = 0f; // HP scaling percentage from upgrade
 
         private CircleCollider2D puddleCollider;
         private float lifetimeTimer = 0f;
@@ -48,11 +49,12 @@ namespace PixelVanguard.Gameplay
             }
         }
 
-        public void Initialize(float dur, float dmg, float tick)
+        public void Initialize(float dur, float dmg, float tick, float hpScale = 0f)
         {
             duration = dur;
             damagePerTick = dmg;
             tickRate = tick;
+            hpScalingPercent = hpScale;
         }
 
         private void Start()
@@ -132,7 +134,16 @@ namespace PixelVanguard.Gameplay
             {
                 if (enemy != null && enemy.IsAlive)
                 {
-                    enemy.TakeDamage(damagePerTick, Vector2.zero, 0f);
+                    float finalDamage = damagePerTick;
+                    
+                    // Add HP scaling if enabled
+                    if (hpScalingPercent > 0 && enemy.EnemyData != null)
+                    {
+                        float scalingDamage = enemy.EnemyData.maxHealth * hpScalingPercent;
+                        finalDamage += scalingDamage;
+                    }
+                    
+                    enemy.TakeDamage(finalDamage, Vector2.zero, 0f);
                 }
             }
         }
@@ -158,5 +169,7 @@ namespace PixelVanguard.Gameplay
             if (instanceMaterial != null) Destroy(instanceMaterial);
             enemiesInPuddle.Clear();
         }
+
+
     }
 }

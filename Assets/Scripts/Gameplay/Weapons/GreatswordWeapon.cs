@@ -17,6 +17,10 @@ namespace PixelVanguard.Gameplay
             new Keyframe(1f, 0f)
         );
 
+        [Header("Components (Auto-Find if Empty)")]
+        [SerializeField] private SpriteRenderer weaponSprite;
+        [SerializeField] private Collider2D weaponCollider;
+
         [Header("Animation")]
         [Tooltip("How fast the slash 'Fills' (0 to 1). Percentage of swingDuration.")]
         [Range(0.1f, 1f)]
@@ -25,6 +29,8 @@ namespace PixelVanguard.Gameplay
         [SerializeField] private float fadeDuration = 0.15f;
         [SerializeField] private float swingDuration = 0.3f;
         [SerializeField] private bool revealVertical = false; // Toggle to switch axis
+
+        [HideInInspector] public bool isMirror = false; // For Mirror Slash upgrade
 
         private SpriteRenderer spriteRenderer;
         private Material instanceMaterial;
@@ -44,9 +50,25 @@ namespace PixelVanguard.Gameplay
 
         protected override void Awake()
         {
-            base.Awake(); 
+            base.Awake();
 
-            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            // Auto-find components if not assigned
+            if (weaponSprite == null)
+            {
+                weaponSprite = GetComponentInChildren<SpriteRenderer>();
+                if (weaponSprite == null)
+                {
+                    weaponSprite = GetComponent<SpriteRenderer>();
+                }
+            }
+
+            if (weaponCollider == null)
+            {
+                weaponCollider = GetComponent<Collider2D>();
+            }
+
+            // Use the found/assigned sprite renderer
+            spriteRenderer = weaponSprite;
             
             if (spriteRenderer != null)
             {
@@ -57,6 +79,10 @@ namespace PixelVanguard.Gameplay
                 instanceMaterial.SetFloat(axisPropID, revealVertical ? 1f : 0f);
 
                 UpdateVisuals(false);
+            }
+            else
+            {
+                Debug.LogError("[GreatswordWeapon] SpriteRenderer not found! Assign in Inspector or add to GameObject.");
             }
 
             // Unparent for world space rotation
@@ -191,32 +217,33 @@ namespace PixelVanguard.Gameplay
             }
         }
 
-
-
         private void OnTriggerStay2D(Collider2D collision)
         {
             // Only damage during swing
             if (!isSwinging) return;
 
             // Check if hit an enemy
-            if (collision.CompareTag("Enemy"))
-            {
-                // Get InstanceID for unique tracking per swing
-                int enemyID = collision.gameObject.GetInstanceID();
+            if (!collision.CompareTag("Enemy")) return;
 
-                // If already hit this swing, ignore
-                if (hitEnemies.Contains(enemyID)) return;
+            // Get InstanceID for unique tracking per swing
+            int enemyID = collision.gameObject.GetInstanceID();
 
-                // Calculate knockback direction (away from weapon center)
-                Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
+            // If already hit this swing, ignore
+            if (hitEnemies.Contains(enemyID)) return;
 
-                // Attempt damage and track if successful
-                if (EnemyDamageUtility.TryDamageEnemy(collision, damage, knockbackDir, knockback))
-                {
-                    hitEnemies.Add(enemyID);
-                }
-            }
+            // Get enemy health component
+            var enemyHealth = collision.GetComponent<EnemyHealth>();
+            if (enemyHealth == null || !enemyHealth.IsAlive) return;
+
+            // Calculate knockback direction (away from weapon center)
+            Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
+
+            // Deal damage (REFACTORED: Direct call instead of EnemyDamageUtility)
+            float finalDamage = GetFinalDamage();
+            enemyHealth.TakeDamage(finalDamage, knockbackDir, knockback);
+            
+            // Track hit
+            hitEnemies.Add(enemyID);
         }
     }
-    // Note: IncreaseDamage() and IncreaseAttackSpeed() inherited from WeaponBase
 }

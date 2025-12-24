@@ -63,14 +63,18 @@ namespace PixelVanguard.Gameplay
             // Check if this specific enemy is on cooldown
             if (enemyCooldowns.ContainsKey(enemyId)) return;
 
+            // Get enemy health component
+            var enemyHealth = collision.GetComponent<EnemyHealth>();
+            if (enemyHealth == null || !enemyHealth.IsAlive) return;
+
             // Calculate knockback direction (away from ball)
             Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
 
-            // Attempt damage and start per-enemy cooldown if successful
-            if (EnemyDamageUtility.TryDamageEnemy(collision, damage, knockbackDir, knockback))
-            {
-                enemyCooldowns[enemyId] = damageInterval;
-            }
+            // Deal damage (REFACTORED: Direct call instead of EnemyDamageUtility)
+            enemyHealth.TakeDamage(damage, knockbackDir, knockback);
+            
+            // Start cooldown for this enemy
+            enemyCooldowns[enemyId] = damageInterval;
         }
 
         private void OnTriggerExit2D(Collider2D collision)

@@ -15,6 +15,7 @@ MonoBehaviour:
   upgradeName: Increase Damage
   description: Increase weapon damage by 5 HP
   icon: {fileID: 0}
-  type: 0
+  type: 3
   value: 5
   weaponToEquip: {fileID: 0}
+  rarityWeight: 100

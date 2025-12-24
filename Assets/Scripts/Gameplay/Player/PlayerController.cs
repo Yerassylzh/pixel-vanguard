@@ -1,233 +1,85 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
-    /// Controls player movement with platform-aware input and proper state management.
-    /// Desktop: WASD + Arrow Keys
-    /// Mobile: VirtualJoystick
-    /// Respects game state (blocks input when paused/level-up/game-over).
+    /// Refactored PlayerController - Now only maintains singleton reference.
+    /// Movement, input, and health are separate components.
     /// </summary>
-    [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
         public static PlayerController Instance { get; private set; }
 
-        [Header("Movement")]
-        private float moveSpeed = 5f;
+        // Component references (cached)
+        private PlayerMovement movement;
+        private PlayerInput input;
+        private PlayerHealth health;
+        private Rigidbody2D playerRigidbody; // Cached for MoveDirection
 
-        [Header("Input Actions (Desktop)")]
-        [SerializeField] private InputActionAsset inputActions;
-
-        [Header("Virtual Joystick (Mobile)")]
-        [SerializeField] private UI.VirtualJoystick virtualJoystick;
-
-        private Rigidbody2D rb;
-        private SpriteRenderer spriteRenderer;
-        private Vector2 moveDirection;
-        public Vector2 MoveDirection => moveDirection; // Expose for weapons/animators
-        private InputAction moveAction;
-        private bool useMobileControls = false;
+        // Public accessors for backwards compatibility
+        public PlayerMovement Movement => movement;
+        public PlayerHealth Health => health;
 
         private void Awake()
         {
-            // Singleton setup
+            // Singleton pattern
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
+
             Instance = this;
 
-            rb = GetComponent<Rigidbody2D>();
-            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            // Cache components
+            movement = GetComponent<PlayerMovement>();
+            input = GetComponent<PlayerInput>();
+            health = GetComponent<PlayerHealth>();
+            playerRigidbody = GetComponent<Rigidbody2D>();
 
-            // Auto-find VirtualJoystick if not assigned (FIX for mobile input)
-            if (virtualJoystick == null)
-            {
-                virtualJoystick = FindAnyObjectByType<UI.VirtualJoystick>();
-            }
-
-            // Load move speed from selected character
-            LoadCharacterStats();
-
-            DeterminePlatform();
-            SetupInput();
+            // Validate
+            if (movement == null) Debug.LogError("[PlayerController] PlayerMovement component missing!");
+            if (input == null) Debug.LogError("[PlayerController] PlayerInput component missing!");
+            if (health == null) Debug.LogError("[PlayerController] PlayerHealth component missing!");
+            if (playerRigidbody == null) Debug.LogError("[PlayerController] Rigidbody2D component missing!");
         }
 
-        private void OnEnable()
+        private void OnDestroy()
         {
-            // Subscribe to platform changes
-            Core.GameEvents.OnPlatformChanged += OnPlatformChanged;
-
-            // Enable desktop input if applicable
-            if (moveAction != null && !useMobileControls)
+            if (Instance == this)
             {
-                moveAction.Enable();
+                Instance = null;
             }
-        }
-
-        private void OnDisable()
-        {
-            Core.GameEvents.OnPlatformChanged -= OnPlatformChanged;
-
-            if (moveAction != null && !useMobileControls)
-            {
-                moveAction.Disable();
-            }
-        }
-
-        private void DeterminePlatform()
-        {
-            // Otherwise use platform detector
-            if (Core.PlatformDetector.Instance != null)
-            {
-                useMobileControls = Core.PlatformDetector.Instance.IsMobile();
-
-            }
-            else
-            {
-
-                useMobileControls = false;
-            }
-        }
-
-        private void SetupInput()
-        {
-            if (!useMobileControls)
-            {
-                SetupDesktopInput();
-            }
-            else
-            {
-                SetupMobileInput();
-            }
-        }
-
-        private void SetupDesktopInput()
-        {
-            if (inputActions == null)
-            {
-                inputActions = Resources.Load<InputActionAsset>("InputSystem_Actions");
-            }
-
-            if (inputActions != null)
-            {
-                var playerActionMap = inputActions.FindActionMap("Player");
-                if (playerActionMap != null)
-                {
-                    moveAction = playerActionMap.FindAction("Move");
-                }
-                else
-                {
-                    Debug.LogError("[PlayerController] 'Player' action map not found!");
-                }
-            }
-            else
-            {
-                Debug.LogError("[PlayerController] InputActions asset not found!");
-            }
-        }
-
-        private void SetupMobileInput()
-        {
-            virtualJoystick = FindAnyObjectByType<UI.VirtualJoystick>();
-        }
-
-        private void OnPlatformChanged(Core.PlatformType newPlatform)
-        {
-            // Re-determine platform and re-setup input
-            DeterminePlatform();
-            SetupInput();
-        }
-
-        private void Update()
-        {
-            GetInput();
-        }
-
-        private void FixedUpdate()
-        {
-            Move();
-        }
-
-        private void GetInput()
-        {
-
-            // Block input if game not playing
-            if (!CanAcceptInput())
-            {
-                moveDirection = Vector2.zero;
-                return;
-            }
-
-            if (useMobileControls)
-            {
-                // Mobile: Read from virtual joystick
-                if (virtualJoystick != null)
-                {
-                    moveDirection = virtualJoystick.Direction;
-                }
-                else
-                {
-                    moveDirection = Vector2.zero;
-                }
-            }
-            else
-            {
-                // Desktop: Read from Input System (supports WASD + Arrow keys)
-                moveDirection = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
-            }
-        }
-
-        private bool CanAcceptInput()
-        {
-            // Check game state - only accept input when playing
-            if (GameManager.Instance == null) return true; // Fallback if no manager
-
-            GameState state = GameManager.Instance.CurrentState;
-            return state == GameState.Playing;
-        }
-
-        private void Move()
-        {
-            // Normalize input to prevent diagonal speed boost
-            Vector2 normalizedDirection = moveDirection.magnitude > 1f
-                ? moveDirection.normalized
-                : moveDirection;
-
-            // Apply movement
-            rb.linearVelocity = normalizedDirection * moveSpeed;
-
-            // Note: Sprite direction is now handled by PlayerAnimationController
-            // using separate WalkLeft and WalkRight animation clips
         }
 
         /// <summary>
-        /// Set move speed (for stat upgrades).
+        /// Public API: Set move speed (for upgrades).
         /// </summary>
         public void SetMoveSpeed(float speed)
         {
-            moveSpeed = speed;
+            movement?.SetMoveSpeed(speed);
         }
 
         /// <summary>
-        /// Load stats from selected character.
-        /// Called in Awake() to initialize character-specific values.
+        /// Public API: Get current move speed.
         /// </summary>
-        private void LoadCharacterStats()
+        public float GetMoveSpeed()
         {
-            var selectedCharacter = Core.CharacterManager.SelectedCharacter;
-            if (selectedCharacter != null)
-            {
-                moveSpeed = selectedCharacter.moveSpeed;
+            return movement != null ? movement.GetMoveSpeed() : 5f;
+        }
 
-            }
-             else
+        /// <summary>
+        /// Public API: Get current movement direction (for animations).
+        /// </summary>
+        public Vector2 MoveDirection
+        {
+            get
             {
-                // Fallback to default if no character selected
-                moveSpeed = 5f;
+                if (playerRigidbody != null)
+                {
+                    return playerRigidbody.linearVelocity.normalized;
+                }
+                return Vector2.zero;
             }
         }
     }

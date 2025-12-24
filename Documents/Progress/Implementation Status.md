@@ -12,11 +12,11 @@
 - **PlatformDetector** - Auto-detects Desktop/Mobile, singleton pattern
 - **CharacterManager** - Character selection, player spawning, Cinemachine integration
 
-### Weapon System (11 scripts) **[RECENTLY REFACTORED]**
+### Weapon System (10 scripts) **[REFACTORED DEC 24]**
 #### Base Architecture
-- **WeaponBase** - Abstract class with auto-fire, `FindNearestEnemy(range)`, upgrade API
+- **WeaponBase** - Abstract class with auto-fire, `GetFinalDamage()`, upgrade API
 - **WeaponManager** - Handles 4 simultaneous weapons, instantiation, tracking
-- **EnemyDamageUtility** *[NEW]* - Centralizes enemy damage pattern (reduces 40 lines duplication)
+- **TargetingUtility** *[NEW]* - Finds unique targets for multi-shot weapons
 - **ShaderHelper** *[NEW]* - Creates reveal material instances
 
 #### Weapon Implementations
@@ -46,9 +46,11 @@
   - **Per-enemy cooldown** (Dictionary<int, float>) - damages ALL touched enemies simultaneously
   - OnTriggerExit cleanup prevents memory leaks
 
-### Player Systems (2)
-- **PlayerController** - Platform-aware movement (WASD, joystick), input blocking
-- **PlayerHealth** - HP management, damage cooldown, max HP upgrade support
+### Player Systems (4 - REFACTORED DEC 24)
+- **PlayerController** - Singleton reference management
+- **PlayerMovement** - Rigidbody2D movement logic
+- **PlayerInput** - New Input System + VirtualJoystick integration
+- **PlayerHealth** - HP management, passive upgrade storage
 
 ### Enemy Systems (3)
 - **EnemyAI** - Simple chase behavior toward player
@@ -85,7 +87,8 @@
 ## 🔧 Code Quality Improvements *[Dec 20-21]*
 
 ### Refactoring Complete
-- **✅ EnemyDamageUtility** created - eliminates duplicate damage pattern (3 files)
+- **✅ Player System Split** - Separated into Controller/Movement/Input/Health (Dec 24)
+- **✅ EnemyDamageUtility removed** - All weapons call EnemyHealth.TakeDamage() directly
 - **✅ ShaderHelper** created - eliminates duplicate shader setup (2 files)
 - **✅ AnimateRadius** unified - replaced separate expand/shrink coroutines (-19 lines)
 - **✅ Per-enemy cooldowns** - OrbitalBall now damages multiple enemies simultaneously

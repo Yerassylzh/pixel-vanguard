@@ -3,51 +3,35 @@ using UnityEngine;
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
-    /// Abstract base class for all weapons.
-    /// Handles common functionality: cooldown, damage calculation, auto-fire.
-    /// Each weapon type implements its own Fire() logic.
+    /// Base class for all weapons.
+    /// REFACTORED: Integrated characterDamageMultiplier correctly.
     /// </summary>
     public abstract class WeaponBase : MonoBehaviour
     {
-        [Header("Weapon Data")]
+        [Header("References")]
         [SerializeField] protected Data.WeaponData weaponData;
 
-        // Stats loaded from WeaponData
+        [Header("Stats (Loaded from WeaponData)")]
         protected float damage;
         protected float cooldown;
         protected float knockback;
-        protected float duration;
-        protected float tickRate;
 
-        // Auto-fire timing
-        protected float fireCooldownTimer = 0f;
+        // Cooldown tracking
+        protected float cooldownTimer = 0f;
 
         // Player reference
         protected Transform player;
 
         protected virtual void Awake()
         {
-            // Get player from singleton
+            // Find player
             if (PlayerController.Instance != null)
             {
                 player = PlayerController.Instance.transform;
             }
-            else
-            {
-                Debug.LogError($"[{GetType().Name}] PlayerController.Instance not found!");
-                enabled = false;
-            }
         }
 
         protected virtual void Start()
-        {
-            LoadWeaponStats(1);
-        }
-
-        /// <summary>
-        /// Load base stats from WeaponData ScriptableObject.
-        /// </summary>
-        protected void LoadWeaponStats(int startLevel = 1)
         {
             if (weaponData == null)
             {
@@ -55,94 +39,83 @@ namespace PixelVanguard.Gameplay
                 return;
             }
 
-            // Load base stats from ScriptableObject
-            damage = weaponData.baseDamage;
-            cooldown = weaponData.cooldown;
-            knockback = weaponData.knockback;
-            duration = weaponData.baseDuration;
-            tickRate = weaponData.baseTickRate;
-            fireCooldownTimer = cooldown;
+            LoadStatsFromData();
         }
 
-        /// <summary>
-        /// Called by derived classes every frame to handle auto-fire timing.
-        /// </summary>
         protected virtual void Update()
         {
-            // Don't fire if game is not playing
-            if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
+            // Cooldown handling
+            if (cooldownTimer > 0f)
             {
-                return;
+                cooldownTimer -= Time.deltaTime;
             }
 
-            // Auto-fire cooldown logic
-            if (fireCooldownTimer > 0f)
-            {
-                fireCooldownTimer -= Time.deltaTime;
-            }
-            else
+            // Auto-fire when cooldown ready
+            if (cooldownTimer <= 0f)
             {
                 Fire();
-                fireCooldownTimer = cooldown;
+                cooldownTimer = cooldown;
             }
         }
 
         /// <summary>
-        /// Abstract method - each weapon implements its own attack logic.
-        /// Called automatically when cooldown expires.
+        /// Fire the weapon (implemented by subclasses).
         /// </summary>
         protected abstract void Fire();
 
         /// <summary>
-        /// Find the nearest enemy within range using Physics2D overlap.
-        /// Optimized to avoid GameObject.FindGameObjectsWithTag.
+        /// Load base stats from WeaponData.
         /// </summary>
-        protected Transform FindNearestEnemy(float maxRange = 15f)
+        private void LoadStatsFromData()
         {
-            // Use OverlapCircle to find enemies in range (filtered by Layer)
-            // Assuming enemies are on an "Enemy" layer. If not, we can fall back or user needs to set it.
-            // For now, let's use a broad check or specific layer if we know it.
-            // Using a non-alloc version would be even better for GC, but OverlapCircle is already O(N) faster than FindWithTag.
-            
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, maxRange);
-            Transform nearest = null;
-            float minDistanceSqr = maxRange * maxRange;
-
-            foreach (var hit in hits)
-            {
-                if (hit.CompareTag("Enemy"))
-                {
-                    float distSqr = (hit.transform.position - transform.position).sqrMagnitude;
-                    if (distSqr < minDistanceSqr)
-                    {
-                        if (hit.TryGetComponent<EnemyHealth>(out var health) && health.IsAlive)
-                        {
-                            minDistanceSqr = distSqr;
-                            nearest = hit.transform;
-                        }
-                    }
-                }
-            }
-
-            return nearest;
+            damage = weaponData.baseDamage;
+            cooldown = weaponData.cooldown;
+            knockback = weaponData.knockback;
+            cooldownTimer = cooldown;
         }
 
         /// <summary>
-        /// Public API: Increase weapon damage.
-        /// Called by UpgradeManager for weapon damage upgrades.
+        /// Get final damage with all multipliers applied.
+        /// FIXED: Now properly integrates character damage multiplier.
+        /// </summary>
+        protected float GetFinalDamage()
+        {
+            // Base character multiplier
+            var selectedCharacter = Core.CharacterManager.SelectedCharacter;
+            float characterMultiplier = selectedCharacter != null ? selectedCharacter.baseDamageMultiplier : 1f;
+            
+            // Might upgrade multiplier
+            var playerHealth = PlayerController.Instance?.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                characterMultiplier *= playerHealth.characterDamageMultiplier;
+            }
+            
+            return damage * characterMultiplier;
+        }
+
+        // === PUBLIC UPGRADE API ===
+        
+        /// <summary>
+        /// Public API: Increase damage by multiplier.
+        /// Called by UpgradeManager for damage upgrades.
         /// </summary>
         public virtual void IncreaseDamage(float multiplier)
         {
+            float oldDamage = damage;
             damage *= multiplier;
+            Debug.Log($"⚔️ [{weaponData.displayName}] DAMAGE: {oldDamage:F1} → {damage:F1} (+{(damage - oldDamage):F1}, +{((multiplier - 1) * 100):F0}%)");
         }
 
         /// <summary>
-        /// Public API: Decrease weapon cooldown (increase fire rate).
-        /// Called by UpgradeManager for weapon speed upgrades.
+        /// Public API: Increase attack speed by reducing cooldown.
+        /// Called by UpgradeManager for attack speed upgrades.
         /// </summary>
         public virtual void IncreaseAttackSpeed(float multiplier)
         {
-            cooldown *= multiplier; // e.g., 0.9 = 10% faster (shorter cooldown)
+            float oldCooldown = cooldown;
+            cooldown *= multiplier;
+            Debug.Log($"⚡ [{weaponData.displayName}] ATTACK SPEED: {oldCooldown:F2}s → {cooldown:F2}s (-{((1 - multiplier) * 100):F0}% cooldown)");
         }
 
         /// <summary>
@@ -151,23 +124,24 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         public virtual void IncreaseKnockback(float multiplier)
         {
+            float oldKnockback = knockback;
             knockback *= multiplier;
+            Debug.Log($"💥 [{weaponData.displayName}] KNOCKBACK: {oldKnockback:F1} → {knockback:F1}");
         }
 
         /// <summary>
-        /// Get weapon data reference.
+        /// Public API: Upgrade weapon to next level.
+        /// Applies percentage-based bonuses to damage and cooldown.
         /// </summary>
-        public Data.WeaponData GetWeaponData() => weaponData;
-
-        /// <summary>
-        /// Get final damage with character multiplier applied.
-        /// Use this method when dealing damage to enemies.
-        /// </summary>
-        protected float GetFinalDamage()
+        public void UpgradeToLevel(int level, float damageBonus, float cooldownReduction)
         {
-            var selectedCharacter = Core.CharacterManager.SelectedCharacter;
-            float characterMultiplier = selectedCharacter != null ? selectedCharacter.baseDamageMultiplier : 1f;
-            return damage * characterMultiplier;
+            float oldDamage = damage;
+            float oldCooldown = cooldown;
+
+            damage += damageBonus;
+            cooldown -= cooldownReduction;
+
+            Debug.Log($"🔼 [{weaponData.displayName}] LEVEL {level}: Damage {oldDamage:F1}→{damage:F1}, Cooldown {oldCooldown:F2}s→{cooldown:F2}s");
         }
     }
 }

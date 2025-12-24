@@ -3,25 +3,39 @@ using UnityEngine;
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
-    /// Gold coin pickup - attracted to player via magnet, gives gold when collected.
-    /// Similar to XPGem but for gold currency.
+    /// Gold coin that spawns when enemies die.
+    /// REFACTORED: Made magnetRange public for upgrade system.
     /// </summary>
+    [RequireComponent(typeof(CircleCollider2D))]
     public class GoldCoin : MonoBehaviour
     {
-        [SerializeField] private int goldValue = 1;
-        [SerializeField] private float magnetRadius = 3f; // Distance at which player attracts coin
-        [SerializeField] private float magnetSpeed = 8f;
+        [Header("Gold Value")]
+        [SerializeField] private int goldAmount = 1;
+
+        [Header("Magnet Behavior")]
+        [HideInInspector] public float magnetRange = 3f; // NOW PUBLIC for upgrade system
+        [SerializeField] private float moveSpeed = 10f;
 
         private Transform player;
-        private bool isBeingAttracted = false;
+        private bool isBeingPulled = false;
+        private CircleCollider2D coinCollider;
+
+        private void Awake()
+        {
+            coinCollider = GetComponent<CircleCollider2D>();
+            coinCollider.isTrigger = true;
+        }
 
         private void Start()
         {
-            // Find player
             var playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null)
             {
                 player = playerObj.transform;
+            }
+            else
+            {
+                Debug.LogWarning("[GoldCoin] Player not found!");
             }
         }
 
@@ -29,56 +43,48 @@ namespace PixelVanguard.Gameplay
         {
             if (player == null) return;
 
-            // Check if player is within magnet range
-            float distance = Vector2.Distance(transform.position, player.position);
+            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-            if (distance <= magnetRadius)
+            if (distanceToPlayer <= magnetRange)
             {
-                isBeingAttracted = true;
+                isBeingPulled = true;
             }
 
-            // Move towards player if attracted
-            if (isBeingAttracted)
+            if (isBeingPulled)
             {
-                transform.position = Vector2.MoveTowards(
-                    transform.position,
-                    player.position,
-                    magnetSpeed * Time.deltaTime
-                );
+                MoveTowardPlayer();
             }
+        }
+
+        private void MoveTowardPlayer()
+        {
+            Vector3 direction = (player.position - transform.position).normalized;
+            transform.position += direction * moveSpeed * Time.deltaTime;
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            // Only collect when touching player
             if (collision.CompareTag("Player"))
             {
-                Collect();
+                CollectGold();
             }
         }
 
-        private void Collect()
+        private void CollectGold()
         {
-            // Fire gold collected event
-            Core.GameEvents.TriggerGoldCollected(goldValue);
-
-            // Destroy this coin
+            Core.GameEvents.TriggerGoldCollected(goldAmount);
             Destroy(gameObject);
         }
 
-        /// <summary>
-        /// Set the gold amount this coin gives (called by spawner).
-        /// </summary>
-        public void SetGoldValue(int value)
+        public void SetGoldAmount(int amount)
         {
-            goldValue = value;
+            goldAmount = amount;
         }
 
         private void OnDrawGizmosSelected()
         {
-            // Draw magnet radius in editor
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, magnetRadius);
+            Gizmos.DrawWireSphere(transform.position, magnetRange);
         }
     }
 }

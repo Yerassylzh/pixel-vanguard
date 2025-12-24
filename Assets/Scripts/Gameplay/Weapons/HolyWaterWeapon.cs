@@ -3,20 +3,21 @@ using UnityEngine;
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
-    /// Area Denial weapon (Holy Water / Sanctified Ground).
-    /// Spawns Damage zones at random offsets.
+    /// Holy Water weapon - Area denial with damage puddles.
     /// </summary>
     public class HolyWaterWeapon : WeaponBase
     {
         [Header("Puddle Setup")]
         [SerializeField] private GameObject puddlePrefab;
-        [SerializeField] private float spawnRadius = 3.5f; // Max distance from player
+        [SerializeField] private float spawnRadius = 3.5f;
         
-        [Header("Weapon Stats")]
-        // Stats are now loaded from WeaponData into base class fields: duration, tickRate
+        [Header("Holy Water Stats")]
+        [SerializeField] private float puddleDuration = 5f;
+        [SerializeField] private float damageTickRate = 0.5f;
 
-        // Upgrade capability
-        private int zoneCount = 1;
+        // Upgrade tracking
+        private float puddleRadiusMultiplier = 1.0f;
+        private float hpScalingPercent = 0f;
 
         protected override void Fire()
         {
@@ -26,33 +27,56 @@ namespace PixelVanguard.Gameplay
                 return;
             }
 
-            for (int i = 0; i < zoneCount; i++)
-            {
-                SpawnPuddle();
-            }
+            SpawnPuddle();
         }
 
         private void SpawnPuddle()
         {
-            // Find random valid position
-            // TODO: In future, check for obstacles so we don't spawn inside a wall
+            // Random position around player
             Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
             Vector3 spawnPos = player.position + (Vector3)randomOffset;
 
             GameObject puddleObj = Instantiate(puddlePrefab, spawnPos, Quaternion.identity);
             
-            // Connect logic
+            // Initialize puddle
             DamagePuddle puddleScript = puddleObj.GetComponent<DamagePuddle>();
             if (puddleScript != null)
             {
-                puddleScript.Initialize(duration, GetFinalDamage(), tickRate);
+                float finalDamage = GetFinalDamage();
+                
+                // Apply HP scaling if enabled
+                if (hpScalingPercent > 0f)
+                {
+                    var playerHealth = PlayerController.Instance?.Health;
+                    if (playerHealth != null)
+                    {
+                        float hpBonus = playerHealth.MaxHealth * hpScalingPercent;
+                        finalDamage += hpBonus;
+                    }
+                }
+                
+                puddleScript.Initialize(puddleDuration, finalDamage, damageTickRate);
             }
         }
 
-        // Optional: Custom upgrades for Duration/Area
+        // === UPGRADE API ===
+        
         public void UpgradeDuration(float percent)
         {
-            duration *= (1f + percent);
+            puddleDuration *= (1f + percent);
+            Debug.Log($"[HolyWater] Duration upgraded: {puddleDuration:F1}s");
+        }
+
+        public void MultiplyPuddleRadius(float multiplier)
+        {
+            puddleRadiusMultiplier *= multiplier;
+            Debug.Log($"[HolyWater] Radius multiplier: {puddleRadiusMultiplier:F2}x");
+        }
+
+        public void SetHPScaling(float percentPercentage)
+        {
+            hpScalingPercent = percentPercentage;
+            Debug.Log($"[HolyWater] HP Scaling: {hpScalingPercent * 100:F1}% of max HP");
         }
     }
 }

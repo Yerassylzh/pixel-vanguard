@@ -33,7 +33,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 5.16892, y: 35.91161, z: 0}
-  m_LocalScale: {x: 1.1, y: 1.1, z: 1}
+  m_LocalScale: {x: 1.3, y: 1.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6292681556478569047}
@@ -109,7 +109,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 0.8
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
@@ -136,12 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db4f954c39c1a784b945752f65a671f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.EnemyHealth
-  xpGemPrefab: {fileID: 226711286709867138, guid: cad8dc082a28d834788ee51d60b2d238, type: 3}
-  goldCoinPrefab: {fileID: 3260919468255876515, guid: 6fb0e4cfca856c943a432e41cd36f7ea, type: 3}
-  healthPotionPrefab: {fileID: 72700924762515949, guid: 3d3a46f25d8094849ab1ba3de24dfa6e, type: 3}
   enemyData: {fileID: 11400000, guid: 1822f2818c1d3134cb4e45862f1b3a34, type: 2}
-  currentHealth: 0
-  isAlive: 1
 --- !u!95 &8564176535590887073
 Animator:
   serializedVersion: 7

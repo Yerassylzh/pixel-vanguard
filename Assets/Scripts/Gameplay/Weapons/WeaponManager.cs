@@ -182,6 +182,53 @@ namespace PixelVanguard.Gameplay
 
             return weaponObj;
         }
+
+        /// <summary>
+        /// Get all weapon instances of a specific type.
+        /// </summary>
+        public List<WeaponInstance> GetWeaponInstancesByType(Data.WeaponType type)
+        {
+            var result = new List<WeaponInstance>();
+            
+            foreach (var weaponInst in equippedWeapons)
+            {
+                if (weaponInst?.weaponData?.type == type)
+                {
+                    result.Add(weaponInst);
+                }
+            }
+            
+            return result;
+        }
+        
+        /// <summary>
+        /// Spawn a mirrored greatsword for Mirror Slash upgrade.
+        /// </summary>
+        public void SpawnMirrorGreatsword()
+        {
+            // Find existing greatsword
+            var greatswords = GetWeaponInstancesByType(Data.WeaponType.Greatsword);
+            if (greatswords.Count == 0)
+            {
+                Debug.LogWarning("[WeaponManager] No greatsword equipped for Mirror Slash!");
+                return;
+            }
+            
+            var original = greatswords[0];
+            
+            // Spawn mirrored copy
+            GameObject mirror = Instantiate(original.weaponObject, transform);
+            mirror.transform.SetParent(null); // Greatsword handles its own positioning
+            mirror.name = "Greatsword (Mirror)";
+            
+            var mirrorWeapon = mirror.GetComponent<GreatswordWeapon>();
+            if (mirrorWeapon != null)
+            {
+                mirrorWeapon.isMirror = true;
+            }
+            
+            Debug.Log("[WeaponManager] Mirror Slash activated!");
+        }
     }
 
     /// <summary>

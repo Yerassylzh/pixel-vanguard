@@ -65,7 +65,7 @@ public enum UnlockType {
 | Character | ID | HP | Speed | Damage Mult | Starter Weapon | Unlock Type | Cost/Requirement |
 |-----------|----|----|-------|-------------|----------------|-------------|------------------|
 | **The Knight** | `knight` | 100 | 5.0 | 1.0x | Greatsword | FreeStarter | Always unlocked |
-| **The Pyromancer** | `pyromancer` | 80 | 5.0 | 1.2x | HolyWater | Ads | Watch 5 ads |
+| **The Pyromancer** | `pyromancer` | 80 | 5.0 | 1.2x | HolyWater | FreeStarter | Always unlocked |
 | **The Ranger** | `ranger` | 100 | 6.5 | 1.0x | AutoCrossbow | Gold | 1500 gold |
 | **The Zombie** | `zombie` | 130 | 4.0 | 0.9x | Greatsword | Gold | 2500 gold |
 | **Santa Claus** | `santa` | 90 | 6.0 | 1.1x | MagicOrbitals | Ads | Watch 10 ads |
@@ -140,7 +140,7 @@ public class UpgradeScaling {
 **Attack Pattern:** Rests at side → Swings → Returns to rest  
 **Damage:** 15 (high)  
 **Cooldown:** 2.5s (between swings)  
-**Knockback:** 5 (high)
+**Knockback:** 100 (high)
 
 | Level | Damage | Cooldown | Special Effect |
 |-------|--------|----------|----------------|
@@ -161,7 +161,7 @@ public class UpgradeScaling {
 **Behavior:** Fires arrows at nearest enemy  
 **Damage:** 10 (medium)  
 **Cooldown:** 1.0s  
-**Knockback:** 3 (medium)
+**Knockback:** 45 (medium)
 
 | Level | Damage | Cooldown | Arrows | Pierce |
 |-------|--------|----------|--------|--------|
@@ -182,7 +182,7 @@ public class UpgradeScaling {
 **Behavior:** Throws flask creating damage puddle  
 **Damage:** 5/tick (DoT)  
 **Cooldown:** 3.0s  
-**Knockback:** 0
+**Knockback:** 20
 
 | Level | Damage/Tick | Duration | Puddle Radius | Tick Rate |
 |-------|-------------|----------|---------------|-----------|
@@ -201,8 +201,8 @@ public class UpgradeScaling {
 **Script:** MagicOrbitalsWeapon.cs  
 **Behavior:** Shields continuously orbit player  
 **Damage:** 8 (low-medium)  
-**Cooldown:** 0.5s  
-**Knockback:** 3 (medium)
+**Cooldown:** 0.5s (continuous damage)  
+**Knockback:** 50 (medium)
 
 | Level | Damage | Shield Count | Orbit Speed | Orbit Radius |
 |-------|--------|--------------|-------------|--------------|
@@ -247,17 +247,23 @@ public class EnemyData : ScriptableObject {
     [Header("Identity")]
     public string enemyID; // e.g., "skeleton"
     public string displayName;
+    public string enemyName; // Added Dec 24 - Name property
     
     [Header("Stats")]
     public float maxHealth = 20f;
     public float moveSpeed = 3f;
     public float contactDamage = 5f;
     public float weightResistance = 0f; // 0-1, higher = harder to knock back
-    
-    [Header("Loot")]
+   
+    [Header("Loot Drops")]
     public int xpDrop = 5;
     public int goldDrop = 1;
     public float healthPotionDropChance = 0.05f; // 5%
+    
+    [Header("Loot Prefabs (ADDED DEC 24)")]
+    public GameObject xpGemPrefab;
+    public GameObject goldCoinPrefab;
+    public GameObject healthPotionPrefab;
     
     [Header("Spawn Config")]
     public int spawnWeight = 10; // Higher = more common
@@ -269,17 +275,17 @@ public class EnemyData : ScriptableObject {
 }
 ```
 
-**Example Enemy Roster:**
+## Enemy Roster
 
-| Enemy | HP | Speed | XP | Weight | Min Time |
-|-------|----|----|----|----|----------|
-| Skeleton | 20 | 3 | 5 | 10 | 0:00 |
-| Crawler | 15 | 6 | 8 | 15 | 1:00 |
-| **Goblin** | 25 | 5 | 7 | 10 | 1:30 |
-| **Ghost** | 30 | 4 | 12 | 5 | 2:30 |
-| Armored Orc | 50 | 2 | 15 | 5 | 3:30 |
-| **Slime** | 80 | 2 | 20 | 2 | 4:30 |
-| Abomination (Boss) | 500 | 1 | 100 | 2 | 5:00 |
+| Enemy | ID | HP | Speed | Damage | XP | Gold % | Potion % | Weight | Resistance | Min Time |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Skeleton Grunt** | `skeleton_grunt` | 10 | 1.25 | 5 | 5 | 25% | 3% | 10 | 0.0 | 0:00 |
+| **Crawler** | `crawler` | 15 | 1.6 | 8 | 8 | 30% | 4% | 5 | 0.1 | 1:00 |
+| **Goblin** | `goblin` | 25 | 2.2 | 7 | 5 | 35% | 5% | 10 | 0.0 | 1:30 |
+| **The Ghost** | `ghost` | 30 | 1.5 | 5 | 12 | 40% | 6% | 10 | 0.0 | 2:30 |
+| **Armored Orc** | `armored_orc` | 80 | 1.2 | 10 | 15 | 80% | 8% | 3 | 0.7 | 2:00 |
+| **The Abomination (Boss)** | `abomination` | 200 | 1.75 | 20 | 50 | 100% | 25% | 1 | 0.9 | 3:00 |
+| **Slime** | `slime` | 80 | 1.7 | 5 | 20 | 60% | 10% | 10 | 0.0 | 4:30 |
 
 ---
 

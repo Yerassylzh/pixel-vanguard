@@ -17,23 +17,9 @@ MonoBehaviour:
   description: Rapid-fire arrow launcher
   icon: {fileID: 0}
   type: 2
-  baseDamage: 10
-  cooldown: 1
-  knockback: 3
-  upgrades:
-  - level: 2
-    damageMultiplier: 1.2
-    cooldownReduction: 1
-    knockbackMultiplier: 1
-    specialUpgrade: Double shot
-  - level: 3
-    damageMultiplier: 1.25
-    cooldownReduction: 0.8
-    knockbackMultiplier: 1
-    specialUpgrade: 'Pierce 1 enemy '
-  - level: 4
-    damageMultiplier: 1.33
-    cooldownReduction: 1
-    knockbackMultiplier: 1
-    specialUpgrade: Triple shot, pierce 2
+  baseDamage: 7
+  cooldown: 1.5
+  knockback: 45
+  baseDuration: 0
+  baseTickRate: 0
   prefab: {fileID: 0}

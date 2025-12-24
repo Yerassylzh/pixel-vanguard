@@ -4,6 +4,7 @@ namespace PixelVanguard.Gameplay
 {
     /// <summary>
     /// Manages player health and damage reception.
+    /// Integrated with characterDamageMultiplier for Might upgrade.
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public class PlayerHealth : MonoBehaviour
@@ -14,6 +15,9 @@ namespace PixelVanguard.Gameplay
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
+
+        [Header("Damage Multiplier")]
+        [HideInInspector] public float characterDamageMultiplier = 1f; // For Might upgrade
 
         [Header("Damage Cooldown")]
         [SerializeField] private float damageCooldown = 1f; // Seconds between taking damage
@@ -164,13 +168,15 @@ namespace PixelVanguard.Gameplay
             if (selectedCharacter != null)
             {
                 maxHealth = selectedCharacter.maxHealth;
-                Debug.Log($"[PlayerHealth] Loaded character stats: MaxHP={maxHealth}");
+                characterDamageMultiplier = selectedCharacter.baseDamageMultiplier; // Initialize from character
+                Debug.Log($"[PlayerHealth] Loaded character stats: MaxHP={maxHealth}, DamageMulti={characterDamageMultiplier}");
             }
             else
             {
                 // Fallback to default if no character selected
                 maxHealth = 100f;
-                Debug.LogWarning("[PlayerHealth] No character selected, using default max HP: 100");
+                characterDamageMultiplier = 1f;
+                Debug.LogWarning("[PlayerHealth] No character selected, using defaults: HP=100, DamageMult=1");
             }
         }
     }

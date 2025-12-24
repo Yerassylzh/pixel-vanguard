@@ -89,17 +89,17 @@ namespace PixelVanguard.UI
                 // Set button labels
                 if (option1Text != null && option1Upgrade != null)
                 {
-                    option1Text.text = $"{option1Upgrade.upgradeName}\n<size=14>{option1Upgrade.description}</size>";
+                    option1Text.text = $"{option1Upgrade.upgradeName}\n<size=19>{option1Upgrade.description}</size>";
                 }
 
                 if (option2Text != null && option2Upgrade != null)
                 {
-                    option2Text.text = $"{option2Upgrade.upgradeName}\n<size=14>{option2Upgrade.description}</size>";
+                    option2Text.text = $"{option2Upgrade.upgradeName}\n<size=19>{option2Upgrade.description}</size>";
                 }
 
                 if (option3Text != null && option3Upgrade != null)
                 {
-                    option3Text.text = $"{option3Upgrade.upgradeName}\n<size=14>{option3Upgrade.description}</size>";
+                    option3Text.text = $"{option3Upgrade.upgradeName}\n<size=19>{option3Upgrade.description}</size>";
                 }
             }
             else

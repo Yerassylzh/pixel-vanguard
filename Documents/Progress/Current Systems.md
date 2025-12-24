@@ -34,11 +34,29 @@
 
 ---
 
-## Player Systems
+## Player Systems (REFACTORED DEC 24)
+
+### PlayerController (Singleton)
+- Central reference point for weapons and systems
+- **Access:** `PlayerController.Instance.transform`
+- **Coordinates:** Other player components
+
+### PlayerMovement
+- Rigidbody2D-based movement logic  
+- **Speed:** 5.0 units/sec default, upgradeable
+- **Diagonal normalized:** Prevents faster diagonal movement
+- **State blocking:** Pauses during level-up/game-over
+
+### PlayerInput
+- New Input System integration
+- **Desktop:** WASD + Arrow keys (PlayerInputActions)
+- **Mobile:** VirtualJoystick (floating touch)
+- **Platform detection:** Auto-switches based on `PlatformDetector.IsMobile()`
 
 ### PlayerHealth
 - **HP:** 100 default (from CharacterData.maxHealth)
 - **Damage Cooldown:** 1 second
+- **Passive Storage:** lifestealPercent, goldBonusMultiplier, characterDamageMultiplier
 - **Triggers:** OnPlayerDeath when HP ≤ 0
 
 ### VirtualJoystick
@@ -54,12 +72,12 @@
 ### Universal Architecture
 - **WeaponBase** - Abstract base class
   - Auto-fire system (cooldown timer in Update())
-  - Stats: `damage`, `cooldown`, `knockback`, `duration`, `tickRate`
-  - `FindNearestEnemy(range)` helper
+  - Stats: `damage`, `cooldown`, `knockback` (duration/tickRate are weapon-specific)
   - `GetFinalDamage()` applies character damage multiplier
+  - Direct damage: All weapons call `EnemyHealth.TakeDamage()` directly
 
 ### Utility Classes
-- **EnemyDamageUtility** - Centralizes enemy tag check + damage application
+- **TargetingUtility** - Finds unique enemy targets for multi-shot weapons
 - **ShaderHelper** - Creates reveal material instances for VFX
 
 ### Weapon Implementations

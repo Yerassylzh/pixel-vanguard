@@ -1,264 +1,376 @@
-# Pixel Vanguard - System Architecture Overview
+# Pixel Vanguard - System Architecture
 
-**Purpose:** Quick context recovery for AI/developers returning to project  
-**Last Updated:** 2025-12-20
+**Purpose:** Master technical reference for AI/developers  
+**Last Updated:** 2024-12-24  
+**Status:** Core systems complete, documentation consolidated
+
+> 💡 **Quick Start:** Read Core Loop → Player System → Weapon System → Upgrade System
 
 ---
 
-## 🎮 Game Core
+## 🎮 Game Overview
 
 **Genre:** Horde Survivor / Action Roguelite (Vampire Survivors-like)  
 **Platform:** Unity 2D (Desktop + Mobile)  
-**Architecture:** Service Locator + Event-Driven + ScriptableObject Data
-
----
-
-## 📊 Complete System Map
+**Architecture:** Component-based + Service Locator + Event Bus + ScriptableObject Data
 
 ### Core Loop
 ```
 Spawn → Fight → Collect XP → Level Up → Choose Upgrade → Repeat → Die → Stats → Restart
 ```
 
-### Systems (9 Core)
-1. **Player** - Movement, health, singleton reference
-2. **Characters** - Selection, stat loading, prefab spawning via CharacterManager
-3. **Weapons** - 4 types, auto-fire, upgrades via WeaponManager
-4. **Enemies** - AI chase, spawning, health, XP drops
-5. **Progression** - XP collection, leveling, upgrade selection
-6. **UI** - HUD, level-up panel, pause, game over
-7. **Input** - Platform-aware (WASD/arrows + joystick)
-8. **Services** - Save/load, platform detection, ads (架構)
-9. **Camera** - Cinemachine follow
+### Technology Stack
+- **Engine:** Unity 2022+ (2D URP)
+- **Input:** New Input System + Virtual Joystick (mobile)
+- **Camera:** Cinemachine Virtual Camera
+- **Pattern:** Service Locator for cross-cutting concerns
 
 ---
 
-## 🗡️ WEAPON SYSTEM (Most Complex)
+## 📊 System Architecture
+
+### 9 Core Systems
+1. **Player** - Movement, health, input, animations (4 components)
+2. **Characters** - Selection, stat loading, spawning  
+3. **Weapons** - 4 types, auto-fire, upgrade system
+4. **Enemies** - AI, waves spawning, loot drops
+5. **Progression** - XP/Gold collection, leveling
+6. **Upgrades** - 18 types with rarity weighting
+7. **UI** - HUD, menus, platform-aware joystick
+8. **Services** - Save/load, platform detection
+9. **Camera** - Cinemachine player follow
+
+---
+
+## 👤 PLAYER SYSTEM (REFACTORED DEC 24)
+
+### Architecture: Split into 4 Components
+
+#### PlayerController (Singleton)
+```csharp
+// Purpose: Central reference point for weapons and systems
+// Location: Assets/Scripts/Gameplay/Player/PlayerController.cs
+
+public static PlayerController Instance { get; private set; }
+public Transform transform; // Accessed by weapons for positioning
+```
+
+**Responsibilities:**
+- Provides singleton instance
+- Coordinates other player components
+- Houses player transform reference
+
+---
+
+#### PlayerMovement
+```csharp
+// Purpose: Rigidbody2D-based movement logic
+// Location: Assets/Scripts/Gameplay/Player/PlayerMovement.cs
+
+private Rigidbody2D rb;
+private float moveSpeed;
+
+void FixedUpdate()
+{
+    Vector2 movement = playerInput.GetMovementInput();
+    rb.linearVelocity = movement * moveSpeed;
+}
+```
+
+**Responsibilities:**
+- Rigidbody2D physics movement
+- Speed modifiers from upgrades
+- Diagonal movement normalization
+
+---
+
+#### PlayerInput
+```csharp
+// Purpose: Platform-aware input handling
+// Location: Assets/Scripts/Gameplay/Player/PlayerInput.cs
+
+private PlayerInputActions inputActions; // New Input System
+private VirtualJoystick virtualJoystick;
+private PlatformDetector platformDetector;
+
+Vector2 GetMovementInput()
+{
+   if (platformDetector.IsMobile()) 
+        return virtualJoystick.Direction;
+    return inputActions.Player.Move.ReadValue<Vector2>();
+}
+```
+
+**Responsibilities:**
+- New Input System integration (WASD/Arrows)
+- Virtual Joystick for mobile
+- Platform detection and switching
+- State-aware input (blocks during pause/levelup)
+
+---
+
+#### PlayerHealth
+```csharp
+// Purpose: HP management and passive upgrade storage
+// Location: Assets/Scripts/Gameplay/Player/PlayerHealth.cs
+
+private int currentHealth;
+private int maxHealth;
+
+// Passive upgrade storage
+public float characterDamageMultiplier = 1f; // Might upgrade
+public float lifestealPercent = 0f;         // Lifesteal
+public float goldBonusMultiplier = 1f;       // Lucky Coins
+```
+
+**Responsibilities:**
+- HP tracking and damage cooldown
+- Stores passive upgrade values
+- Triggers OnPlayerDeath event
+
+---
+
+## 🗡️ WEAPON SYSTEM
 
 ### 4 Weapon Types
 
-| Weapon | Type Enum | Script | Behavior |
-|--------|-----------|--------|----------|
-| Greatsword | `Greatsword` | GreatswordWeapon.cs | Periodic 360° swing (2.5s cooldown) |
-| AutoCrossbow | `Crossbow` | AutoCrossbowWeapon.cs | Fires arrows at enemies |
-| HolyWater | `HolyWater` | HolyWaterWeapon.cs | Spawns "Sanctified Ground" fire zone (area denial) |
-| MagicOrbitals | `MagicOrbitals` | MagicOrbitalsWeapon.cs | Shields orbit continuously |
+| Weapon | Script | Behavior |
+|--------|--------|----------|
+| Greatsword | GreatswordWeapon.cs | Periodic 360° swing with shader reveal |
+| AutoCrossbow | AutoCrossbowWeapon.cs | Fires arrows at unique targets |
+| HolyWater | HolyWaterWeapon.cs | Spawns DoT damage puddles |
+| MagicOrbitals | MagicOrbitalsWeapon.cs | Shields orbit player continuously |
 
-### Weapon Architecture
+### WeaponBase (Abstract Parent)
+```csharp
+// All weapons inherit from this base class
+
+protected float damage;      // Base damage (from WeaponData)
+protected float cooldown;     // Fire rate
+protected float knockback;    // Knockback force
+
+// Auto-fire system
+protected virtual void Update()
+{
+    if (cooldownTimer <= 0f) {
+        Fire();
+        cooldownTimer = cooldown;
+    }
+    cooldownTimer -= Time.deltaTime;
+}
+
+// Upgrade API
+public virtual void IncreaseDamage(float multiplier);
+public virtual void IncreaseAttackSpeed(float multiplier);
+public virtual void IncreaseKnockback(float multiplier);
+
+// Damage calculation (includes character multiplier)
+protected float GetFinalDamage()
+{
+    float characterMultiplier = CharacterManager.SelectedCharacter.baseDamageMultiplier;
+    characterMultiplier *= PlayerHealth.characterDamageMultiplier; // Might upgrade
+    return damage * characterMultiplier;
+}
 ```
-WeaponBase (abstract)
-├── Properties: damage, cooldown, knockback, weaponData
-├── Methods: Fire() [abstract], UpgradeToLevel(), IncreaseDamage(), IncreaseAttackSpeed()
-├── Singleton ref: PlayerController.Instance.transform
-│
-├── GreatswordWeapon
-│   └── State machine: Idle → Swing → Idle
-├── AutoCrossbowWeapon
-│   └── Spawns ArrowProjectile prefabs
-├── HolyWaterWeapon
-│   └── Spawns DamagePuddle prefabs
-└── MagicOrbitalsWeapon
-    └── Continuous orbit calculation
-```
+
+**Key Pattern:** All weapons call `EnemyHealth.TakeDamage()` directly
+
+---
 
 ### WeaponManager (Orchestrator)
 ```csharp
-// Located on: Player GameObject
-// Max weapons: 4 simultaneous
-// Auto-equips: Greatsword on start
+// Location: Player GameObject
+// Manages up to 4 equipped weapons simultaneously
 
 Key Methods:
 - EquipWeapon(WeaponData) → Instantiate + track
-- UpgradeWeapon(weaponID) → Level up specific weapon
+- UpgradeWeapon(weaponID) → Level up specific weapon  
 - GetEquippedWeapons() → List<WeaponInstance>
-
-Prefab Mapping (via enum):
-- Greatsword → greatswordPrefab
-- MagicOrbitals → magicOrbitalsPrefab
-- Crossbow → autoCrossbowPrefab
-- HolyWater → holyWaterPrefab
-```
-
-### WeaponData (ScriptableObjects)
-```
-Location: Assets/ScriptableObjects/Weapons/
-Files: Greatsword.asset, AutoCrossbow.asset, HolyWater.asset, MagicOrbitals.asset
-
-Structure:
-- weaponID: string (lowercase identifier)
-- displayName: string (UI display)
-- type: WeaponType enum
-- baseDamage, cooldown, knockback
-- baseDuration (for timed effects like HolyWater)
-- baseTickRate (for DoT weapons)
-
-Note: NO per-weapon upgrades! All upgrades are universal.
+- IsWeaponEquipped(WeaponType) → bool
 ```
 
 ---
 
 ## 🎯 UPGRADE SYSTEM
 
-### UpgradeManager
-```csharp
-// Uses: WeaponManager to apply to ALL equipped weapons
-// NOT weapon-specific anymore!
+### 18 Upgrade Types
 
-Upgrade Types:
-1. PlayerMoveSpeed → Multiplies player.moveSpeed
-2. PlayerMaxHP → Adds to max health
-3. WeaponAttackSpeed → Calls weapon.IncreaseAttackSpeed() for ALL
-4. WeaponDamage → Calls weapon.IncreaseDamage() for ALL
-5. NewWeapon → Equips a new weapon (max 4 total)
+#### Universal (4)
+- **Move Speed** - Increases player movement
+- **Max HP** - Increases health pool
+- **Weapon Damage** - Boosts ALL weapons
+- **Attack Speed** - Faster cooldowns for ALL weapons
 
-Flow:
-Level Up → GetRandomUpgrades(3) → Player picks → ApplyUpgrade()
-```
+#### New Weapons (4)
+- Greatsword, AutoCrossbow, HolyWater, MagicOrbitals
 
-### Key Fix (2025-12-14):
-❌ **OLD:** Only upgraded Greatsword  
-✅ **NEW:** Loops through `weaponManager.GetEquippedWeapons()` and upgrades ALL
+#### Greatsword (3)
+- **Mirror Slash** - Spawns 2nd sword at 180°
+- **Executioner's Edge** - +50% damage
+- **Berserker Fury** - -30% cooldown
 
----
+#### AutoCrossbow (3)
+- **Dual Shot** - Fires 2 arrows at unique targets
+- **Triple Barrage** - Fires 3 arrows
+- **Piercing Bolts** - Arrows pierce through enemies
 
-## 👤 PLAYER SYSTEM
+#### HolyWater (3)
+- **Sanctified Expansion** - +40% puddle radius
+- **Burning Touch** - +6% of enemy max HP as damage
+- **Eternal Flame** - 2x puddle duration
 
-### PlayerController
-```csharp
-// Singleton: PlayerController.Instance (accessed by weapons)
-// Input: New Input System
-// Movement: WASD/Arrows (desktop) + Floating joystick (mobile)
-// Speed: Upgradeable via reflection (no public setter yet)
+#### MagicOrbitals (2)
+- **Expanded Orbit** - +50% orbit radius
+- **Overcharged Spheres** - +100% damage
 
-State Checking:
-- Respects GameManager.CurrentState
-- Blocks input when paused
-```
-
-### PlayerHealth
-```csharp
-// HP management with events
-// Public API: IncreaseMaxHealth(int amount)
-// Event: OnPlayerDeath → GameManager triggers game over
-```
+#### Passive (3, max 3 selected)
+- **Lifesteal** - 10% healing on hit (stored, not integrated yet)
+- **Magnet** - +100% XP/Gold/Potion pickup range
+- **Lucky Coins** - +80% gold from enemies (stored, not applied yet)
 
 ---
 
-## 🎭 CHARACTER SYSTEM
-
-### CharacterManager
+### Rarity System
 ```csharp
-// Static access to selected character
-CharacterManager.SelectedCharacter → CharacterData
-CharacterManager.SpawnedPlayer → GameObject
+Rarity Weight Distribution:
+- Common:    100 weight (~53% chance)
+- Uncommon:   50 weight (~26% chance)  
+- Rare:       25 weight (~13% chance)
+- Epic:       10 weight (~5% chance)
+- Passive:    30 weight (~16% chance)
 
-// Spawns player prefab from CharacterData.characterPrefab
-// Validates: tags, layers, components, sprite sorting
-// Auto-assigns: Cinemachine camera target
+Selection Algorithm:
+1. Filter valid upgrades (not already applied, weapon ownership)
+2. Calculate totalWeight = sum(upgrade.rarityWeight)
+3. Pick random value [0, totalWeight)
+4. Return first upgrade where accumulatedWeight > randomValue
 ```
 
-### CharacterData (ScriptableObjects)
-```
-Location: Assets/ScriptableObjects/Characters/
+---
 
-Structure:
-- characterID: string (unique identifier)
-- displayName: string (UI display)
-- Max HP, Move Speed, Damage Multiplier
-- Starter Weapon: WeaponData reference
-- Character Prefab: GameObject with all player components
-- Unlock Type: FreeStarter / Gold / Ads
-```
-
-### Stat Loading
+### UpgradeManager (Implementation)
 ```csharp
-PlayerController.LoadCharacterStats() → sets moveSpeed
-PlayerHealth.LoadCharacterStats() → sets maxHealth
-WeaponManager.Start() → equips starterWeapon
-WeaponBase.GetFinalDamage() → applies baseDamageMultiplier
+// Filters and applies upgrades to ALL equipped weapons
+
+Key Flow:
+1. GetRandomUpgrades(3) → Returns 3 weighted, validated upgrades
+2. ApplyUpgrade(UpgradeData) → Distributes to correct system
+3. Tracks applied upgrades (prevents duplicates)
+
+Weapon-Specific Pattern:
+if (weaponScript is AutoCrossbowWeapon crossbow) {
+    crossbow.SetMultiShot(arrowCount);
+}
 ```
 
 ---
 
 ## 👾 ENEMY SYSTEM
 
-### EnemyAI
-```csharp
-// Chases: PlayerController.Instance.transform
-// Movement: Simple Vector2.MoveTowards
-// Tag: "Enemy" (required for weapon collision)
-```
-
 ### EnemySpawner
-```csharp
-// Spawns: At screen edges (off-camera)
-// Difficulty: Scales over time (more frequent, more HP)
-// Continuous: Every spawnInterval seconds
-```
+- Spawns at screen edges based on game time
+- Weighted spawn rates per enemy type
+- Uses `EnemyData` ScriptableObjects
+
+### EnemyAI
+- Simple chase behavior (moves toward player)
+- Direct vector pathfinding (no nav mesh)
+- Pauses when game paused or dead
 
 ### EnemyHealth
 ```csharp
-// Damage: TakeDamage(damage, knockback direction, knockback force)
-// Death: Spawns XP gem
-// Tag: "Enemy" (required)
+// Health, knockback, loot drops
+
+void TakeDamage(float damage, Vector2 knockbackDir, float knockbackForce)
+{
+    currentHealth -= damage;
+    ApplyKnockback(knockbackDir, knockbackForce);
+    if (currentHealth <= 0) {
+        DropLoot();
+        Destroy(gameObject);
+    }
+}
+
+float actualKnockback = knockbackForce * (1f - enemyData.weightResistance);
+rb.AddForce(knockbackDirection * actualKnockback, ForceMode2D.Force);
+```
+
+### EnemyData (ScriptableObject)
+```csharp
+public class EnemyData : ScriptableObject
+{
+    [Header("Stats")]
+    public int maxHealth;
+    public float moveSpeed;
+    public float damage;
+    public float weightResistance; // 0-1, knockback resistance
+    
+    [Header("Loot")]
+    public float xpDropAmount;
+    public float goldDropChance;
+    public float healthPotionDropChance;
+    
+    [Header("Loot Prefabs")]
+    public GameObject xpGemPrefab;
+    public GameObject goldCoinPrefab;
+    public GameObject healthPotionPrefab;
+    
+    [Header("Spawning")]
+    public int spawnWeight;
+    public float minGameTimeSeconds;
+    public GameObject prefab;
+}
 ```
 
 ---
 
-## 📈 PROGRESSION
+## 🌟 PROGRESSION SYSTEM
 
-### XPGem
+### XP & Leveling
 ```csharp
-// Magnet: Attracted to player when in range
-// Collection: Triggers GameEvents.TriggerXPGained()
-// Visual: All gems identical (cyan square) - NO size/color differentiation by value
-// Note: Future enhancement - differentiate by size/particles/color based on XP amount
-```
-
-### Loot Drops
-```
-✅ XP Gems: Fully implemented (left-up offset, magnet pickup)
-✅ Gold Drops: Fully implemented (right-up offset, magnet pickup, chance-based)
-✅ Health Potions: Fully implemented (prefab, chance-based, smart pickup)
-```
-
-### Leveling
-```
 XP Required = level * 10
-Level up → Pause game → Show LevelUpPanel → Select upgrade → Resume
+Level 1: 10 XP
+Level 2: 20 XP
+Level 3: 30 XP
+...
 ```
+
+### Collectibles
+
+**XPGem**
+- Magnet range: 3f default, upgradeable
+- Auto-collects on proximity
+- Grants XP based on enemy type
+
+**GoldCoin**
+- Magnet range: 3f default
+- Grants gold for shop (future feature)
+- Drop rates vary by enemy
+
+**HealthPotion**
+- Smart pickup: Only if damaged
+- Magnet range: 2f default
+- Restores 25 HP
 
 ---
 
-## 🎨 UI SYSTEM
+## 🎨 Passive Upgrades Integration
 
-### HUD
+### Storage Locations
 ```csharp
-// Shows: HP bar, XP bar, Level, Timer, Kill count
-// Updates: Via event listeners
-// Platform: Visible on all platforms
+// PlayerHealth.cs
+public float characterDamageMultiplier = 1f; // Might upgrade
+public float lifestealPercent = 0f;          // Lifesteal
+public float goldBonusMultiplier = 1f;       // Lucky Coins
+
+// XPGem.cs / GoldCoin.cs / HealthPotion.cs
+private float magnetRange = 3f;              // Magnet upgrade
 ```
 
-###LevelUpPanel
-```csharp
-// Shows: 3 random upgrade cards
-// Pauses: Game while selecting
-// Cards: Generated from UpgradeManager.GetRandomUpgrades()
-```
-
-### PauseMenu
-```csharp
-// Toggle: ESC (desktop) or button (mobile)
-// Platform-aware: Button visibility
-// State: Uses GameManager.SetPaused(true/false)
-```
-
-### GameOverScreen
-```csharp
-// Shows: Final stats (time, kills, XP)
-// Data: From GameSession
-// Actions: Restart scene
-```
+### Integration Status
+✅ **Magnet** - Fully integrated (increases pickup range)  
+⚠️ **Lifest eal** - Stored, needs integration in weapon hit events  
+⚠️ **Gold Bonus** - Stored, needs application in `EnemyHealth.DropLoot()`
 
 ---
 
@@ -266,262 +378,138 @@ Level up → Pause game → Show LevelUpPanel → Select upgrade → Resume
 
 ### Platform Detection
 ```csharp
-// PlatformDetector singleton
-// Auto-detects: Mobile vs Desktop
-// Force modes: AlwaysMobile, AlwaysDesktop (for testing)
+PlatformDetector.IsMobile() → bool
+
+Desktop: WASD + Arrow keys (New Input System)
+Mobile:  Virtual Joystick (floating anchor)
 ```
 
-### VirtualJoystick
-```csharp
-// Type: Floating (appears where touched)
-// Raycast blocking: Ignores UI elements
-// Visibility: Mobile only
-```
+### Virtual Joystick
+- Appears on first touch
+- Parent-space coordinates
+- Auto-hides on release
+- Disables during pause/levelup
 
 ---
 
-## 💾 SAVE SYSTEM (Architecture Only)
+## 🏗️ Service Architecture
 
-### ISaveService
+### ServiceLocator Pattern
 ```csharp
-// Interface for platform-specific saves
-// Implementations: PlayerPrefsSaveService (local), YandexSaveService (cloud)
-
-SaveData structure:
-- High scores
-- Stat levels (Dictionary → List conversion for Unity JSON)
-- Ad watch progress
+ServiceLocator.Register<ISaveService>(new PlayerPrefsSaveService());
+var saveService = ServiceLocator.Get<ISaveService>();
 ```
 
-### GameSession
-```csharp
-// Runtime stats: playTime, totalKills, totalXPGained
-// NOT persistent (resets each run)
-```
+**Available Services:**
+- `ISaveService` - Player prefs save/load
+- `IAdService` - Ad integration (NoAdService default)
+- `IPlatformService` - Platform-specific features
 
 ---
 
-## 🏗️ ARCHITECTURE PATTERNS
+## 📁 File Structure
 
-### 1. Service Locator
-```csharp
-ServiceLocator.Get<ISaveService>()
-ServiceLocator.Get<IPlatform Service>()
-```
-
-### 2. Singleton
-```csharp
-PlayerController.Instance
-GameManager.Instance
-PlatformDetector.Instance
-```
-
-### 3. ScriptableObject Data
-```csharp
-WeaponData, UpgradeData, EnemyData (all create via Assets menu)
-```
-
-### 4. Event System
-```csharp
-PlayerHealth.OnPlayerDeath
-PlayerController.OnLevelUp
-```
-
----
-
-## 📁 CRITICAL FILE LOCATIONS
-
-### Scripts
 ```
 Assets/Scripts/
-├── Core/
-│   ├── ServiceLocator.cs
-│   └── GameManager.cs
-├── Data/
-│   ├── WeaponData.cs (+ enum WeaponType)
-│   └── UpgradeData.cs (+ enum UpgradeType)
-├── Gameplay/
-│   ├── Player/
-│   │   ├── PlayerController.cs (SINGLETON)
-│   │   └── PlayerHealth.cs
-│   ├── Weapons/
-│   │   ├── WeaponBase.cs (ABSTRACT)
+├── Core/ (4 files)
+│   ├── CharacterManager.cs
+│   ├── GameEvents.cs
+│   ├── PlatformDetector.cs
+│   └── ServiceLocator.cs
+│
+├── Data/ (4 ScriptableObject definitions)
+│   ├── CharacterData.cs
+│   ├── EnemyData.cs
+│   ├── UpgradeData.cs
+│   └── WeaponData.cs
+│
+├── Gameplay/ (26 files)
+│   ├── Player/ (4 - REFACTORED DEC 24)
+│   │   ├── PlayerController.cs (Singleton)
+│   │   ├── PlayerMovement.cs (NEW)
+│   │   ├── PlayerInput.cs (NEW)
+│   │   ├── PlayerHealth.cs
+│   │   └── PlayerAnimationController.cs
+│   │
+│   ├── Weapons/ (10)
+│   │   ├── WeaponBase.cs
+│   │   ├── WeaponManager.cs
 │   │   ├── GreatswordWeapon.cs
 │   │   ├── AutoCrossbowWeapon.cs
 │   │   ├── HolyWaterWeapon.cs
 │   │   ├── MagicOrbitalsWeapon.cs
 │   │   ├── ArrowProjectile.cs
 │   │   ├── DamagePuddle.cs
-│   │   └── WeaponManager.cs
-│   ├── EnemyAI.cs
-│   ├── EnemyHealth.cs
-│   ├── EnemySpawner.cs
+│   │   ├── OrbitalBall.cs
+│   │   ├── ShaderHelper.cs
+│   │   └── TargetingUtility.cs
+│   │
+│   ├── Enemies/ (4)
+│   │   ├── EnemyAI.cs
+│   │   ├── EnemyHealth.cs
+│   │   ├── EnemySpawner.cs
+│   │   └── EnemyAnimationController.cs
+│   │
+│   ├── GameManager.cs
+│   ├── GameSession.cs
 │   ├── UpgradeManager.cs
-│   └── XPGem.cs
-└── UI/
-    ├── HUD.cs
-    ├── LevelUpPanel.cs
-    ├── PauseMenu.cs
-    └── GameOverScreen.cs
-
-Assets/Shaders/
-├── SpriteReveal.shader     - Horizontal/Vertical clip reveal (Greatsword)
-└── RadialReveal.shader     - Center-outward clip reveal (Holy Water)
-```
-
-### Assets
-```
-Assets/ScriptableObjects/
-├── Weapons/ (4 assets)
-│   ├── Greatsword.asset
-│   ├── AutoCrossbow.asset
-│   ├── HolyWater.asset
-│   └── MagicOrbitals.asset
-└── Upgrades/ (4 assets)
-    ├── SwiftFeet.asset
-    ├── VitalityBoost.asset
-    ├── SpinningFury.asset
-    └── SharpBlade.asset
+│   ├── XPGem.cs
+│   ├── GoldCoin.cs
+│   └── HealthPotion.cs
+│
+├── UI/ (5 files)
+│   ├── HUD.cs
+│   ├── LevelUpPanel.cs
+│   ├── PauseMenu.cs
+│   ├── GameOverScreen.cs
+│   └── VirtualJoystick.cs
+│
+├── Services/ (6 files)
+│   ├── Interfaces: IAdService, ISaveService, IPlatformService
+│   └── Implementations: SaveData, PlayerPrefsSaveService, NoAdService
+│
+└── Utils/ (1 file)
+    └── AutoFPS60Setter.cs
 ```
 
 ---
 
-## 🔧 KEY IMPLEMENTATION DETAILS
+## 🎯 Design Patterns & Conventions
 
-### Tags Required
-- Player: `"Player"`
-- Enemies: `"Enemy"`
-- NO tags needed for weapons/projectiles
+### Singletons
+- **GameManager** - Game state machine
+- **PlayerController** - Player reference
+- **CharacterManager** - Character spawning
 
-### Sorting Layers (Order 0 unless specified)
-1. **Background**
-2. **Ground** (-1 to 2)
-3. **Shadows** (NEW)
-4. **Ground Effects** (Puddles)
-5. **Enemies**
-6. **Player**
-7. **Collectibles** (XP, Gold)
-8. **Flying Objects** (Trees)
-9. **Weapons** (Arrows=5, Orbitals=8, Slash=10)
-10. **Effects** (VFX)
-11. **UI**
+### ScriptableObjects
+- All configuration data (Characters, Weapons, Enemies, Upgrades)
+- Enables designer-friendly tuning
 
-### Prefabs Structure
-```
-Assets/Prefabs/Weapons/
-├── GreatswordWeapon.prefab (has sprite, collider, script)
-├── MagicOrbitalsWeapon.prefab (has sprite, collider, script)
-├── AutoCrossbowWeapon.prefab (empty, just script)
-├── HolyWaterWeapon.prefab (empty, just script)
-├── ArrowProjectile.prefab (sprite, rigidbody, collider)
-└── DamagePuddle.prefab (sprite, collider)
-```
+### Events
+- `GameEvents` static class for decoupled communication
+- UI updates via events (no direct references)
+
+### Code Style
+- **Null-safe:** Use `?.` operator
+- **Early returns:** Avoid deep nesting
+- **Protected fields:** Weapon stats (inheritance-friendly)
+- **XML docs:** On public APIs
 
 ---
 
-## 🐛 COMMON ISSUES & FIXES
+## 📖 Related Documentation
 
-### "PlayerController.Instance not found"
-**Fix:** Player must have PlayerController component with Awake() setting Instance
-
-### "Missing Script on prefab"
-**Fix:** Assign correct weapon script (GreatswordWeapon, AutoCrossbowWeapon, etc.)
-
-### "Weapons don't spawn"
-**Fix:** WeaponManager needs all 4 prefabs assigned + 4 WeaponData assets in Available Weapons
-
-### "Upgrades only affect Greatsword"
-**Fix:** ✅ FIXED - Now uses WeaponManager.GetEquippedWeapons() loop
-
-### "Collisions not working"
-**Fix:** Ensure "Is Trigger" checked on weapon/projectile colliders
+| Topic | Document |
+|-------|----------|
+| Recent Changes | [CHANGELOG.md](CHANGELOG.md) |
+| Feature Specs | [Features Specification.md](Features%20Specification.md) |
+| Data Models | [GDD - Data Models.md](GDD/GDD%20-%20Data%20Models.md) |
+| Upgrade Details | [GDD - Upgrade System.md](GDD/GDD%20-%20Upgrade%20System.md) |
+| Implementation Status | [Progress/Implementation Status.md](Progress/Implementation%20Status.md) |
+| Current Systems | [Progress/Current Systems.md](Progress/Current%20Systems.md) |
 
 ---
 
-## 📊 IMPLEMENTATION STATUS
-
-### ✅ Complete (Core Gameplay)
-- Player movement & health
-- **Character system** (selection, stat loading, spawning)
-- 4 weapon types (all functional)
-- Enemy AI & spawning
-- XP & leveling system
-- Upgrade system (4 types)
-- HUD, pause, game over
-- Platform-aware input
-- Camera follow (Cinemachine auto-assignment)
-
-### 🔨 Code Only (Unity Setup Needed)
-- Character variety (create 3 CharacterData assets)
-- Enemy visuals (sprites/animations pending import)
-
-### ⏳ Not Started
-- Main menu scene
-- Persistent upgrades / meta-progression
-- Achievement system
-- Sound/Music
-- Map bounds
-- Visual polish (VFX/particles)
-
-
----
-
-## 🎓 DESIGN PHILOSOPHY
-
-### Weapon System
-- **Type = Behavior:** Enum determines which script/prefab to use
-- **Data-Driven:** All stats in WeaponData ScriptableObjects
-- **Inheritance:** WeaponBase provides common functionality
-- **Manager Pattern:** WeaponManager orchestrates all weapons
-
-### Upgrade System
-- **Universal:** Weapon upgrades apply to ALL equipped weapons
-- **Fair:** No weapon-specific bias
-- **Scalable:** Adding weapons doesn't require UpgradeManager changes
-
-### Input
-- **Platform-Aware:** Auto-detects and switches
-- **State-Respecting:** Checks GameManager.CurrentState before accepting input
-- **Flexible:** Can force platform for testing
-
----
-
-## 🚀 NEXT STEPS (When Resuming)
-
-1. **Unity Setup:** Complete weapon prefab/asset assignment in WeaponManager
-2. **Testing:** Test all 4 weapons + upgrades
-3. **Enemy Variety:** Create 2-3 more enemy types
-4. **Main Menu:** Scene + UI
-5. **Polish:** VFX, SFX, particles
-
----
-
-## 📝 RECENT MAJOR CHANGES
-
-### 2025-12-14 Session
-1. **Weapon Naming:** Standardized all to Greatsword, AutoCrossbow, HolyWater, MagicOrbitals
-2. **WeaponType Enum:** Changed from behavior-based (OrbitingMelee) to weapon-specific (Greatsword)
-3. **Greatsword Behavior:** Redesigned from continuous orbit to periodic swing
-4. **UpgradeManager Fix:** Now upgrades ALL weapons, not just Greatsword
-5. **WeaponBase API:** Added IncreaseDamage(), IncreaseAttackSpeed(), IncreaseKnockback()
-### 2025-12-21 Session
-1. **Animation System:**
-   - Player: `IsMoving` + `FacingRight` (4 states)
-   - Enemy: `FacingRight` only (2 states), direction-based (fixes knockback)
-2. **Loot System:**
-   - Implemented GoldCoin spawning with magnet
-   - Added offset system to prevent XP/Gold overlap
-   - Added `goldDropChance` configuration
-3. **Sorting Layers:**
-   - Defined 11-layer hierarchy including Shadows, Ground Effects, Collectibles
-4. **Enemy Spawning:**
-   - Added validation to prevent spawning in isolated/blocked areas
-5. **Health Potions:**
-   - Implemented `HealthPotion.cs` with smart pickup (only if damaged)
-   - Refactored loot system to use Prefabs
-
-
-
----
-
-**This document is the MASTER REFERENCE for understanding the entire system!**
+**Last Updated:** 2024-12-24  
+**Maintainer:** Development Team  
+**Status:** Production-ready, pending passive upgrade integration

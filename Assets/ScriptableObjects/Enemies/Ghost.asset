@@ -15,13 +15,16 @@ MonoBehaviour:
   enemyID: ghost
   displayName: The Ghost
   maxHealth: 30
-  moveSpeed: 4
+  moveSpeed: 1.5
   contactDamage: 5
   weightResistance: 0
   xpDrop: 12
   goldDrop: 1
-  goldDropChance: 0.28
-  healthPotionDropChance: 0.05
+  goldDropChance: 0.4
+  healthPotionDropChance: 0.06
   spawnWeight: 10
   minGameTimeSeconds: 150
-  prefab: {fileID: 0}
+  prefab: {fileID: 8181075781839725347, guid: 5cac3958a73d96e44827ddd28abec6f8, type: 3}
+  xpGemPrefab: {fileID: 226711286709867138, guid: cad8dc082a28d834788ee51d60b2d238, type: 3}
+  goldCoinPrefab: {fileID: 3260919468255876515, guid: 6fb0e4cfca856c943a432e41cd36f7ea, type: 3}
+  healthPotionPrefab: {fileID: 72700924762515949, guid: 3d3a46f25d8094849ab1ba3de24dfa6e, type: 3}

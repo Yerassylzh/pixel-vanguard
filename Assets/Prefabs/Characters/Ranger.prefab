@@ -106,6 +106,10 @@ GameObject:
   - component: {fileID: 4932436927180459938}
   - component: {fileID: 7580766684763432527}
   - component: {fileID: 4796621435367568231}
+  - component: {fileID: 7511385686166012183}
+  - component: {fileID: 8437697226955777831}
+  - component: {fileID: 4796947368932041992}
+  - component: {fileID: -8166762942815212637}
   m_Layer: 7
   m_Name: Ranger
   m_TagString: Player
@@ -123,7 +127,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 14.81716, y: 8.90902, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.2, y: 1.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4005360102648441044}
@@ -226,8 +230,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d0f7bd66d665404a8b68d7b746d6c9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.PlayerController
-  inputActions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  virtualJoystick: {fileID: 0}
 --- !u!114 &6424153896076162844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,6 +242,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 274cc2f9e575c9f4fb19927427ff9253, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.PlayerHealth
+  characterDamageMultiplier: 1
   damageCooldown: 1
   isInvincible: 0
   invincibilityDuration: 0
@@ -315,3 +318,65 @@ CapsuleCollider2D:
   m_Offset: {x: -0.060037136, y: -0.1400876}
   m_Size: {x: 0.589118, y: 1.3495932}
   m_Direction: 0
+--- !u!114 &7511385686166012183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7754090624489383594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0fcbed7413dffc498f418d904ded333, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.WeaponManager
+  maxWeapons: 4
+  availableWeapons:
+  - {fileID: 11400000, guid: 6f0c5959fa6f3b44d99a7be7fe8d195c, type: 2}
+  - {fileID: 11400000, guid: c8b3bdb59fa32974584e72137d5852b4, type: 2}
+  - {fileID: 11400000, guid: 693c8a640da667b498c7fb6496de5fb7, type: 2}
+  - {fileID: 11400000, guid: de15370806b57d943bcca55806fe0c25, type: 2}
+  greatswordPrefab: {fileID: 857720846206935189, guid: d8a38c11ccd259c42b0839e5c66110cf, type: 3}
+  magicOrbitalsPrefab: {fileID: 5344819303833049432, guid: 6879b3c3cedffd842909e968c5efdb9e, type: 3}
+  autoCrossbowPrefab: {fileID: 8182498166737875069, guid: ab0e7680b5c50c94a9b39f0c91d080cc, type: 3}
+  holyWaterPrefab: {fileID: 2137014098205658066, guid: d926af20219059843bfbc7d0e3a1f199, type: 3}
+--- !u!114 &8437697226955777831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7754090624489383594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aff5aa5abec9b94dafc52865728ad0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.PlayerMovement
+--- !u!114 &4796947368932041992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7754090624489383594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919d9284e49345f499c290cf2291ca2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.PlayerInput
+--- !u!114 &-8166762942815212637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7754090624489383594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 274cc2f9e575c9f4fb19927427ff9253, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.PlayerHealth
+  characterDamageMultiplier: 1
+  damageCooldown: 1
+  isInvincible: 0
+  invincibilityDuration: 0

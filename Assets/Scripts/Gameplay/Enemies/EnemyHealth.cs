@@ -1,35 +1,34 @@
 using UnityEngine;
+using PixelVanguard.Data;
 
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
-    /// Manages enemy health, damage, and death behavior.
+    /// Handles enemy health, damage, knockback, death, and loot drops.
+    /// REFACTORED: Integrated gold bonus from UpgradeManager.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     public class EnemyHealth : MonoBehaviour
     {
-        [Header("Loot Prefabs")]
-        [SerializeField] private GameObject xpGemPrefab;
-        [SerializeField] private GameObject goldCoinPrefab;
-        [SerializeField] private GameObject healthPotionPrefab;
+        [Header("Data")]
+        [SerializeField] private EnemyData enemyData;
 
-        [Header("Configuration")]
-        [SerializeField] private Data.EnemyData enemyData;
-
-        [Header("Runtime Stats")]
-        [SerializeField] private float currentHealth;
-        [SerializeField] private bool isAlive = true;
-
-        private Rigidbody2D rb;
-        private static int totalKillCount = 0; // Track total kills across all enemies
-
-        public bool IsAlive => isAlive;
+        [Header("Stats")]
+        private float currentHealth;
         public float ContactDamage => enemyData != null ? enemyData.contactDamage : 5f;
-        public Data.EnemyData EnemyData => enemyData; // Expose for EnemyAI to access move speed
+
+        // Public accessors
+        public EnemyData EnemyData => enemyData;
+        public bool IsAlive => isAlive;
+
+        private bool isAlive = true;
+        private Rigidbody2D rb;
+
+        // Static kill count (shared across all enemies)
+        private static int totalKillCount = 0;
 
         private void Awake()
         {
-            // Auto-get required component
             rb = GetComponent<Rigidbody2D>();
         }
 
@@ -42,7 +41,16 @@ namespace PixelVanguard.Gameplay
         }
 
         /// <summary>
-        /// Apply damage to this enemy.
+        /// Initialize enemy with data (called by EnemySpawner).
+        /// </summary>
+        public void Initialize(Data.EnemyData data)
+        {
+            enemyData = data;
+            currentHealth = data.maxHealth;
+        }
+
+        /// <summary>
+        /// Apply damage to the enemy with knockback.
         /// </summary>
         public void TakeDamage(float damage, Vector2 knockbackDirection, float knockbackForce)
         {
@@ -50,14 +58,9 @@ namespace PixelVanguard.Gameplay
 
             currentHealth -= damage;
 
-            // Apply knockback
-            if (rb != null && enemyData != null)
-            {
-                float actualKnockback = knockbackForce * (1f - enemyData.weightResistance);
-                rb.AddForce(knockbackDirection * actualKnockback, ForceMode2D.Impulse);
-            }
+            float actualKnockback = knockbackForce * (1f - enemyData.weightResistance);
+            rb.AddForce(knockbackDirection * actualKnockback, ForceMode2D.Force);
 
-            // Check for death
             if (currentHealth <= 0f)
             {
                 Die();
@@ -70,14 +73,10 @@ namespace PixelVanguard.Gameplay
 
             isAlive = false;
 
-            // Update kill count
             totalKillCount++;
             Core.GameEvents.TriggerEnemyKilled(totalKillCount);
 
-            // Drop loot
             DropLoot();
-
-            // Destroy this enemy
             Destroy(gameObject);
         }
 
@@ -86,8 +85,6 @@ namespace PixelVanguard.Gameplay
             if (enemyData == null) return;
 
             Vector3 dropPosition = transform.position;
-
-            // Track how many items we're dropping to offset them properly
             int itemCount = 0;
             Vector3[] offsets = new Vector3[]
             {
@@ -98,7 +95,7 @@ namespace PixelVanguard.Gameplay
                 new Vector3(0.3f, -0.2f, 0f)    // Right-down
             };
 
-            // Drop XP Gem (always if xpDrop > 0)
+            // Drop XP Gem (always if > 0)
             if (enemyData.xpDrop > 0)
             {
                 Vector3 spawnPos = dropPosition + offsets[itemCount % offsets.Length];
@@ -106,81 +103,90 @@ namespace PixelVanguard.Gameplay
                 itemCount++;
             }
 
-            // Drop Gold Coin (chance-based)
+            // Drop Gold Coin (chance-based + GOLD BONUS INTEGRATED)
             if (enemyData.goldDrop > 0 && Random.value < enemyData.goldDropChance)
             {
                 Vector3 spawnPos = dropPosition + offsets[itemCount % offsets.Length];
-                SpawnGoldCoin(spawnPos, enemyData.goldDrop);
+                
+                // ✅ INTEGRATED: Apply gold bonus from UpgradeManager
+                int baseGold = enemyData.goldDrop;
+                int finalGold = CalculateGoldWithBonus(baseGold);
+                
+                SpawnGoldCoin(spawnPos, finalGold);
                 itemCount++;
             }
 
-            // Drop health potion (chance-based)
-            if (Random.value < enemyData.healthPotionDropChance)
+            // Drop Health Potion (chance-based)
+            if (enemyData.healthPotionPrefab != null && Random.value < enemyData.healthPotionDropChance)
             {
                 Vector3 spawnPos = dropPosition + offsets[itemCount % offsets.Length];
-                SpawnHealthPotion(spawnPos);
+                Instantiate(enemyData.healthPotionPrefab, spawnPos, Quaternion.identity);
+                itemCount++;
             }
         }
 
+        /// <summary>
+        /// Calculate final gold amount with Lucky Coins upgrade bonus.
+        /// </summary>
+        private int CalculateGoldWithBonus(int baseGold)
+        {
+            var upgradeManager = FindFirstObjectByType<UpgradeManager>();
+            if (upgradeManager != null)
+            {
+                float bonus = upgradeManager.GetGoldBonusPercent();
+                int finalGold = Mathf.RoundToInt(baseGold * (1f + bonus));
+                
+                if (bonus > 0f)
+                {
+                    Debug.Log($"[EnemyHealth] 💰 Gold drop: {baseGold} → {finalGold} (+{(bonus * 100):F0}% bonus)");
+                }
+                
+                return finalGold;
+            }
+            
+            return baseGold;
+        }
+
+        /// <summary>
+        /// Spawn an XP gem at the drop location.
+        /// </summary>
         private void SpawnXPGem(Vector3 position, int xpAmount)
         {
-            if (xpGemPrefab == null) 
+            if (enemyData.xpGemPrefab == null)
             {
-                Debug.LogWarning("[EnemyHealth] XPGem Prefab not assigned!");
+                Debug.LogWarning($"[EnemyHealth] XP gem prefab not assigned for {enemyData.enemyName}!");
                 return;
             }
 
-            GameObject gemObj = Instantiate(xpGemPrefab, position, Quaternion.identity);
-            
-            // Configure XP amount
-            var gem = gemObj.GetComponent<XPGem>();
-            if (gem != null)
+            GameObject gemObj = Instantiate(enemyData.xpGemPrefab, position, Quaternion.identity);
+            var xpGem = gemObj.GetComponent<XPGem>();
+            if (xpGem != null)
             {
-                gem.SetXPAmount(xpAmount);
+                xpGem.SetXPAmount(xpAmount);
             }
         }
 
+        /// <summary>
+        /// Spawn a gold coin at the drop location.
+        /// </summary>
         private void SpawnGoldCoin(Vector3 position, int goldAmount)
         {
-            if (goldCoinPrefab == null)
+            if (enemyData.goldCoinPrefab == null)
             {
-                Debug.LogWarning("[EnemyHealth] GoldCoin Prefab not assigned!");
+                Debug.LogWarning($"[EnemyHealth] Gold coin prefab not assigned for {enemyData.enemyName}!");
                 return;
             }
 
-            GameObject coinObj = Instantiate(goldCoinPrefab, position, Quaternion.identity);
-
-            // Configure Gold amount
-            var coin = coinObj.GetComponent<GoldCoin>();
-            if (coin != null)
+            GameObject coinObj = Instantiate(enemyData.goldCoinPrefab, position, Quaternion.identity);
+            var goldCoin = coinObj.GetComponent<GoldCoin>();
+            if (goldCoin != null)
             {
-                coin.SetGoldValue(goldAmount);
+                goldCoin.SetGoldAmount(goldAmount);
             }
         }
 
-        private void SpawnHealthPotion(Vector3 position)
-        {
-            if (healthPotionPrefab == null)
-            {
-                // Silent return or warning depending on preference
-                return;
-            }
-
-            Instantiate(healthPotionPrefab, position, Quaternion.identity);
-        }
-
-
         /// <summary>
-        /// Set enemy data (called by spawner).
-        /// </summary>
-        public void Initialize(Data.EnemyData data)
-        {
-            enemyData = data;
-            currentHealth = data.maxHealth;
-        }
-
-        /// <summary>
-        /// Reset kill count (call when starting new game).
+        /// Reset static kill count (called when restarting game).
         /// </summary>
         public static void ResetKillCount()
         {

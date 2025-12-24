@@ -17,6 +17,7 @@ namespace PixelVanguard.Gameplay
         [Header("Orbit Settings")]
         [SerializeField] private float targetRadius = 2.5f;
         [SerializeField] private float orbitSpeed = 180f; // Degrees per second
+        [SerializeField] private float orbitalDuration = 8f; // How long orbitals last before despawning
         
         [Header("Animation Timing")]
         [SerializeField] private float fadeInDuration = 0.5f;
@@ -24,10 +25,23 @@ namespace PixelVanguard.Gameplay
         
         [Header("Visual Settings")]
         [Tooltip("Delay in seconds before balls become visible during expand (prevents overlap at spawn)")]
-        [SerializeField] private float ballAppearDelay = 2f;
+        [SerializeField] private float ballAppearDelay = 0.2f;
         
         [Tooltip("Delay in seconds before balls disappear during shrink (hide before reaching radius 0)")]
         [SerializeField] private float ballDisappearDelay = 0.15f;
+
+        // Upgrade tracking
+        private float orbitRadiusMultiplier = 1.0f;
+
+        /// <summary>
+        /// Multiply orbit radius for future spawns.
+        /// </summary>
+        public void MultiplyOrbitRadius(float multiplier)
+        {
+            orbitRadiusMultiplier *= multiplier;
+            targetRadius *= multiplier;
+            Debug.Log($"[MagicOrbitals] Orbit radius: {targetRadius:F2} (x{orbitRadiusMultiplier:F2})");
+        }
 
         // Runtime state
         private List<OrbitalBall> activeBalls = new List<OrbitalBall>();
@@ -59,7 +73,7 @@ namespace PixelVanguard.Gameplay
             if (isActive)
             {
                 lifetimeTimer += Time.deltaTime;
-                float timeRemaining = duration - lifetimeTimer;
+                float timeRemaining = orbitalDuration - lifetimeTimer;
                 
                 if (!isFadingOut && timeRemaining <= fadeOutDuration)
                 {
@@ -96,9 +110,12 @@ namespace PixelVanguard.Gameplay
             lifetimeTimer = 0f;
             isFadingOut = false;
             currentRadius = 0f;
+            
+            // Set active IMMEDIATELY to prevent race condition with cooldown
+            isActive = true;
 
             SpawnOrbitals();
-            StartCoroutine(AnimateRadius(0f, targetRadius, fadeInDuration, () => isActive = true));
+            StartCoroutine(AnimateRadius(0f, targetRadius, fadeInDuration, null));
         }
 
         private void SpawnOrbitals()
@@ -120,7 +137,7 @@ namespace PixelVanguard.Gameplay
                 OrbitalBall ball = orbObj.GetComponent<OrbitalBall>();
                 if (ball != null)
                 {
-                    ball.Initialize(GetFinalDamage(), knockback, cooldown);
+                    ball.Initialize(GetFinalDamage(), knockback, 0.1f); // 0.1s damage tick
                     activeBalls.Add(ball);
                 }
                 else

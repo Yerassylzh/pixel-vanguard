@@ -56,14 +56,19 @@ namespace PixelVanguard.Gameplay
         {
             if (animator == null || playerController == null) return;
 
-            // Get horizontal input from player controller
-            float horizontalInput = playerController.MoveDirection.x;
-            bool isMoving = Mathf.Abs(horizontalInput) > inputThreshold;
+            // Check total movement magnitude (X and Y) for the "IsMoving" state
+            Vector2 moveDir = playerController.MoveDirection;
+            bool isMoving = moveDir.sqrMagnitude > (inputThreshold * inputThreshold);
 
             // Update facing direction when moving
             if (isMoving)
             {
-                isFacingRight = horizontalInput > 0;
+                // Only update facing direction if there's significant horizontal input
+                if (Mathf.Abs(moveDir.x) > inputThreshold)
+                {
+                    isFacingRight = moveDir.x > 0;
+                }
+                // If moving purely vertically, keep previous facing direction
             }
 
             // Set animator parameters

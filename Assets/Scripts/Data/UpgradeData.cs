@@ -29,6 +29,11 @@ namespace PixelVanguard.Data
         [Header("Weapon (only for NewWeapon type)")]
         [Tooltip("Weapon to equip when this upgrade is selected")]
         public WeaponData weaponToEquip;
+        
+        [Header("Rarity")]
+        [Tooltip("Higher weight = more common. Common=100, Uncommon=50, Rare=25, Epic=10")]
+        [Range(1, 100)]
+        public int rarityWeight = 100;
     }
 
     public enum UpgradeType
@@ -37,6 +42,30 @@ namespace PixelVanguard.Data
         PlayerMaxHP,        // Increase player max health
         WeaponAttackSpeed,  // Increase weapon attack speed (lower cooldown) - affects ALL weapons
         WeaponDamage,       // Increase weapon damage - affects ALL weapons
-        NewWeapon           // Acquire a new weapon (max 4 total)
+        NewWeapon,          // Acquire a new weapon (max 4 total)
+
+        // Greatsword
+        GreatswordMirrorSlash,
+        GreatswordDamageBoost,
+        GreatswordCooldownBoost,
+    
+        // Crossbow
+        CrossbowDualShot,
+        CrossbowTripleShot,
+        CrossbowPierce,
+    
+        // Holy Water
+        HolyWaterRadius,
+        HolyWaterScaling,
+        HolyWaterDuration,
+    
+        // Magic Orbitals
+        OrbitalsExpandedOrbit,
+        OrbitalsOverchargedSpheres,
+    
+        // Passives
+        PassiveLifesteal,
+        PassiveMagnet,
+        PassiveLuckyCoin
     }
 }

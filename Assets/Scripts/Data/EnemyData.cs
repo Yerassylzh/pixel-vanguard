@@ -56,6 +56,19 @@ namespace PixelVanguard.Data
         [Tooltip("Enemy prefab to spawn")]
         public GameObject prefab;
 
+        [Header("Loot Prefabs")]
+        [Tooltip("XP gem prefab to drop")]
+        public GameObject xpGemPrefab;
+        
+        [Tooltip("Gold coin prefab to drop")]
+        public GameObject goldCoinPrefab;
+        
+        [Tooltip("Health potion prefab to drop")]
+        public GameObject healthPotionPrefab;
+
+        // Property for backwards compatibility
+        public string enemyName => displayName;
+
         private void OnValidate()
         {
             if (string.IsNullOrEmpty(enemyID))

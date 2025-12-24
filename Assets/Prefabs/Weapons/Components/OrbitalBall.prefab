@@ -5018,4 +5018,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16176770d9813ea4e9642635c48ea568, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.OrbitalBall
-  orbSprite: {fileID: 173717843599774386}
+  ballSprite: {fileID: 173717843599774386}
+  ballCollider: {fileID: 22545258262038511}

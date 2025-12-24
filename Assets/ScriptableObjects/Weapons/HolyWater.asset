@@ -18,8 +18,8 @@ MonoBehaviour:
   icon: {fileID: 0}
   type: 3
   baseDamage: 5
-  cooldown: 8
-  knockback: 0
+  cooldown: 3
+  knockback: 20
   baseDuration: 4
   baseTickRate: 0.5
   prefab: {fileID: 0}

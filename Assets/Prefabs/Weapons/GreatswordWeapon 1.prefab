@@ -47,7 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.GreatswordWeapon
   weaponData: {fileID: 11400000, guid: c8b3bdb59fa32974584e72137d5852b4, type: 2}
-  opacityCurve:
+  weaponSprite: {fileID: 0}
+  weaponCollider: {fileID: 0}
+  swingCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -60,19 +62,10 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.7250015
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
+      value: 1
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -80,10 +73,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  revealSpeedFactor: 0.5
-  fadeDuration: 0.15
   swingDuration: 0.3
-  revealVertical: 0
+  restAngleOffset: -90
+  revealMaterial: {fileID: 2100000, guid: 995807f548a21c84784de36302d3010a, type: 2}
+  isMirror: 0
 --- !u!68 &2042334937225040689
 EdgeCollider2D:
   m_ObjectHideFlags: 0

@@ -21,7 +21,10 @@ MonoBehaviour:
   xpDrop: 50
   goldDrop: 20
   goldDropChance: 1
-  healthPotionDropChance: 0.5
+  healthPotionDropChance: 0.25
   spawnWeight: 1
   minGameTimeSeconds: 180
   prefab: {fileID: 4638536460833975349, guid: 507744c9f889a8847963e2c04792c596, type: 3}
+  xpGemPrefab: {fileID: 226711286709867138, guid: cad8dc082a28d834788ee51d60b2d238, type: 3}
+  goldCoinPrefab: {fileID: 3260919468255876515, guid: 6fb0e4cfca856c943a432e41cd36f7ea, type: 3}
+  healthPotionPrefab: {fileID: 72700924762515949, guid: 3d3a46f25d8094849ab1ba3de24dfa6e, type: 3}

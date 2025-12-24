@@ -20,8 +20,8 @@ MonoBehaviour:
   characterPrefab: {fileID: 4020933243460161695, guid: b6258b1f466368146a495216cfcbf40d, type: 3}
   maxHealth: 130
   moveSpeed: 4
-  baseDamageMultiplier: 0.9
-  starterWeapon: {fileID: 11400000, guid: c8b3bdb59fa32974584e72137d5852b4, type: 2}
+  baseDamageMultiplier: 1
+  starterWeapon: {fileID: 11400000, guid: de15370806b57d943bcca55806fe0c25, type: 2}
   unlockType: 1
   goldCost: 2500
   adWatchCount: 5

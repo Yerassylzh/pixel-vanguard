@@ -4,7 +4,7 @@ namespace PixelVanguard.Gameplay
 {
     /// <summary>
     /// Arrow projectile behavior.
-    /// Moves in straight line, damages enemies, can pierce multiple targets.
+    /// REFACTORED: Directly calls EnemyHealth.TakeDamage (no wrapper).
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(Collider2D))]
@@ -63,14 +63,14 @@ namespace PixelVanguard.Gameplay
             // Ignore non-enemy collisions
             if (!collision.CompareTag("Enemy")) return;
 
-            // Try to damage enemy
+            // Try to damage enemy (REFACTORED: Direct call, no wrapper)
             var enemyHealth = collision.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsAlive)
             {
-                // Calculate knockback direction (direction of arrow)
+                // Knockback in arrow direction
                 Vector2 knockbackDir = direction;
 
-                // Deal damage
+                // Deal damage (using the damage passed in Initialize)
                 enemyHealth.TakeDamage(damage, knockbackDir, knockback);
 
                 // Increment hit count
