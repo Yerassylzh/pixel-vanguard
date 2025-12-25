@@ -13,6 +13,7 @@ namespace PixelVanguard.Gameplay
         [Header("Tracking")]
         private int passiveSkillCount = 0;
         private HashSet<UpgradeType> appliedUpgrades = new HashSet<UpgradeType>();
+        private HashSet<string> equippedWeaponIDs = new HashSet<string>(); // Track specific weapons equipped
         
         // Passive effects (NOW INTEGRATED)
         private float lifestealPercent = 0f;
@@ -31,6 +32,20 @@ namespace PixelVanguard.Gameplay
             playerController = FindAnyObjectByType<PlayerController>();
             playerHealth = FindAnyObjectByType<PlayerHealth>();
             weaponManager = FindAnyObjectByType<WeaponManager>();
+            
+            // Initialize equippedWeaponIDs with starter weapon(s) already equipped
+            if (weaponManager != null)
+            {
+                var equippedWeapons = weaponManager.GetEquippedWeapons();
+                foreach (var weaponInstance in equippedWeapons)
+                {
+                    if (weaponInstance?.weaponData != null)
+                    {
+                        equippedWeaponIDs.Add(weaponInstance.weaponData.weaponID);
+                        Debug.Log($"[UpgradeManager] Initialized with equipped weapon: {weaponInstance.weaponData.weaponID}");
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -38,6 +53,11 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         public UpgradeData[] GetRandomUpgrades(int count = 3)
         {
+            Debug.Log($"\n========== LEVEL UP: Requesting {count} upgrades ==========");
+            Debug.Log($"[UpgradeManager] Applied upgrades count: {appliedUpgrades.Count}");
+            Debug.Log($"[UpgradeManager] Passive skill count: {passiveSkillCount}/3");
+            Debug.Log($"[UpgradeManager] Total available upgrades: {allUpgrades?.Length ?? 0}");
+            
             if (allUpgrades == null || allUpgrades.Length == 0)
             {
                 Debug.LogWarning("[UpgradeManager] No upgrades available!");
@@ -46,20 +66,30 @@ namespace PixelVanguard.Gameplay
 
             // Build valid upgrades list with filtering
             var validUpgrades = new List<UpgradeData>();
+            int filteredCount = 0;
             
             foreach (var upgrade in allUpgrades)
             {
                 if (upgrade == null) continue;
                 
                 // Check if upgrade is valid for current player state
-                if (!IsUpgradeValid(upgrade)) continue;
+                bool isValid = IsUpgradeValid(upgrade);
+                if (!isValid)
+                {
+                    filteredCount++;
+                    continue;
+                }
                 
                 validUpgrades.Add(upgrade);
+                Debug.Log($"[UpgradeManager] ✓ VALID: {upgrade.upgradeName} (type: {upgrade.type})");
             }
 
+            Debug.Log($"[UpgradeManager] Filtered out: {filteredCount}, Valid: {validUpgrades.Count}");
+            
             if (validUpgrades.Count == 0)
             {
-                Debug.LogWarning("[UpgradeManager] No valid upgrades after filtering!");
+                Debug.LogError("[UpgradeManager] ❌ NO VALID UPGRADES AFTER FILTERING!");
+                Debug.Log($"Applied upgrades: {string.Join(", ", appliedUpgrades)}");
                 return new UpgradeData[0];
             }
 
@@ -74,9 +104,11 @@ namespace PixelVanguard.Gameplay
                 {
                     selectedUpgrades.Add(selected);
                     validUpgrades.Remove(selected); // Prevent duplicates
+                    Debug.Log($"[UpgradeManager] Selected #{i+1}: {selected.upgradeName}");
                 }
             }
-
+            
+            Debug.Log($"========== Offering {selectedUpgrades.Count} upgrades ==========\n");
             return selectedUpgrades.ToArray();
         }
         
@@ -85,53 +117,94 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         private bool IsUpgradeValid(UpgradeData upgrade)
         {
+            // Core stat upgrades are REPEATABLE - never filter them
+            bool isRepeatableStat = upgrade.type == UpgradeType.PlayerMoveSpeed ||
+                                   upgrade.type == UpgradeType.PlayerMaxHP ||
+                                   upgrade.type == UpgradeType.WeaponDamage ||
+                                   upgrade.type == UpgradeType.WeaponAttackSpeed;
+            
+            if (isRepeatableStat)
+            {
+                // Always valid - can stack infinitely
+                return true;
+            }
+            
             // First check: Has this exact upgrade already been applied?
             if (appliedUpgrades.Contains(upgrade.type))
             {
+                Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - Already applied (in HashSet)");
                 return false;
             }
             
             switch (upgrade.type)
             {
-                // NewWeapon checks
+                // NewWeapon checks - check specific weapon ID, not just type
                 case UpgradeType.NewWeapon:
-                    if (upgrade.weaponToEquip == null) return false;
-                    if (weaponManager != null && weaponManager.IsWeaponEquipped(upgrade.weaponToEquip.weaponID)) return false;
-                    if (weaponManager != null && weaponManager.GetEquippedWeapons().Count >= 4) return false;
+                    if (upgrade.weaponToEquip == null)
+                    {
+                        Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - weaponToEquip is null");
+                        return false;
+                    }
+                    // Check if THIS SPECIFIC weapon is already equipped
+                    if (equippedWeaponIDs.Contains(upgrade.weaponToEquip.weaponID))
+                    {
+                        Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - This weapon already equipped");
+                        return false;
+                    }
                     break;
                 
                 // Greatsword upgrades - require Greatsword equipped
                 case UpgradeType.GreatswordMirrorSlash:
                 case UpgradeType.GreatswordDamageBoost:
                 case UpgradeType.GreatswordCooldownBoost:
-                    if (!IsWeaponEquipped(Data.WeaponType.Greatsword)) return false;
+                    if (!IsWeaponEquipped(Data.WeaponType.Greatsword))
+                    {
+                        Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - Greatsword not equipped");
+                        return false;
+                    }
                     break;
                 
                 // Crossbow upgrades - require AutoCrossbow equipped
                 case UpgradeType.CrossbowDualShot:
                 case UpgradeType.CrossbowTripleShot:
                 case UpgradeType.CrossbowPierce:
-                    if (!IsWeaponEquipped(Data.WeaponType.Crossbow)) return false;
+                    if (!IsWeaponEquipped(Data.WeaponType.Crossbow))
+                    {
+                        Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - Crossbow not equipped");
+                        return false;
+                    }
                     break;
                 
                 // Holy Water upgrades - require HolyWater equipped
                 case UpgradeType.HolyWaterRadius:
                 case UpgradeType.HolyWaterScaling:
                 case UpgradeType.HolyWaterDuration:
-                    if (!IsWeaponEquipped(Data.WeaponType.HolyWater)) return false;
+                    if (!IsWeaponEquipped(Data.WeaponType.HolyWater))
+                    {
+                        Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - Holy Water not equipped");
+                        return false;
+                    }
                     break;
                 
                 // Magic Orbitals upgrades - require MagicOrbitals equipped
                 case UpgradeType.OrbitalsExpandedOrbit:
                 case UpgradeType.OrbitalsOverchargedSpheres:
-                    if (!IsWeaponEquipped(Data.WeaponType.MagicOrbitals)) return false;
+                    if (!IsWeaponEquipped(Data.WeaponType.MagicOrbitals))
+                    {
+                        Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - Magic Orbitals not equipped");
+                        return false;
+                    }
                     break;
                 
                 // Passives - check limit (max 3)
                 case UpgradeType.PassiveLifesteal:
                 case UpgradeType.PassiveMagnet:
                 case UpgradeType.PassiveLuckyCoin:
-                    if (passiveSkillCount >= 3) return false;
+                    if (passiveSkillCount >= 3)
+                    {
+                        Debug.Log($"[UpgradeManager] ✗ FILTERED: {upgrade.upgradeName} - Max passives reached (3/3)");
+                        return false;
+                    }
                     break;
             }
             
@@ -219,6 +292,12 @@ namespace PixelVanguard.Gameplay
 
                 case UpgradeType.NewWeapon:
                     ApplyNewWeaponUpgrade(upgrade.weaponToEquip);
+                    // Track this specific weapon as equipped
+                    if (upgrade.weaponToEquip != null)
+                    {
+                        equippedWeaponIDs.Add(upgrade.weaponToEquip.weaponID);
+                        Debug.Log($"[UpgradeManager] Tracked weapon: {upgrade.weaponToEquip.weaponID}");
+                    }
                     break;
 
                 // GREATSWORD

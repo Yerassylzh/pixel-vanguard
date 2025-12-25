@@ -221,10 +221,31 @@ namespace PixelVanguard.Gameplay
             mirror.transform.SetParent(null); // Greatsword handles its own positioning
             mirror.name = "Greatsword (Mirror)";
             
+
             var mirrorWeapon = mirror.GetComponent<GreatswordWeapon>();
             if (mirrorWeapon != null)
             {
+                var originalWeapon = original.weaponScript;
+                
+                // CRITICAL FIX: Copy upgraded stats from original to mirror
+                // Without this, mirror's Start() loads base stats from ScriptableObject,
+                // losing all upgrades applied to the original (damage, cooldown, etc.)
+                mirrorWeapon.CopyStatsFrom(originalWeapon);
+                
                 mirrorWeapon.isMirror = true;
+                
+                // Synchronize cooldowns so they fire simultaneously
+                originalWeapon.ResetCooldown();
+                mirrorWeapon.ResetCooldown();
+                
+                // Add mirror to equipped weapons so it receives future upgrades
+                var mirrorInstance = new WeaponInstance
+                {
+                    weaponData = original.weaponData,
+                    weaponObject = mirror,
+                    weaponScript = mirrorWeapon
+                };
+                equippedWeapons.Add(mirrorInstance);
             }
             
             Debug.Log("[WeaponManager] Mirror Slash activated!");

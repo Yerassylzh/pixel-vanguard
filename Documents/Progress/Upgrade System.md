@@ -13,23 +13,39 @@ UpgradeData (ScriptableObject) → UpgradeManager → WeaponManager → Weapons
                                  PlayerHealth (stats)
 ```
 
-**Core Pattern:** Weighted random selection with upgrade history tracking prevents duplicates.
+**Core Pattern:** Weighted random selection with upgrade history tracking prevents duplicates.  
+**NEW:** Core stat upgrades (Speed, HP, Damage, Attack Speed) are **infinitely repeatable** for scaling.
 
 ---
 
 ## Upgrade Categories
 
-### Universal Upgrades (5)
+### Universal Upgrades (4) - **REPEATABLE**
 
-| Type | Effect | Rarity Weight |
-|------|--------|---------------|
-| PlayerMoveSpeed | +% movement speed | 100 (Common) |
-| PlayerMaxHP | +flat max health | 100 (Common) |
-| WeaponAttackSpeed | -% cooldown (all weapons) | 100 (Common) |
-| WeaponDamage | +% damage (all weapons) | 100 (Common) |
-| NewWeapon | Equip weapon (max 4) | 50 (Uncommon) |
+| Type | Effect | Rarity Weight | Repeatability |
+|------|--------|---------------|---------------|
+| PlayerMoveSpeed | +20% movement speed | 100 (Common) | ♾️ Infinite |
+| PlayerMaxHP | +10 max health | 100 (Common) | ♾️ Infinite |
+| WeaponAttackSpeed | -30% cooldown (all weapons) | 100 (Common) | ♾️ Infinite |
+| WeaponDamage | +% damage (all weapons) | 100 (Common) | ♾️ Infinite |
 
-**Always available** unless max weapons reached (4/4).
+**Always available** - never filtered out. Players can stack these endlessly for late-game scaling.
+
+**Design Rationale:**
+- Prevents upgrade pool exhaustion in long runs
+- Allows continuous power scaling
+- Matches genre expectations (Vampire Survivors pattern)
+
+### New Weapon Unlocks (4) - **One-time per weapon**
+
+| Weapon | Rarity Weight | Tracking |
+|--------|---------------|----------|
+| Greatsword | 50 (Uncommon) | By weaponID |
+| Auto Crossbow | 50 (Uncommon) | By weaponID |
+| Holy Water | 50 (Uncommon) | By weaponID |
+| Magic Orbitals | 50 (Uncommon) | By weaponID |
+
+**Max 4 weapons total**. Each specific weapon can only be unlocked once (tracked via `equippedWeaponIDs` HashSet).
 
 ---
 
@@ -103,15 +119,36 @@ UpgradeData (ScriptableObject) → UpgradeManager → WeaponManager → Weapons
 
 **Checks performed (in order):**
 
-1. ✅ **Duplicate prevention** - `appliedUpgrades.Contains(type)` (via HashSet)
-2. ✅ **Weapon ownership** - Weapon-specific upgrades require weapon equipped
-3. ✅ **Max limits** - Weapons (4), Passives (3)
-4. ✅ **Assignment** - NewWeapon has weaponToEquip assigned
+1. ✅ **Repeatable Check** - Core stats (Speed, HP, Damage, Attack Speed) **always pass** (never filtered)
+2. ✅ **Duplicate prevention** - Non-repeatable upgrades checked via `appliedUpgrades.Contains(type)`
+3. ✅ **Weapon ownership** - Weapon-specific upgrades require weapon equipped
+4. ✅ **Weapon unlock tracking** - NewWeapon checked via `equippedWeaponIDs.Contains(weaponID)` (specific weapon, not type)
+5. ✅ **Max limits** - Passives (3)
 
 **Example:** GreatswordMirrorSlash only shown if:
-- Never applied before (no duplicates)
 - Greatsword currently equipped
-- Player has room for upgrades
+- Never applied before (no duplicates)
+
+**Example:** PlayerMoveSpeed shown if:
+- Always (repeatable - no checks)
+
+**Example:** NewWeapon (Crossbow) shown if:
+- Not already in `equippedWeaponIDs`
+- Less than 4 weapons equipped
+
+### Tracking System
+
+```csharp
+// In UpgradeManager
+private HashSet<UpgradeType> appliedUpgrades;        // One-time upgrades
+private HashSet<string> equippedWeaponIDs;          // Specific weapons by ID
+private int passiveSkillCount;                       // Passive limit (max 3)
+```
+
+**Key difference:** 
+- Old: All NewWeapon upgrades shared same `UpgradeType.NewWeapon` in HashSet
+- New: Each weapon tracked individually by weaponID in separate HashSet
+- Result: Can unlock all 4 weapons without false filtering
 
 ### Weighted Random Selection (`SelectWeightedRandom()`)
 

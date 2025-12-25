@@ -21,6 +21,9 @@ namespace PixelVanguard.Gameplay
 
         // Player reference
         protected Transform player;
+        
+        // Clone tracking - prevents Start() from overwriting copied stats
+        private bool isClone = false;
 
         protected virtual void Awake()
         {
@@ -39,7 +42,12 @@ namespace PixelVanguard.Gameplay
                 return;
             }
 
-            LoadStatsFromData();
+            // Skip loading base stats if this is a cloned weapon
+            // (stats were already copied from the original)
+            if (!isClone)
+            {
+                LoadStatsFromData();
+            }
         }
 
         protected virtual void Update()
@@ -92,6 +100,30 @@ namespace PixelVanguard.Gameplay
             }
             
             return damage * characterMultiplier;
+        }
+
+        public void ResetCooldown()
+        {
+            cooldownTimer = 0f;
+        }
+        
+        /// <summary>
+        /// Copy current stats from another weapon instance.
+        /// Used when spawning clones (e.g., mirror slash) to preserve upgrades.
+        /// </summary>
+        public void CopyStatsFrom(WeaponBase source)
+        {
+            if (source == null) return;
+            
+            // Mark as clone to prevent Start() from overwriting these stats
+            isClone = true;
+            
+            damage = source.damage;
+            cooldown = source.cooldown;
+            knockback = source.knockback;
+            cooldownTimer = source.cooldownTimer;
+            
+            Debug.Log($"[{GetType().Name}] Copied stats from {source.GetType().Name}: damage={damage:F1}, cooldown={cooldown:F2}s");
         }
 
         // === PUBLIC UPGRADE API ===

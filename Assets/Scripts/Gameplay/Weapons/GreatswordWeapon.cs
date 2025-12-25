@@ -141,6 +141,12 @@ namespace PixelVanguard.Gameplay
                 }
             }
             
+            // 2. Mirror Slash: Flip rotation 180° to fire on opposite side
+            if (isMirror)
+            {
+                rotationAngle += 180f;
+            }
+            
             transform.rotation = Quaternion.Euler(0, 0, rotationAngle);
 
             // 2. Reset Visuals

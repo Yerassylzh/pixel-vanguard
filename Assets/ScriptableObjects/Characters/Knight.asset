@@ -21,7 +21,7 @@ MonoBehaviour:
   maxHealth: 100
   moveSpeed: 5
   baseDamageMultiplier: 1
-  starterWeapon: {fileID: 11400000, guid: 6f0c5959fa6f3b44d99a7be7fe8d195c, type: 2}
+  starterWeapon: {fileID: 11400000, guid: c8b3bdb59fa32974584e72137d5852b4, type: 2}
   unlockType: 0
   goldCost: 10000
   adWatchCount: 5
