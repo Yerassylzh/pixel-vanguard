@@ -42,6 +42,11 @@ namespace PixelVanguard.Gameplay
         }
 
         public float GetMoveSpeed() => moveSpeed;
+        
+        /// <summary>
+        /// Get current move input (for animations - not affected by knockback).
+        /// </summary>
+        public Vector2 MoveInput => moveInput;
 
         private void FixedUpdate()
         {

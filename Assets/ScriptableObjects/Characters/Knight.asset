@@ -19,7 +19,7 @@ MonoBehaviour:
   idleSprite: {fileID: 0}
   characterPrefab: {fileID: 4666537409914712190, guid: 1a79bd3446576194781d2b9e93b835a1, type: 3}
   maxHealth: 100
-  moveSpeed: 5
+  moveSpeed: 3.5
   baseDamageMultiplier: 1
   starterWeapon: {fileID: 11400000, guid: c8b3bdb59fa32974584e72137d5852b4, type: 2}
   unlockType: 0

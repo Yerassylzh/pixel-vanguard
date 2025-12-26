@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Collections;
+using PixelVanguard.Interfaces;
 
 namespace PixelVanguard.VFX
 {
     /// <summary>
     /// Handles sprite flash effect when entity takes damage.
     /// Attach to any GameObject with SpriteRenderer that should flash on hit.
+    /// Automatically subscribes to IDamageable.OnDamaged event.
     /// </summary>
     [RequireComponent(typeof(SpriteRenderer))]
     public class DamageFlash : MonoBehaviour
@@ -19,6 +21,7 @@ namespace PixelVanguard.VFX
         
         // Components
         private SpriteRenderer spriteRenderer;
+        private IDamageable damageable;
         
         // State
         private Color originalColor;
@@ -28,6 +31,35 @@ namespace PixelVanguard.VFX
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
             originalColor = spriteRenderer.color;
+            
+            // Find IDamageable on this GameObject
+            damageable = GetComponent<IDamageable>();
+            if (damageable == null)
+            {
+                Debug.LogWarning($"[DamageFlash] No IDamageable component found on {gameObject.name}!");
+            }
+        }
+        
+        private void OnEnable()
+        {
+            if (damageable != null)
+            {
+                damageable.OnDamaged += HandleDamage;
+                Debug.Log($"[DamageFlash] Subscribed to OnDamaged on {gameObject.name}");
+            }
+        }
+        
+        private void OnDisable()
+        {
+            if (damageable != null)
+            {
+                damageable.OnDamaged -= HandleDamage;
+            }
+        }
+        
+        private void HandleDamage(float damage, Vector3 position)
+        {
+            Flash();
         }
         
         /// <summary>

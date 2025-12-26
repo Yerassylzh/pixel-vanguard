@@ -165,10 +165,9 @@ namespace PixelVanguard.Gameplay
         {
             if (playerHealth != null)
             {
-                float currentMax = playerHealth.MaxHealth;
-                float newMax = currentMax + amount;
                 playerHealth.IncreaseMaxHealth(amount);
-                Debug.Log($"[UpgradeApplicator] ❤️ Max HP: {currentMax} → {newMax}");
+                Debug.Log($"[UpgradeApplicator] ❤️ Max HP: {playerHealth.MaxHealth}");
+                Debug.Log($"[UpgradeApplicator] ❤️ Current HP: {playerHealth.CurrentHealth}");
             }
         }
 

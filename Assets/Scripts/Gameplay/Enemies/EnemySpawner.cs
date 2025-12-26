@@ -58,12 +58,33 @@ namespace PixelVanguard.Gameplay
             // Check if it's time to spawn
             if (Time.time >= nextSpawnTime && currentEnemyCount < maxEnemies)
             {
-                SpawnEnemy();
+                SpawnEnemyWave();
                 ScheduleNextSpawn();
             }
         }
 
-        private void SpawnEnemy()
+        /// <summary>
+        /// Spawn multiple enemies at once (Vampire Survivors style).
+        /// Spawns 2-4 enemies per wave depending on game time.
+        /// </summary>
+        private void SpawnEnemyWave()
+        {
+            float gameTime = GameManager.Instance != null ? GameManager.Instance.GameTime : Time.time;
+            float minutesElapsed = gameTime / 60f;
+            
+            // Start with 2 enemies, add 1 every 2 minutes, cap at 4
+            int enemiesToSpawn = 2 + Mathf.FloorToInt(minutesElapsed / 2f);
+            enemiesToSpawn = Mathf.Clamp(enemiesToSpawn, 2, 4);
+            
+            // Spawn multiple enemies
+            for (int i = 0; i < enemiesToSpawn; i++)
+            {
+                if (currentEnemyCount >= maxEnemies) break;
+                SpawnSingleEnemy();
+            }
+        }
+
+        private void SpawnSingleEnemy()
         {
             // Get enemy data based on spawn eligibility
             var enemyData = GetEnemyDataForCurrentTime();

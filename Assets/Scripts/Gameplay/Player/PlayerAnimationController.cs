@@ -56,8 +56,8 @@ namespace PixelVanguard.Gameplay
         {
             if (animator == null || playerController == null) return;
 
-            // Check total movement magnitude (X and Y) for the "IsMoving" state
-            Vector2 moveDir = playerController.MoveDirection;
+            // Use Movement.MoveInput (actual input, not velocity) to prevent knockback from triggering animation
+            Vector2 moveDir = playerController.Movement != null ? playerController.Movement.MoveInput : Vector2.zero;
             bool isMoving = moveDir.sqrMagnitude > (inputThreshold * inputThreshold);
 
             // Update facing direction when moving

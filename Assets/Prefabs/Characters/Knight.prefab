@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: -7509221217629645066}
   - component: {fileID: -7519427643987746405}
   - component: {fileID: 5165195169569683667}
+  - component: {fileID: -4516589363711829828}
   m_Layer: 7
   m_Name: Knight
   m_TagString: Player
@@ -286,9 +287,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d631cd9e5db1774c979841efaaf9ba1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.VFX.DamageFlash
-  spriteRenderer: {fileID: 0}
   flashDuration: 0.15
-  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &-4516589363711829828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4666537409914712190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3489bfa720af40e418fe766b3194c0cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.DamageNumberListener
+  damageType: 2
+  healType: 3
 --- !u!1 &8917478516091804949
 GameObject:
   m_ObjectHideFlags: 0

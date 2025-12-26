@@ -60,6 +60,48 @@ UpgradeManager (Orchestrator)
 - Passive limit (max 3 total)
 - Weapon-specific filtering
 
+## ✅ VFX System
+
+**Namespace:** PixelVanguard.VFX  
+**Purpose:** Event-driven visual feedback for combat
+
+**IDamageable Interface:**
+- Events: `OnDamaged(damage, position)`, `OnHealed(amount, position)`
+- Implemented by: `EnemyHealth`, `PlayerHealth`
+- Enables complete decoupling of health from feedback systems
+
+**DamageFlash:**
+- Subscribes to `IDamageable.OnDamaged` in `OnEnable()`
+- Auto-flashes sprite on damage
+- Configurable: flash duration, flash color
+- No manual triggering required
+
+**DamageNumber:**
+- Floating damage text with scale pop animation
+- World-space tracking (follows camera movement)
+- Scale-in (0.3x → 1.0x) → float up → scale-out
+- Multi-text support: primary (colored) + shadow (black)
+- Configurable: spawn offset, lifetime, animation speeds
+
+**DamageNumberListener:**
+- Subscribes to `IDamageable` events
+- Spawns damage numbers automatically
+- Configurable damage type (Normal/Critical/PlayerDamage/Healing)
+
+**DamageNumberSpawner:**
+- Singleton with object pooling (50 instances default)
+- World-to-canvas coordinate conversion
+- Handles Screen Space Camera and Overlay modes
+- Color-coded by damage type
+
+**Event Flow:**
+```
+EnemyHealth.TakeDamage()
+    └─► OnDamaged?.Invoke(damage, position)
+        ├─► DamageFlash.HandleDamage() → Flash()
+        └─► DamageNumberListener.HandleDamage() → Spawn number
+```
+
 ## ✅ Enemy Systems
 
 **Components:**
@@ -139,12 +181,14 @@ Skeleton, Crawler, Goblin, Ghost, ArmoredOrc, Slime
 Assets/Scripts/
 ├── Core/ - CharacterManager, GameEvents, PlatformDetector, ServiceLocator
 ├── Data/ - ScriptableObject definitions (4 types)
+├── Interfaces/ - IDamageable (event-driven damage)
 ├── Gameplay/
 │   ├── Player/ - PlayerController, PlayerMovement, PlayerInput, PlayerHealth, PlayerAnimationController
 │   ├── Weapons/ - WeaponBase, WeaponManager, 4 weapon types, projectiles, utilities
 │   ├── Enemies/ - EnemyAI, EnemyHealth, EnemySpawner, EnemyAnimationController
 │   ├── Upgrades/ - UpgradeManager, UpgradeTracker, UpgradeValidator, UpgradeApplicator
 │   └── Collectibles - XPGem, GoldCoin, HealthPotion, GameManager, GameSession
+├── VFX/ - DamageFlash, DamageNumber, DamageNumberListener, DamageNumberSpawner
 ├── UI/ - HUD, LevelUpPanel, PauseMenu, GameOverScreen, VirtualJoystick
 ├── Services/ - Interfaces + Implementations
 └── Utils/ - AutoFPS60Setter
@@ -152,10 +196,12 @@ Assets/Scripts/
 
 ## Design Patterns
 
-**Singletons:** GameManager, PlayerController, CharacterManager  
+**Singletons:** GameManager, PlayerController, CharacterManager, DamageNumberSpawner  
+**Event-Driven:** IDamageable events for damage feedback (VFX)  
 **ScriptableObjects:** All configuration data (designer-friendly)  
 **Events:** `GameEvents` static class for decoupled communication  
-**Service Locator:** Cross-cutting concerns (save, ads, platform)
+**Service Locator:** Cross-cutting concerns (save, ads, platform)  
+**Object Pooling:** Damage numbers (performance optimization)
 
 ## Code Conventions
 

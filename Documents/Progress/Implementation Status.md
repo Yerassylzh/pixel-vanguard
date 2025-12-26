@@ -58,6 +58,9 @@
 - [x] ScriptableObject data architecture
 - [x] Cinemachine integration
 - [x] Platform detection
+- [x] Event-driven VFX (IDamageable interface)
+- [x] Object pooling (damage numbers)
+- [x] Animation uses input (not velocity - prevents knockback animation)
 
 ## ⚠️ PARTIAL IMPLEMENTATION
 
@@ -77,10 +80,15 @@
 - [ ] Meta progression (permanent upgrades)
 - [ ] Multiple characters (only Knight exists)
 - [ ] Boss enemies
-- [ ] Audio system (SFX, music)
+- [ ] Audio implementation (SFX spec complete, assets needed)
 - [ ] Settings menu (volume, controls)
 - [ ] Achievements
 - [ ] Localization
+
+## ✅ SPECIFICATIONS COMPLETE
+
+- [x] SFX Specification (detailed audio design doc)
+- [x] Damage feedback system (visual + numerical)
 
 ## 🐛 KNOWN ISSUES
 

@@ -1,13 +1,14 @@
 using UnityEngine;
+using PixelVanguard.Interfaces;
 
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
     /// Manages player health and damage reception.
-    /// Integrated with characterDamageMultiplier for Might upgrade.
+    /// Implements IDamageable for event-driven damage feedback.
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
-    public class PlayerHealth : MonoBehaviour
+    public class PlayerHealth : MonoBehaviour, IDamageable
     {
         [Header("Stats")]
         private float maxHealth = 100f;
@@ -27,6 +28,11 @@ namespace PixelVanguard.Gameplay
         [SerializeField] private bool isInvincible = false;
         [SerializeField] private float invincibilityDuration = 0f;
 
+        // IDamageable implementation
+        public event System.Action<float, Vector3> OnDamaged;
+        public event System.Action<float, Vector3> OnHealed;
+        public bool IsAlive => currentHealth > 0f;
+        
         private float invincibilityTimer = 0f;
         private PlayerController playerController;
 
@@ -78,6 +84,9 @@ namespace PixelVanguard.Gameplay
             currentHealth -= damage;
             currentHealth = Mathf.Max(0f, currentHealth);
 
+            // Fire damage event for feedback systems
+            OnDamaged?.Invoke(damage, transform.position);
+
             Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
 
             if (currentHealth <= 0f)
@@ -93,6 +102,9 @@ namespace PixelVanguard.Gameplay
         {
             currentHealth += amount;
             currentHealth = Mathf.Min(currentHealth, maxHealth);
+
+            // Fire heal event for feedback systems
+            OnHealed?.Invoke(amount, transform.position);
 
             Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
         }
@@ -139,6 +151,9 @@ namespace PixelVanguard.Gameplay
             {
                 playerController.enabled = false;
             }
+
+            Debug.Log($"[PlayerHealth] ❤️ Max HP: {MaxHealth}");
+            Debug.Log($"[PlayerHealth] ❤️ Current HP: {CurrentHealth}");
 
             // NOTE: Actual game over logic handled by GameManager
             // ReviveManager will check if revive is available

@@ -1,14 +1,15 @@
 using UnityEngine;
 using PixelVanguard.Data;
+using PixelVanguard.Interfaces;
 
 namespace PixelVanguard.Gameplay
 {
     /// <summary>
     /// Handles enemy health, damage, knockback, death, and loot drops.
-    /// REFACTORED: Integrated gold bonus from UpgradeManager.
+    /// Implements IDamageable for event-driven damage feedback.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class EnemyHealth : MonoBehaviour
+    public class EnemyHealth : MonoBehaviour, IDamageable
     {
         [Header("Data")]
         [SerializeField] private EnemyData enemyData;
@@ -24,6 +25,10 @@ namespace PixelVanguard.Gameplay
         private bool isAlive = true;
         private Rigidbody2D rb;
 
+        // IDamageable implementation
+        public event System.Action<float, Vector3> OnDamaged;
+        public event System.Action<float, Vector3> OnHealed;
+        
         // Static kill count (shared across all enemies)
         private static int totalKillCount = 0;
 
@@ -57,6 +62,10 @@ namespace PixelVanguard.Gameplay
             if (!isAlive) return;
 
             currentHealth -= damage;
+
+            // Fire damage event for feedback systems
+            Debug.Log($"[EnemyHealth] TakeDamage: {damage} dmg, firing OnDamaged event, subscribers: {OnDamaged?.GetInvocationList().Length ?? 0}");
+            OnDamaged?.Invoke(damage, transform.position);
 
             float actualKnockback = knockbackForce * (1f - enemyData.weightResistance);
             rb.AddForce(knockbackDirection * actualKnockback, ForceMode2D.Force);

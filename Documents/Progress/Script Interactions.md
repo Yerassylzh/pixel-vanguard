@@ -25,7 +25,42 @@ GameEvents.OnPlayerDeath += ShowGameOver;
 - Game state changes (death → game over)
 - Stat tracking (kills, damage dealt)
 
-### 2. Direct References (Performance-Critical)
+### 2. Event-Driven (Interface Events)
+
+**IDamageable Interface** - Component-level events for damage feedback:
+```csharp
+// Interface
+public interface IDamageable
+{
+    event Action<float, Vector3> OnDamaged;
+    event Action<float, Vector3> OnHealed;
+    bool IsAlive { get; }
+}
+
+// Implementation (EnemyHealth, PlayerHealth)
+public event Action<float, Vector3> OnDamaged;
+OnDamaged?.Invoke(damage, transform.position);
+
+// Subscribers (DamageFlash, DamageNumberListener)
+private void OnEnable()
+{
+    damageable.OnDamaged += HandleDamage;
+}
+```
+
+**Benefits:**
+- Complete decoupling (health ↔ VFX independent)
+- Easy to add/remove feedback systems
+- No manual triggering required
+- Testable in isolation
+
+**Usage:**
+- Damage flash effects
+- Floating damage numbers
+- Hit sounds (future)
+- Screen shake (future)
+
+### 3. Direct References (Performance-Critical)
 
 **Singletons:**
 - `PlayerController.Instance` - Accessed by weapons for positioning

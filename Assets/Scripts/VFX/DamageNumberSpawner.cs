@@ -32,15 +32,33 @@ namespace PixelVanguard.VFX
         private Queue<GameObject> pool = new Queue<GameObject>();
         private Transform poolParent;
         
+        // Public accessor for pool parent (so DamageNumber can return correctly)
+        public Transform PoolParent => poolParent;
+        
         private void Awake()
         {
             // Singleton
             if (Instance != null && Instance != this)
             {
+                Debug.LogWarning("[DamageNumberSpawner] Duplicate spawner destroyed");
                 Destroy(gameObject);
                 return;
             }
             Instance = this;
+            Debug.Log($"[DamageNumberSpawner] Singleton initialized, Canvas: {canvas != null}, Prefab: {damageNumberPrefab != null}");
+            
+            // Validate
+            if (canvas == null)
+            {
+                Debug.LogError("[DamageNumberSpawner] Canvas not assigned in Inspector!");
+                return;
+            }
+            
+            if (damageNumberPrefab == null)
+            {
+                Debug.LogError("[DamageNumberSpawner] Damage number prefab not assigned in Inspector!");
+                return;
+            }
             
             // Create pool parent
             poolParent = new GameObject("DamageNumber Pool").transform;
@@ -51,6 +69,8 @@ namespace PixelVanguard.VFX
             {
                 CreateNewPoolObject();
             }
+            
+            Debug.Log($"[DamageNumberSpawner] Pool created with {poolSize} objects");
         }
         
         /// <summary>
@@ -58,6 +78,8 @@ namespace PixelVanguard.VFX
         /// </summary>
         public void SpawnDamageNumber(Vector3 worldPosition, float damage, DamageNumberType type)
         {
+            Debug.Log($"[DamageNumberSpawner] SpawnDamageNumber called: {damage} at {worldPosition}, type: {type}");
+            
             if (canvas == null)
             {
                 Debug.LogError("[DamageNumberSpawner] Canvas not assigned!");
@@ -66,27 +88,73 @@ namespace PixelVanguard.VFX
             
             // Get from pool
             GameObject numberObj = GetFromPool();
-            if (numberObj == null) return;
+            if (numberObj == null)
+            {
+                Debug.LogError("[DamageNumberSpawner] Failed to get object from pool!");
+                return;
+            }
             
-            // Convert world position to canvas space
-            Vector2 screenPos = Camera.main.WorldToScreenPoint(worldPosition);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvas.transform as RectTransform,
+            Debug.Log($"[DamageNumberSpawner] Got pooled object: {numberObj.name}");
+            
+            // CRITICAL: Get the correct camera for this canvas mode
+            Camera renderCamera = null;
+            if (canvas.renderMode == RenderMode.ScreenSpaceCamera)
+            {
+                renderCamera = canvas.worldCamera;
+                if (renderCamera == null)
+                {
+                    renderCamera = Camera.main;
+                    Debug.LogWarning("[DamageNumberSpawner] Canvas worldCamera not assigned, using Camera.main");
+                }
+            }
+            // For ScreenSpaceOverlay, camera should be null
+            
+            Debug.Log($"[DamageNumberSpawner] Canvas mode: {canvas.renderMode}, Using camera: {renderCamera?.name ?? "null (overlay)"}");
+            
+            // Convert world position to screen position
+            Vector2 screenPos = renderCamera != null 
+                ? renderCamera.WorldToScreenPoint(worldPosition) 
+                : Camera.main.WorldToScreenPoint(worldPosition);
+            
+            Debug.Log($"[DamageNumberSpawner] World pos: {worldPosition}, Screen pos: {screenPos}");
+            
+            // Convert screen position to canvas local position
+            RectTransform canvasRect = canvas.transform as RectTransform;
+            bool success = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect,
                 screenPos,
-                canvas.worldCamera,
+                renderCamera, // Use the same camera as canvas
                 out Vector2 localPos
             );
             
-            // Position the number
+            if (!success)
+            {
+                Debug.LogError("[DamageNumberSpawner] Failed to convert screen point to local point!");
+                numberObj.SetActive(false);
+                return;
+            }
+            
+            Debug.Log($"[DamageNumberSpawner] Canvas local pos: {localPos}, Success: {success}");
+            
+            // CRITICAL FIX: Reparent to canvas BEFORE positioning to avoid transform issues
             RectTransform rectTransform = numberObj.GetComponent<RectTransform>();
-            rectTransform.localPosition = localPos;
+            rectTransform.SetParent(canvas.transform, false); // worldPositionStays = false
+            
+            // Reset transform to ensure clean state
+            rectTransform.localScale = Vector3.one;
+            rectTransform.localRotation = Quaternion.identity;
+            
+            // Set position in canvas space
+            rectTransform.anchoredPosition = localPos;
+            
+            Debug.Log($"[DamageNumberSpawner] Final anchored position: {rectTransform.anchoredPosition}");
             
             // Initialize with color based on type
             Color color = GetColorForType(type);
             DamageNumber damageNumber = numberObj.GetComponent<DamageNumber>();
             if (damageNumber != null)
             {
-                damageNumber.Initialize(damage, color);
+                damageNumber.Initialize(damage, color, worldPosition);
             }
             
             // Activate
