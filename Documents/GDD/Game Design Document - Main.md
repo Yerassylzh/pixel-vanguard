@@ -1,221 +1,130 @@
-# Game Design Document - Pixel Vanguard
-**Version:** 1.0  
-**Last Updated:** 2025-12-10  
-**Type:** Horde Survivor / Action Roguelite
+# Game Design Document - Main
+
+**Game Title:** Pixel Vanguard  
+**Genre:** Horde Survivor / Action Rogue lite (Vampire Survivors-style)  
+**Platform:** Unity 2D (Desktop + Mobile)  
+**Target:** Casual action players
 
 ---
 
-## Table of Contents
-1. [System Architecture Overview](#system-architecture-overview)
-2. [Scene Flow & Navigation](#scene-flow--navigation)
-3. [Core Systems](#core-systems)
-4. [Reference Documents](#reference-documents)
+## Core Concept
+
+**Elevator Pitch:** Survive waves of pixel-art enemies by unlocking weapons and stacking upgrades in this auto-attack roguelite.
+
+**Core Loop:**
+```
+Spawn → Kill Enemies → Collect XP → Level Up → Choose Upgrade → Get Stronger → Repeat → Eventually Die → See Stats
+```
+
+**Session Duration:** 10-30 minutes per run
 
 ---
 
-## System Architecture Overview
+## Key Features
 
-### High-Level Architecture
+### 1. Auto-Combat System
+- Weapons fire automatically (no aim required)
+- Player focuses on positioning and dodging
+- Mobile-friendly (virtual joystick)
 
-```mermaid
-graph TD
-    A[Bootstrap Scene] --> B[MainMenu Scene]
-    B --> C[GameScene]
-    C --> D[Results Scene]
-    D --> B
-    D --> C
-    
-    E[Service Layer] -.-> A
-    E -.-> B
-    E -.-> C
-    E -.-> D
-    
-    F[Save System] -.-> E
-    G[Ad System] -.-> E
-    H[Platform Detection] -.-> E
-```
+### 2. Weapon Variety (4 Types)
+- **Greatsword:** Melee 360° swing with visual slash
+- **Auto Crossbow:** Ranged multi-target arrows
+- **Holy Water:** Area denial puddles with DoT
+- **Magic Orbitals:** Orbiting shield balls
 
-### Core Pillars
+### 3. Deep Upgrade System (18 Types)
+- **Universal:** Speed, HP, Damage, Attack Speed (infinite stacking)
+- **New Weapons:** Unlock up to 4 weapons
+- **Weapon-Specific:** 10 unique upgrades (Mirror Slash, Dual Shot, etc.)
+- **Passives:** Lifesteal, Magnet, Lucky Coins (max 3)
 
-1. **Platform Agnostic Design**: Single codebase supports Android, Web Desktop, and Web Mobile
-2. **Service-Based Architecture**: Platform-specific services (Ads, Saves) are injected at runtime
-3. **Data-Driven Gameplay**: Weapons, enemies, and stats defined via ScriptableObjects
-4. **Event-Driven Communication**: Systems communicate via events to maintain loose coupling
+### 4. Progression Systems
+- XP leveling (level × 10 XP required)
+- Gold collection (future shop)
+- Weighted rarity upgrades (Common → Epic)
 
 ---
 
-## Scene Flow & Navigation
+## Design Pillars
 
-### Scene Hierarchy
+### 1. **Incremental Power Fantasy**
+- Start weak, become godlike
+- Repeatable stats enable infinite scaling
+- Synergistic upgrades (Dual + Triple + Pierce crossbow)
 
-```
-Bootstrap (Initialization)
-    ↓
-MainMenu (Hub)
-    ↓ (Play Button)
-GameScene (Core Gameplay Loop)
-    ↓ (Win/Loss)
-Results (Summary + Monetization)
-    ↓ (Home)           ↓ (Retry)
-MainMenu          GameScene
-```
+### 2. **Meaningful Choices**
+- Weighted randomness ensures variety
+- Prerequisites create upgrade paths
+- Passive limits force trade-offs
 
-### Scene Responsibilities
+### 3. **Visual Satisfaction**
+- Shader-based weapon reveals
+- Knockback on every hit
+- Screen-filling late-game power
 
-| Scene | Purpose | Key Scripts | Persistent? |
-|-------|---------|-------------|-------------|
-| **Bootstrap** | Platform detection, service injection, data loading | `Bootstrap`, `ServiceLocator`, `PlatformDetector` | No |
-| **MainMenu** | Character selection, shop, navigation hub | `MainMenuController`, `ShopManager`, `CharacterSelector`   | No |
-| **GameScene** | Combat, progression, level-up events | `GameManager`, `PlayerController`, `EnemySpawner`, `LevelUpManager` | No |
-| **Results** | Game summary, ad monetization, save data | `ResultsController`, `AdRewardHandler`, `SaveWriter` | No |
+### 4. **Accessibility**
+- One-finger mobile control
+- Auto-targeting weapons
+- Clear visual feedback
 
 ---
 
-## Core Systems
+## Monetization (Future)
 
-### 1. Service Locator Pattern
-
-**Purpose:** Provide platform-specific implementations without hardcoding dependencies
-
-**Location:** Global singleton, initialized in Bootstrap
-
-**Key Interfaces:**
-- `IAdService` - Ads (AdMob for Android, Yandex Ads for Web)
-- `ISaveService` - Save data (PlayerPrefs for Android, Cloud for Yandex)
-- `IPlatformService` - Input handling, screen orientation
-
-**Implementation Flow:**
-```
-Bootstrap → Detect Platform → Register Services → Load Initial Data → Navigate to MainMenu
-```
-
-### 2. Game Loop Architecture
-
-**Location:** GameScene
-
-**Flow Diagram:**
-
-```mermaid
-graph LR
-    A[Game Start] --> B[Spawn Player]
-    B --> C[Start Timer]
-    C --> D{Game Running?}
-    D -->|Yes| E[Spawn Enemies]
-    E --> F[Update Combat]
-    F --> G[Collect XP/Gold]
-    G --> H{Level Up?}
-    H -->|Yes| I[Pause Game]
-    I --> J[Show 3 Cards]
-    J --> K[Player Selects]
-    K --> L[Apply Upgrade]
-    L --> D
-    H -->|No| M{Player Dead?}
-    M -->|Yes| N[Show Revive?]
-    N -->|Yes| O[Watch Ad]
-    O --> D
-    N -->|No| P[Results Scene]
-    M -->|No| D
-```
-
-**Key Managers:**
-- **GameManager**: Master controller, owns game state (Paused/Running/GameOver)
-- **EnemySpawner**: Time-based difficulty scaling, spawns enemies at screen edges
-- **LevelUpManager**: XP tracking, card generation, upgrade application
-- **WeaponManager**: Handles equipped weapons, auto-fire logic, collision detection
-
-### 3. Combat System
-
-**Damage Flow:**
-```
-Weapon (Auto-fires) → Projectile/Hitbox → Enemy Hit → Calculate Damage → Apply Knockback → Drop XP/Gold
-```
-
-**Key Components:**
-- **Weapon Base Class**: Defines fire rate, damage multiplier, auto-fire behavior
-- **Projectile**: Handles movement, pierce count, lifetime
-- **Enemy Health**: Takes damage, handles knockback physics, spawns loot on death
-
-**Y-Sorting:** All combat happens in a Y-sorted layer for proper 2.5D depth perception
-
-### 4. Progression System
-
-**Two Progression Tracks:**
-
-#### A. In-Run Progression (Temporary)
-- Level up from XP gems
-- Unlock/upgrade weapons during run
-- Temporary stat boosts
-- **Reset on death/completion**
-
-#### B. Meta Progression (Permanent)
-- Gold earned from runs
-- Purchase permanent stat upgrades (Vitality, Might, Greaves, Magnet, Luck)
-- Unlock new characters
-- **Persists across sessions**
-
-**Data Flow:**
-```
-GameScene (Collect Gold) → Results Scene (Optionally Double with Ad) → Save System → MainMenu (Display Total)
-```
-
-### 5. Monetization Integration
-
-**Ad Placements:**
-
-| Type | Trigger | Reward | Implementation |
-|------|---------|--------|----------------|
-| **Rewarded** | Results screen "Double Gold" button | 2x gold | `IAdService.ShowRewardedAd()` |
-| **Rewarded** | Level-up reroll button | New card selection | `LevelUpManager.OnRerollRequest()` |
-| **Rewarded** | Revive screen | Restore 50% HP, continue run | `ReviveManager.OnReviveRequest()` |
-| **Rewarded** | Shop "Daily Grant" | +500 gold | `ShopManager.OnDailyGrant()` |
-| **Interstitial** | Post-results (frequency capped) | N/A | `IAdService.ShowInterstitial()` |
-
-**Flow Example (Revive):**
-```
-Player HP = 0 → Pause Game → Check Revive Count → Show ReviveScreen → Player Clicks "Revive" → 
-Show Ad → Wait for Ad Close → Heal Player (50%) → Grant Invincibility (3s) → Resume Game
-```
+**Free-to-Play Model:**
+- Core game free
+- Optional ads for continue/double rewards
+- No pay-to-win mechanics
 
 ---
 
-## Reference Documents
+## Target Audience
 
-Detailed technical designs for specific systems:
+**Primary:** Casual mobile gamers (ages 18-35)  
+**Secondary:** PC roguelite fans
 
-- [GameScene Technical Design](file:///c:/Users/Honor/Unity%20Games/Pixel%20Vanguard/Documents/GDD%20-%20GameScene%20Technical.md) - Deep dive into combat loop, spawning, and weapon systems
-- [Service Architecture](file:///c:/Users/Honor/Unity%20Games/Pixel%20Vanguard/Documents/GDD%20-%20Service%20Architecture.md) - Platform detection and service injection patterns
-- [Data Models Reference](file:///c:/Users/Honor/Unity%20Games/Pixel%20Vanguard/Documents/GDD%20-%20Data%20Models.md) - ScriptableObject schemas for weapons, enemies, characters
-
----
-
-## Script Responsibilities Quick Reference
-
-| Script | Scene | Purpose | Events Emitted | Events Listened |
-|--------|-------|---------|----------------|-----------------|
-| `Bootstrap` | Bootstrap | Initialize services, load save data | `OnServicesReady` | None |
-| `GameManager` | GameScene | Master game state, pause/resume | `OnGameStart`, `OnGameOver`, `OnPause` | `OnPlayerDeath` |
-| `PlayerController` | GameScene | Movement, health, input handling | `OnPlayerDeath`, `OnPlayerLevelUp` | `OnUpgradeApplied` |
-| `EnemySpawner` | GameScene | Spawn enemies based on time/difficulty | None | `OnGameStart`, `OnPause` |
-| `WeaponManager` | GameScene | Manage equipped weapons, auto-fire | `OnWeaponFired`, `OnEnemyHit` | `OnPlayerLevelUp` |
-| `LevelUpManager` | GameScene | XP tracking, card generation | `OnLevelUp`, `OnCardsGenerated` | `OnCardSelected` |
-| `ResultsController` | Results | Display stats, handle ad rewards | `OnGoldCalculated` | `OnAdWatched` |
-| `ShopManager` | MainMenu | Purchase upgrades, unlock characters | `OnPurchaseComplete` | None |
+**Appeal:**
+- Easy to learn, hard to master
+- Short sessions fit mobile lifestyle
+- Satisfying power progression
+- Retro pixel art aesthetic
 
 ---
 
-## Design Principles
+## Unique Selling Points
 
-1. **Separation of Concerns**: Each manager handles ONE responsibility
-2. **Event-Driven**: Avoid direct references between systems
-3. **Data-Driven**: Game balance tweaked via ScriptableObjects, not code
-4. **Platform Agnostic**: No platform-specific code outside service implementations
-5. **Fail-Safe Ads**: Game must work even if ad service fails (graceful degradation)
+1. **4-Weapon Limit** - Forces strategic choices
+2. **Prerequisite System** - Adds progression depth
+3. **HP Scaling Damage** - Makes upgrades relevant vs bosses
+4. **Multi-Target Arrows** - Rewards positioning
 
 ---
 
-## Future Expansion Points
+## Technical Highlights
 
-- **Boss Waves**: Director can trigger special boss spawns at set times
-- **New Weapons**: Drop-in via ScriptableObjects, no code changes needed
-- **Daily Challenges**: Separate scene or GameScene mode variant
-- **Leaderboards**: Add `ILeaderboardService` to service layer
+- Component-based architecture (easy to extend)
+- ScriptableObject-driven balance (designer-friendly)
+- Modular upgrade system (4-class separation)
+- Event-driven UI (decoupled)
+
+---
+
+## Future Expansion
+
+**Phase 2:**
+- Shop system (spend gold)
+- More characters (3-5 total)
+- Boss enemies
+- Meta progression (permanent upgrades)
+
+**Phase 3:**
+- Multiple maps
+- Daily challenges
+- Leaderboards
+- Achievements
+
+**Phase 4:**
+- Multiplayer co-op
+- More weapons (target 8-10)
+- Prestige system

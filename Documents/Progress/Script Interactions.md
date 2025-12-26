@@ -1,82 +1,116 @@
-# Script Interactions
+# Script Interactions - System Communication
 
-**How scripts communicate.**
+**Purpose:** How different scripts communicate
 
----
+## Core Communication Patterns
 
-## Core Flow
+### 1. Events (Decoupled)
 
-```
-ServiceLocator (singleton, no deps)
-GameEvents (static, no deps)
-GameManager (listens to events, controls time)
-```
+**GameEvents.cs** - Static event bus for system-wide notifications:
+```csharp
+// Triggers
+GameEvents.TriggerPlayerHealthChanged(currentHP, maxHP);
+GameEvents.TriggerXPGained(amount);
+GameEvents.TriggerPlayerDeath();
+GameEvents.TriggerEnemyKilled(enemyData);
 
----
-
-## Player Systems
-
-```mermaid
-graph LR
-    PlayerController[PlayerController] --> PlayerHealth
-    PlayerHealth -->|OnPlayerDeath| GameManager
-    PlayerHealth -->|OnHealthChanged| HUD[HUD - future]
-    PlayerController -.->|uses| InputActions[InputSystem_Actions]
+// Listeners
+GameEvents.OnPlayerHealthChanged += UpdateHealthBar;
+GameEvents.OnXPGained += AddXP;
+GameEvents.OnPlayerDeath += ShowGameOver;
 ```
 
-**Communication:**
-- PlayerHealth fires events, doesn't call GameManager directly
-- GameManager listens and reacts (pause game, end game)
+**Usage:**
+- UI updates (HP bar, XP bar)
+- Game state changes (death → game over)
+- Stat tracking (kills, damage dealt)
 
----
+### 2. Direct References (Performance-Critical)
 
-## Enemy Systems
+**Singletons:**
+- `PlayerController.Instance` - Accessed by weapons for positioning
+- `GameManager.Instance` - Game state queries (`CurrentState`)
+- `CharacterManager.SelectedCharacter` - Character data access
 
-```mermaid
-graph LR
-    EnemyAI[EnemyAI] --> EnemyHealth
-    EnemyAI --> EnemyAnimationController
-    EnemyHealth -->|OnEnemyKilled| GameManager
-    EnemyHealth -->|OnXPGained| LevelUpManager
-    EnemyAI -.->|finds| Player[Player tag]
+**Component Queries:**
+- Weapons find player via `FindObjectOfType<PlayerController>()`
+- Stored as cached reference in `Awake()`
+
+### 3. ScriptableObject Data Flow
+
+```
+CharacterData → CharacterManager → Player Components
+WeaponData → WeaponManager → WeaponBase
+EnemyData → EnemySpawner → Enemy Components
+UpgradeData → UpgradeManager → Player/Weapons
 ```
 
-**Communication:**
-- EnemyAI finds Player by tag (GameObject.FindGameObjectWithTag)
-- EnemyHealth reads EnemyData.moveSpeed
-- Events used for XP, gold, kill count
+**Benefits:** Designer-friendly tuning, no code changes for balance
 
----
+## System-to-System Communication
 
-## Event Flow
+### Player → Weapons
+- Weapons access `PlayerController.Instance.transform` for positioning
+- Weapons call `GetFinalDamage()` which queries `CharacterManager.SelectedCharacter.baseDamageMultiplier`
 
-**Player Death:**
-1. `PlayerHealth.Die()` → fires `OnPlayerDeath`
-2. `GameManager.OnPlayerDeath()` → calls `EndGame()`
-3. `GameManager.EndGame()` → sets `Time.timeScale = 0`
+### Upgrades → Player
+- `UpgradeApplicator` calls `PlayerController.SetMoveSpeed()`
+- `UpgradeApplicator` calls `PlayerHealth.IncreaseMaxHealth()`
 
-**Enemy Death:**
-1. `EnemyHealth.Die()` → fires `OnEnemyKilled`, `OnXPGained`, `OnGoldCollected`
-2. `GameManager` updates kill count
-3. (Future) LevelUpManager tracks XP
+### Upgrades → Weapons
+- `UpgradeApplicator` queries `WeaponManager.GetEquippedWeapons()`
+- Calls `weapon.IncreaseDamage()` or weapon-specific methods
+- For NewWeapon: `WeaponManager.EquipWeapon(weaponData)`
 
----
+### Weapons → Enemies
+- Direct collision detection (`OnTriggerStay2D`)
+- Direct method call: `enemyHealth.TakeDamage(damage, knockbackDir, force)`
+- No utility classes - weapons call enemy methods directly
 
-## Dependencies
+### Enemies → Player
+- Collision: `OnCollisionStay2D` → `PlayerHealth.TakeDamage()`
+- Loot drops: Instantiate collectibles on death
 
-| Script | Depends On |
-|--------|-----------|
-| PlayerController | Rigidbody2D, InputActions, PlayerAnimationController |
-| PlayerHealth | PlayerController |
-| EnemyAI | EnemyHealth, Player (tag) |
-| EnemyHealth | Rigidbody2D, EnemyData |
-| EnemyAnimationController | Animator, EnemyAI |
-| WeaponManager | WeaponData inputs, Projectile prefabs |
-| GameManager | GameEvents |
+### Collectibles → Player
+- Trigger: `OnTriggerEnter2D` detects player tag
+- Event: `GameEvents.TriggerXPGained(amount)`
+- Direct: Health potion calls `PlayerHealth.Heal(amount)`
 
----
+### UI → Game Systems
+- `LevelUpPanel` calls `UpgradeManager.GetRandomUpgrades()`
+- Player selects → calls `UpgradeManager.ApplyUpgrade(upgrade)`
+- `HUD` subscribes to `GameEvents` for updates
 
-## Weapon Integrations
-- Spawner calls `EnemyHealth.Initialize(EnemyData)`
-- Weapons find enemies → call `EnemyHealth.TakeDamage()`
-- Knockback direction: `(enemy.pos - weapon.pos).normalized`
+## Dependency Flow
+
+```
+GameManager (Top Level)
+    └─► Player Systems
+        ├─► WeaponManager → Weapons
+        │       └─► Enemies
+        └─► UpgradeManager → Player/Weapons
+            ├─► UpgradeTracker
+            ├─► UpgradeValidator → WeaponManager
+            └─► UpgradeApplicator → All systems
+
+Services (ServiceLocator)
+    ├─► SaveService (any system)
+    ├─► AdService (UI)
+    └─► PlatformService (Input)
+```
+
+## Anti-Patterns Avoided
+
+**❌ NO:** Central "Manager of Managers"  
+**✅ YES:** Decoupled via events + selective singletons
+
+**❌ NO:** God objects  
+**✅ YES:** Single responsibility (Player split into 4 components, UpgradeManager split into 4 classes)
+
+**❌ NO:** Tight coupling  
+**✅ YES:** Dependency injection where appropriate (UpgradeApplicator receives references)
+
+## Cross-Scene Communication
+
+**Not Applicable:** Single-scene game (GameScene only)  
+**Future:** If multiple scenes added, use `DontDestroyOnLoad` + events

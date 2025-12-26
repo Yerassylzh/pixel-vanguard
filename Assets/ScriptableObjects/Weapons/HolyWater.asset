@@ -18,7 +18,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   type: 3
   baseDamage: 5
-  cooldown: 3
+  cooldown: 15
   knockback: 20
   baseDuration: 4
   baseTickRate: 0.5

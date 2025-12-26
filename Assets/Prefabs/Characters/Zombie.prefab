@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 5885493294868352394}
   - component: {fileID: 1103839971442466751}
   - component: {fileID: 9085930267321992938}
+  - component: {fileID: -5008327138818794787}
   m_Layer: 7
   m_Name: Zombie
   m_TagString: Player
@@ -273,6 +274,21 @@ MonoBehaviour:
   damageCooldown: 1
   isInvincible: 0
   invincibilityDuration: 0
+--- !u!114 &-5008327138818794787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4020933243460161695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d631cd9e5db1774c979841efaaf9ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.VFX.DamageFlash
+  spriteRenderer: {fileID: 0}
+  flashDuration: 0.15
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &8560080887469840968
 GameObject:
   m_ObjectHideFlags: 0

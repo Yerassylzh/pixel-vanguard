@@ -13,7 +13,10 @@ When u start adding some art, always save all the new ideas and enhancements for
 E.g: XP gems must be differenciated by their size and some effects (m.b particles, colors).
 
 Next plans:
-Adding more players
-Adding 3 move enemies
-Balancing the gameplay
+Increase slash cooldown and wider up it's collider [v]
+Increase XP threshold for next level
+Increase Enemy health
+Increase Enemy count [v]
+Balance weapon cooldown, rarity, etc
+Add visual effects of getting damage, die, etc
 Adding SFX and music

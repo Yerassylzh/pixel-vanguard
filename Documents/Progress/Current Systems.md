@@ -1,183 +1,165 @@
-# Current Systems
+# Current Systems - Implementation Status
 
-**Implemented system overview - concise technical reference**
+**Purpose:** Quick reference for what's implemented and how systems work
 
----
+## ✅ Player Systems
 
-## Core Managers
+**Components (4):**
+- `PlayerController` - Singleton, GameManager integration, speed getters/setters
+- `PlayerMovement` - Rigidbody2D velocity-based movement
+- `PlayerInput` - New Input System + Virtual Joystick (desktop WASD, mobile joystick)
+- `PlayerHealth` - HP tracking, passive effects storage (lifesteal%, goldBonus%), damage cooldown
 
-### GameManager
-- Master game state controller (Singleton, DontDestroyOnLoad)
-- **States:** Initializing → Playing → Paused → LevelUp → GameOver
-- **Tracks:** Time, kills, gold
-- **Events:** Listens to OnPlayerDeath, OnEnemyKilled, OnGoldCollected
+**Character System:**
+- `CharacterData` (ScriptableObject) - Stats (moveSpeed, maxHP, damageMultiplier), starter weapon
+- `CharacterManager` - Spawns selected character at runtime, configures Cinemachine follow
 
-### PlayerController
-- Platform-aware movement with auto-detection
-- **Desktop:** WASD + Arrow keys (Input Actions)
-- **Mobile:** VirtualJoystick (floating touch)
-- **Speed:** 5.0 units/sec, diagonal normalized
-- **State Blocking:** Pauses input during level-up/game-over
+**Current Balance:**
+- Knight: Speed 5.0, HP 100, Damage 1.0x, Starter: Greatsword
 
-### WeaponManager
-- Manages up to 4 equipped weapons simultaneously
-- **Spawning:** Instantiates weapon prefabs, initializes with WeaponData
-- **API:** `EquipWeapon(WeaponData)`, `GetEquippedWeapons()`, `IsWeaponEquipped(WeaponType)`
+## ✅ Weapon Systems
 
-### UpgradeManager
-- Applies universal upgrades to ALL equipped weapons + player stats
-- **Formula Conversion:**
-  - Attack Speed: `cooldown *= (1.0 - value/100)` (10% = faster)
-  - Damage: `damage *= (1.0 + value/100)` (10% = +10% dmg)
-  - Speed: `speed *= (1.0 + value/100)`
-- **Method:** `ApplyUpgrade(UpgradeData)` distributes to weapons or player
+**4 Weapon Types:**
+- **Greatsword** - 360° periodic swing with shader fill animation, knockback 100
+- **AutoCrossbow** - Multi-target arrows (Dual/Triple upgrade), pierce support, knockback 45
+- **HolyWater** - DoT puddles with HP scaling, knockback 20
+- **MagicOrbitals** - Continuous orbit shields, knockback 50
 
----
+**WeaponBase:**
+- Auto-fire system (cooldown-based `Update()`)
+- Upgrade API: `IncreaseDamage(multiplier)`, `IncreaseAttackSpeed(multiplier)`
+- `GetFinalDamage()` - Applies character damage multiplier
+- Cloning support (`CopyStatsFrom()`, `isClone` flag)
 
-## Player Systems (REFACTORED DEC 24)
+**WeaponManager:**
+- Max 4 equipped weapons simultaneously
+- `EquipWeapon(weaponData)` - Instantiates prefab, tracks instance
+- `SpawnMirrorGreatsword()` - For Mirror Slash upgrade (spawns synchronized copy)
+- `GetEquippedWeapons()` - Returns list for upgrade application
 
-### PlayerController (Singleton)
-- Central reference point for weapons and systems
-- **Access:** `PlayerController.Instance.transform`
-- **Coordinates:** Other player components
+## ✅ Upgrade System
 
-### PlayerMovement
-- Rigidbody2D-based movement logic  
-- **Speed:** 5.0 units/sec default, upgradeable
-- **Diagonal normalized:** Prevents faster diagonal movement
-- **State blocking:** Pauses during level-up/game-over
+**Architecture (Refactored Dec 2024):**
+```
+UpgradeManager (Orchestrator)
+    ├─► UpgradeTracker (State)
+    ├─► UpgradeValidator (Validation)
+    └─► UpgradeApplicator (Effects)
+```
 
-### PlayerInput
-- New Input System integration
-- **Desktop:** WASD + Arrow keys (PlayerInputActions)
-- **Mobile:** VirtualJoystick (floating touch)
-- **Platform detection:** Auto-switches based on `PlatformDetector.IsMobile()`
+**18 Upgrade Types:**
+- 4 Repeatable: Speed, HP, Damage, Attack Speed
+- 4 Weapons: Greatsword, Crossbow, HolyWater, Orbitals
+- 10 Weapon-Specific: Mirror Slash, Dual/Triple Shot, etc.
+- 3 Passives (max 3): Lifesteal, Magnet, Lucky Coins
 
-### PlayerHealth
-- **HP:** 100 default (from CharacterData.maxHealth)
-- **Damage Cooldown:** 1 second
-- **Passive Storage:** lifestealPercent, goldBonusMultiplier, characterDamageMultiplier
-- **Triggers:** OnPlayerDeath when HP ≤ 0
+**Features:**
+- Weighted rarity selection
+- Repeatable stats (infinite)
+- Prerequisite support (Triple requires Dual)
+- Passive limit (max 3 total)
+- Weapon-specific filtering
 
-### VirtualJoystick
-- Floating touch controls (appears at touch, hides on release)
-- **Range:** 50 units (configurable)
-- **State Management:** Auto-disables during pause/level-up
-- **Platform:** Invisible on desktop, responds to platform changes
+## ✅ Enemy Systems
 
----
+**Components:**
+- `EnemySpawner` - Wave-based spawning at screen edges, difficulty scaling
+- `EnemyAI` - Simple chase behavior (moves toward player)
+- `EnemyHealth` -  HP, knockback resistance, loot drops (XP, gold, potions)
+- `EnemyData` (ScriptableObject) - Stats, drop rates, spawn weights
 
-## Weapon System
+**6 Enemy Types:**
+Skeleton, Crawler, Goblin, Ghost, ArmoredOrc, Slime
 
-### Universal Architecture
-- **WeaponBase** - Abstract base class
-  - Auto-fire system (cooldown timer in Update())
-  - Stats: `damage`, `cooldown`, `knockback` (duration/tickRate are weapon-specific)
-  - `GetFinalDamage()` applies character damage multiplier
-  - Direct damage: All weapons call `EnemyHealth.TakeDamage()` directly
+**Drop Rates (Adjusted Dec 2024):**
+- XP: Always drops (amount varies by enemy)
+- Gold: 25%-80% depending on enemy type
+- Health Potion: 3%-10% depending on enemy type
 
-### Utility Classes
-- **TargetingUtility** - Finds unique enemy targets for multi-shot weapons
-- **ShaderHelper** - Creates reveal material instances for VFX
+**Difficulty Scaling:**
+- `difficultyIncreaseRate: 0.1f` (10% faster spawns per minute)
+- `maxSpawnRate: 10f` (caps at 10x speed)
 
-### Weapon Implementations
+## ✅ Progression Systems
 
-**Greatsword** - Grand Cleave (Melee Slash)
-- Horizontal slash VFX (Left/Right based on PlayerController movement)
-- SpriteReveal shader with AnimationCurve opacity fade
-- Multi-hit tracking (HashSet<int> prevents duplicate kills per swing)
-- No physical rotation; visual-only effect
+**XP & Leveling:**
+- Formula: `XP Required = level × 10`
+- `LevelUpPanel` - Shows 3 random upgrades
+- `XPGem` - Magnet range 3f (upgradeable), auto-collect
 
-**Auto Crossbow** - Firework Bolt (Projectile)
-- Finds nearest enemy via Physics2D.OverlapCircleAll (15m range)
-- Spawns spinning arrow projectile with pierce capability
-- Multi-shot support (spread pattern)
-- ArrowProjectile handles movement, lifetime, pierce count
+**Gold:**
+- `GoldCoin` - Magnet range 3f, drops from enemies
+- Future: Shop system
 
-**Holy Water** - Sanctified Ground (Area Denial)
-- Spawns blue fire zone at random offset (3.5m radius)
-- RadialReveal shader (center-outward expansion)
-- Animation: Rune expands → Fire particles → DoT → Rune shrinks → Destroy
-- DamagePuddle tracks enemies in HashSet, applies DoT every `tickRate`
+**Health Potions:**
+- Smart pickup: Only if damaged
+- Magnet range 2f
+- Restores 25 HP
+- No magnet pull if player at max HP
 
-**Magic Orbitals** - Ethereal Shields (Orbital)
-- Spawns 3 balls (OrbitalBall instances)
-- Radius animation: 0 → targetRadius → 0 (unified AnimateRadius coroutine)
-- Per-enemy damage cooldown (Dictionary<int, float>)
-- Damages ALL touched enemies simultaneously (no global cooldown)
-- Visibility delays (Invoke) prevent overlap at spawn/despawn
+## ✅ Input Systems
 
----
+**Platform Detection:**
+- `PlatformDetector.IsMobile()` - True if mobile build
+- Desktop: WASD + Arrow keys (New Input System)
+- Mobile: Virtual Joystick (floating, appears on touch)
 
-## Enemy Systems
+**Joystick Behavior:**
+- Disabled during pause/levelup
+- Parent-space coordinates
+- Auto-hides on release
 
-### EnemyAI
-- Simple chase behavior (moves toward player via normalized delta)
-- **Speed:** From EnemyData.moveSpeed (typically 2.5-3.0)
-- **Pathfinding:** Direct vector (no nav mesh)
-- **Pauses:** When game paused or dead
+## ✅ Camera System
 
-### EnemyHealth
-- **HP Management:** Takes damage, applies knockback, triggers death
-- **Knockback:** Scaled by `weightResistance` (0-1, heavier = less knockback)
-- **Loot:** Fires events OnEnemyKilled (XP, gold) via GameEvents
+**Cinemachine Integration:**
+- Virtual Camera follows spawned player
+- Graceful fallback if Cinemachine not installed
+- Auto- configured by `CharacterManager`
 
-### EnemySpawner
-- Continuous spawning at screen edges (outside camera view)
-- **Difficulty Scaling:** Spawn rate increases with GameManager.GameTime
-- **Selection:** Weighted random based on EnemyData.spawnWeight
-- **Limit:** Max 100 enemies on screen
+## ✅ Service Architecture
 
----
+**ServiceLocator Pattern:**
+- `ISaveService` - PlayerPrefs save/load
+- `IAdService` - Ad integration (NoAdService default)
+- `IPlatformService` - Platform-specific features
 
-## Loot & Progression
+## ⚠️ Partial Integration
 
-### XPGem
-- Magnet behavior (pulls toward player within 3 units)
-- **Speed:** 10 units/sec when attracted
-- **Value:** Set by EnemyData.xpDrop
-- **Collection:** OnTriggerEnter2D with player
+**Lifesteal:**
+- Storage: `UpgradeTracker` → exposed via `UpgradeManager.GetLifestealPercent()`
+- Integration: Needs weapon hit events to apply healing
 
-### Level-Up Flow
-1. XP bar fills → `GameEvents.OnPlayerLevelUp` fires
-2. `LevelUpPanel` shows 3 random upgrades (no duplicates, smart filtering)
-3. Player selects → `UpgradeManager.ApplyUpgrade(UpgradeData)`
-4. Multiplier conversion applied → All weapons + player updated
+**Gold Bonus:**
+- Storage: `UpgradeTracker` → exposed via `UpgradeManager.GetGoldBonusPercent()`
+- Integration: Needs application in `EnemyHealth.DropLoot()`
 
----
+## 📁 File Structure
 
-## UI Systems
+```
+Assets/Scripts/
+├── Core/ - CharacterManager, GameEvents, PlatformDetector, ServiceLocator
+├── Data/ - ScriptableObject definitions (4 types)
+├── Gameplay/
+│   ├── Player/ - PlayerController, PlayerMovement, PlayerInput, PlayerHealth, PlayerAnimationController
+│   ├── Weapons/ - WeaponBase, WeaponManager, 4 weapon types, projectiles, utilities
+│   ├── Enemies/ - EnemyAI, EnemyHealth, EnemySpawner, EnemyAnimationController
+│   ├── Upgrades/ - UpgradeManager, UpgradeTracker, UpgradeValidator, UpgradeApplicator
+│   └── Collectibles - XPGem, GoldCoin, HealthPotion, GameManager, GameSession
+├── UI/ - HUD, LevelUpPanel, PauseMenu, GameOverScreen, VirtualJoystick
+├── Services/ - Interfaces + Implementations
+└── Utils/ - AutoFPS60Setter
+```
 
-### HUD
-- Real-time display: HP bar, XP bar, level, timer, kill count
-- Event-driven updates (subscribes to GameEvents)
+## Design Patterns
 
-### LevelUpPanel
-- Shows 3 random UpgradeData cards
-- **Filtering:** Excludes already-equipped weapons
-- **Smart Selection:** Prevents duplicate cards
+**Singletons:** GameManager, PlayerController, CharacterManager  
+**ScriptableObjects:** All configuration data (designer-friendly)  
+**Events:** `GameEvents` static class for decoupled communication  
+**Service Locator:** Cross-cutting concerns (save, ads, platform)
 
-### PauseMenu / GameOverScreen
-- Standard overlay panels
-- State transitions via GameManager.SetState()
+## Code Conventions
 
----
-
-## Technical Notes
-
-### Platform Detection
-- PlatformDetector Singleton (MUST have only 1 in scene)
-- Auto-detects Mobile/Desktop/Editor
-- Fires OnPlatformChanged event
-- Desktop: Hides joystick, enables Input Actions
-
-### Save System
-- ServiceLocator pattern (fail-fast on duplicates)
-- PlayerPrefs-based persistence
-- SaveData model (serializable)
-
-### Common Pitfalls
-1. **Weapon Update Override:** MUST call `base.Update()` first
-2. **Upgrade Multipliers:** Use conversion formulas (value/100)
-3. **Weapon Parenting:** Weapons unparent themselves (world-space positioning)
-4. **Singleton Duplicates:** Only ONE PlatformDetector/GameManager allowed
+- Null-safe operators (`?.`)
+- Early returns (avoid deep nesting)
+- Protected fields in weapon classes (inheritance-friendly)
+- XML docs on public APIs

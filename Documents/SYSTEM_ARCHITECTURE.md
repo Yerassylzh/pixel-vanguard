@@ -44,21 +44,71 @@ Spawn → Fight → Collect XP → Level Up → Choose Upgrade → Repeat → Di
 
 ## 👤 PLAYER SYSTEM (REFACTORED DEC 24)
 
-### Architecture: Split into 4 Components
+### Player Systems Architecture
 
-#### PlayerController (Singleton)
-```csharp
-// Purpose: Central reference point for weapons and systems
-// Location: Assets/Scripts/Gameplay/Player/PlayerController.cs
+**Status:** ✅ Fully Implemented (Refactored into 4 components)
 
-public static PlayerController Instance { get; private set; }
-public Transform transform; // Accessed by weapons for positioning
+### Core Components
+
+The player system uses **component composition** for separation of concerns:
+
+```
+Player GameObject
+├─ PlayerController    - Singleton reference, GameManager integration
+├─ PlayerMovement      - Rigidbody2D physics movement
+├─ PlayerInput         - Input handling (WASD + Mobile Joystick)
+└─ PlayerHealth        - HP management, damage, passive effects
 ```
 
-**Responsibilities:**
-- Provides singleton instance
-- Coordinates other player components
-- Houses player transform reference
+#### PlayerController
+- Singleton pattern (`Instance` accessor)
+- Provides `GetMoveSpeed()` / `SetMoveSpeed()` for upgrades
+- Integrates with GameManager for game state
+
+#### PlayerMovement
+- Rigidbody2D movement (velocity-based)
+- Handles move speed modifications
+- Preserves facing direction during vertical movement
+
+#### PlayerInput
+- Unity's New Input System integration
+- Desktop: WASD / Arrow keys
+- Mobile: Virtual Joystick (Dynamic Joystick from Joystick Pack)
+- Outputs `Vector2 moveInput` for movement
+
+#### PlayerHealth
+- HP tracking with max health upgrades
+- Stores passive effects:
+  - `lifestealPercent` (from Lifesteal upgrades)
+  - `goldBonusPercent` (from Lucky Coins upgrades)
+- Damage multiplier from character data
+- Death handling → triggers Game Over
+
+### Character System
+
+**CharacterData** (ScriptableObject):
+- Move speed, Max HP, Damage multiplier
+- Starter weapon assignment
+- Character-specific sprite
+
+**CharacterManager**:
+- Spawns selected character at runtime
+- Configures Cinemachine camera follow
+- Validates tags, layers, components
+
+### Current Balance
+
+**Knight Stats:**
+- Move Speed: 5.0
+- Max HP: 100
+- Damage Multiplier: 1.0x
+- Starter Weapon: Greatsword
+
+**Knockback Values** (Force mode: `ForceMode2D.Force`):
+- Greatsword: 100
+- AutoCrossbow: 45
+- HolyWater: 20
+- MagicOrbitals: 50
 
 ---
 
@@ -248,20 +298,116 @@ Selection Algorithm:
 
 ---
 
-### UpgradeManager (Implementation)
-```csharp
-// Filters and applies upgrades to ALL equipped weapons
+## Upgrade System Architecture
 
-Key Flow:
-1. GetRandomUpgrades(3) → Returns 3 weighted, validated upgrades
-2. ApplyUpgrade(UpgradeData) → Distributes to correct system
-3. Tracks applied upgrades (prevents duplicates)
+**Status:** ✅ Fully Implemented & Refactored  
+**Philosophy:** Modular, responsibility-separated design following Single Responsibility Principle
 
-Weapon-Specific Pattern:
-if (weaponScript is AutoCrossbowWeapon crossbow) {
-    crossbow.SetMultiShot(arrowCount);
-}
+### Core Components
+
+The upgrade system is split into 4 focused classes for maintainability and testability:
+
 ```
+┌─────────────────┐
+│ UpgradeManager  │ ← Orchestration layer (218 lines)
+│  (MonoBehaviour)│
+└────────┬────────┘
+         │ initializes & coordinates
+         ├──► UpgradeTracker      (State management - 118 lines)
+         ├──► UpgradeValidator    (Validation logic - 173 lines)
+         └──► UpgradeApplicator   (Effect implementation - 389 lines)
+```
+
+#### 1. **UpgradeManager** (Orchestrator)
+- Initializes all components
+- Calls `GetRandomUpgrades()` for level-up
+- Coordinates validation via `UpgradeValidator`
+- Coordinates application via `UpgradeApplicator`
+- Provides public API for passive effects (Lifesteal, Gold Bonus)
+
+#### 2. **UpgradeTracker** (State Manager)
+- Tracks applied upgrades (Hash Set<UpgradeType>)
+- Tracks equipped weapons by ID (HashSet<string>)
+- Tracks passive skill count (0-3 limit)
+- Stores passive values (lifesteal %, gold bonus %)
+- Provides query methods for validation
+
+#### 3. **UpgradeValidator** (Filter Logic)
+- Checks repeatable stats (always valid)
+- Checks duplicate upgrades (via UpgradeTracker)
+- Checks weapon requirements (weapon must be equipped)
+- Checks prerequisites (e.g., Triple Crossbow requires Dual)
+- Checks passive limits (max 3)
+
+#### 4. **UpgradeApplicator** (Effect Implementer)
+- Applies stat changes (Speed, HP, Damage, Attack Speed)
+- Applies weapon unlocks
+- Applies weapon-specific upgrades (Greatsword, Crossbow, Holy Water, Orbitals)
+- Applies passive effects (Lifesteal, Magnet, Lucky Coins)
+- Organized by category (~20 private methods)
+
+### Upgrade Types
+
+**Repeatable (Infinite):**
+- Player Move Speed (+20% per selection)
+- Player Max HP (+10 per selection)
+- Weapon Damage (+% all weapons)
+- Weapon Attack Speed (-% cooldown all weapons)
+
+**One-Time:**
+- New Weapon unlocks (max 4 weapons)
+- Weapon-specific upgrades (Mirror Slash, Dual Crossbows, etc.)
+
+**Limited:**
+- Passives (max 3 total: Lifesteal, Magnet, Lucky Coins)
+
+### Validation Flow
+
+```
+Player Levels Up
+    └─► UpgradeManager.GetRandomUpgrades(3)
+         ├─► For each upgrade in allUpgrades:
+         │    └─► UpgradeValidator.IsUpgradeValid(upgrade)
+         │         ├─► Repeatable stat? → Always valid
+         │         ├─► UpgradeTracker.HasUpgrade()? → Filter out
+         │         ├─► Weapon required? → Check equipped
+         │         ├─► Prerequisite needed? → Check applied
+         │         └─► Passive limit? → Check count
+         └─► SelectWeightedRandom(validUpgrades) → Return 3
+
+Player Selects Upgrade
+    └─► UpgradeManager.ApplyUpgrade(upgrade)
+         ├─► UpgradeApplicator.ApplyUpgrade(upgrade)
+         │    └─► Switch on upgrade.type → Call specific method
+         └─► UpgradeTracker.TrackUpgrade(type) [if non-repeatable]
+```
+
+### Design Benefits
+
+**Separation of Concerns:**
+- State management isolated (UpgradeTracker)
+- Validation logic isolated (UpgradeValidator)
+- Effect implementation isolated (UpgradeApplicator)
+- Orchestration simplified (UpgradeManager)
+
+**Testability:**
+- Can unit test validator without applicator
+- Can test tracker independently
+- Mocking simplified (inject dependencies)
+
+**Maintainability:**
+- Adding new upgrade: Only edit UpgradeApplicator
+- Changing validation: Only edit UpgradeValidator
+- Adding tracking: Only edit UpgradeTracker
+- Files stay under 400 lines each
+
+### Integration Points
+
+- `PlayerController` - Speed modifications
+- `PlayerHealth` - HP modifications, lifesteal storage
+- `WeaponManager` - Weapon unlocking, global damage/speed
+- `XPGem` / `GoldCoin` - Magnet radius upgrades
+- Weapon scripts (Greatsword, Crossbow, HolyWater, Orbitals) - Specific upgrades
 
 ---
 

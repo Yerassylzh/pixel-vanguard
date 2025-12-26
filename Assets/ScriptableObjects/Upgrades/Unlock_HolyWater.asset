@@ -18,4 +18,4 @@ MonoBehaviour:
   type: 4
   value: 0
   weaponToEquip: {fileID: 11400000, guid: 693c8a640da667b498c7fb6496de5fb7, type: 2}
-  rarityWeight: 50
+  rarityWeight: 20

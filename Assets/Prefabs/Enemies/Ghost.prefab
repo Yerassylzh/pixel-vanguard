@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 5800102410115332626}
   - component: {fileID: 1885541002512723076}
   - component: {fileID: 6933744324383126150}
+  - component: {fileID: 6120504891953546159}
   m_Layer: 6
   m_Name: Ghost
   m_TagString: Enemy
@@ -311,3 +312,18 @@ CapsuleCollider2D:
   m_Offset: {x: 0.018790722, y: -0.07639027}
   m_Size: {x: 0.2775488, y: 1.1000767}
   m_Direction: 0
+--- !u!114 &6120504891953546159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8181075781839725347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d631cd9e5db1774c979841efaaf9ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.VFX.DamageFlash
+  spriteRenderer: {fileID: 0}
+  flashDuration: 0.1
+  flashColor: {r: 1, g: 1, b: 1, a: 1}

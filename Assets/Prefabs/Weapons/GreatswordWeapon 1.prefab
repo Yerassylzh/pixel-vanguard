@@ -47,9 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.GreatswordWeapon
   weaponData: {fileID: 11400000, guid: c8b3bdb59fa32974584e72137d5852b4, type: 2}
-  weaponSprite: {fileID: 0}
-  weaponCollider: {fileID: 0}
-  swingCurve:
+  opacityCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -62,10 +60,19 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 1
+      time: 0.2
       value: 1
-      inSlope: 2
-      outSlope: 2
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -73,9 +80,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  weaponSprite: {fileID: 0}
+  weaponCollider: {fileID: 0}
+  revealSpeedFactor: 0.5
+  fadeDuration: 0.15
   swingDuration: 0.3
-  restAngleOffset: -90
-  revealMaterial: {fileID: 2100000, guid: 995807f548a21c84784de36302d3010a, type: 2}
+  revealVertical: 0
   isMirror: 0
 --- !u!68 &2042334937225040689
 EdgeCollider2D:
@@ -114,27 +124,27 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
   m_Points:
-  - {x: 0.92376655, y: 0.9956839}
-  - {x: 0.94305557, y: 0.9829726}
-  - {x: 1.0482502, y: 0.96651006}
-  - {x: 1.137317, y: 1.1059817}
-  - {x: 1.1855621, y: 1.1865247}
-  - {x: 1.2626573, y: 1.2668158}
-  - {x: 1.4236737, y: 1.4170618}
-  - {x: 1.5542992, y: 1.5752891}
-  - {x: 1.6857961, y: 1.7035857}
-  - {x: 1.7908932, y: 1.7126627}
-  - {x: 1.8754483, y: 1.6909994}
-  - {x: 1.863809, y: 1.4804494}
-  - {x: 1.8024307, y: 1.1025529}
-  - {x: 1.718147, y: 0.95728064}
-  - {x: 1.607258, y: 0.52589345}
-  - {x: 1.5635439, y: 0.45640653}
-  - {x: 1.3589361, y: 0.01569459}
-  - {x: 0.9893786, y: -0.5331789}
-  - {x: 0.88416505, y: -0.6412239}
-  - {x: 0.80569464, y: -0.7442035}
-  - {x: 0.5351627, y: -1.2312399}
+  - {x: 0.93411493, y: 1.0353462}
+  - {x: 0.91830033, y: 0.97478163}
+  - {x: 0.9090222, y: 0.95433056}
+  - {x: 0.8584605, y: 0.8693751}
+  - {x: 0.8120969, y: 0.78799903}
+  - {x: 0.7698577, y: 0.7044128}
+  - {x: 0.7274427, y: 0.6085113}
+  - {x: 0.67603505, y: 0.4989404}
+  - {x: 0.62483966, y: 0.40044913}
+  - {x: 0.5576481, y: 0.25748065}
+  - {x: 0.53795385, y: 0.12978148}
+  - {x: 0.4533627, y: 0.040820718}
+  - {x: 0.37252748, y: -0.059849024}
+  - {x: 0.28824377, y: -0.14675856}
+  - {x: 0.20653713, y: -0.26687694}
+  - {x: 0.075277865, y: -0.45795104}
+  - {x: -0.0028749704, y: -0.6554845}
+  - {x: -0.04657042, y: -0.859041}
+  - {x: -0.009819888, y: -1.11136}
+  - {x: 0.22341712, y: -1.3051124}
+  - {x: 0.460615, y: -1.4209979}
   - {x: 0.83587945, y: -1.4277563}
   - {x: 1.2181356, y: -1.3036747}
   - {x: 1.3968393, y: -1.1967984}
@@ -153,7 +163,7 @@ EdgeCollider2D:
   - {x: 1.5432324, y: 2.2642553}
   - {x: 1.3095335, y: 1.8860981}
   - {x: 1.0626378, y: 1.333414}
-  - {x: 0.918146, y: 1.009778}
+  - {x: 0.9340936, y: 1.0336473}
   m_AdjacentStartPoint: {x: 0, y: 0}
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0

@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 477443669962294258}
   - component: {fileID: 1400915315164787020}
   - component: {fileID: 7318530812515752894}
+  - component: {fileID: -634874503410652368}
   m_Layer: 6
   m_Name: Crawler
   m_TagString: Enemy
@@ -311,3 +312,18 @@ CapsuleCollider2D:
   m_Offset: {x: 0.51992524, y: 0.34348103}
   m_Size: {x: 1.2409068, y: 0.6261197}
   m_Direction: 1
+--- !u!114 &-634874503410652368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8627135825830073534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d631cd9e5db1774c979841efaaf9ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.VFX.DamageFlash
+  spriteRenderer: {fileID: 0}
+  flashDuration: 0.1
+  flashColor: {r: 1, g: 1, b: 1, a: 1}

@@ -110,6 +110,7 @@ GameObject:
   - component: {fileID: 3449098293204493259}
   - component: {fileID: -6456078506331607471}
   - component: {fileID: 8792510696036136495}
+  - component: {fileID: 7233223350663595054}
   m_Layer: 7
   m_Name: Pyromancer
   m_TagString: Player
@@ -380,3 +381,18 @@ MonoBehaviour:
   damageCooldown: 1
   isInvincible: 0
   invincibilityDuration: 0
+--- !u!114 &7233223350663595054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7630985173914735179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d631cd9e5db1774c979841efaaf9ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.VFX.DamageFlash
+  spriteRenderer: {fileID: 0}
+  flashDuration: 0.15
+  flashColor: {r: 1, g: 1, b: 1, a: 1}

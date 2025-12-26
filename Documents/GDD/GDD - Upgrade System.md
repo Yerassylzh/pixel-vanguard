@@ -1,270 +1,150 @@
-# GDD - Upgrade System
-**Parent:** [Main Game Design Document](file:///c:/Users/Honor/Unity%20Games/Pixel%20Vanguard/Documents/GDD/Game%20Design%20Document%20-%20Main.md)
+# GDD - Upgrade System Design
+
+**Purpose:** Design specification for upgrade mechanics
 
 ---
 
-## Overview
+## Design Goals
 
-The upgrade system allows players to enhance their character and weapons during a run via level-up cards. Players choose from 3 random upgrades each time they level up, creating build diversity and strategic depth.
-
-**Total Upgrades:** 19 unique upgrade paths
-- **10 weapon-specific** upgrades
-- **3 passive skills**
-- **1 stat boost**
-- **5 universal/new weapon** upgrades (existing system)
+1. **Infinite Scaling:** Repeatable stats prevent upgrade pool exhaustion
+2. **Strategic Depth:** Weapon-specific upgrades + prerequisites
+3. **Build Variety:** 18 upgrade types create unique combinations
+4. **Balanced RNG:** Weighted rarity prevents frustration
 
 ---
 
-## Universal Upgrades (Existing System)
+## Upgrade Categories
 
-These upgrades affect ALL equipped weapons or the player character:
+### Universal (Always Available)
+- Move Speed, Max HP, Weapon Damage, Attack Speed
+- Infinite repeatability
+- Provides reliable power growth
 
-| Upgrade Type | Effect | Formula |
-|--------------|--------|---------|
-| **Weapon Attack Speed** | Reduces all weapon cooldowns by X% | `cooldown *= (1.0 - value/100)` |
-| **Weapon Damage** | Increases all weapon damage by X% | `damage *= (1.0 + value/100)` |
-| **Player Max HP** | Increases player maximum health | `maxHP += value` |
-| **Player Move Speed** | Increases player movement speed by X% | `speed *= (1.0 + value/100)` |
-| **New Weapon** | Equips additional weapon (max 4 total) | Instantiates weapon prefab from `WeaponData` |
+### Weapon Unlocks (One-Time)
+- 4 weapons, max 4 equipped
+- Each unlock buffs entire arsenal
+- Synergy potential
 
----
+### Weapon-Specific (One-Time)
+- 10 unique upgrades
+- Requires weapon equipped (filtered otherwise)
+- Creates specialization paths
 
-## Weapon-Specific Upgrades
-
-### Greatsword (3 upgrades)
-
-| Upgrade | Effect | Implementation |
-|---------|--------|----------------|
-| **Mirror Slash** | Spawns 2nd greatsword on opposite side | Create second `GreatswordWeapon` instance at 180° rotation |
-| **Executioner's Edge** | +50% damage, +100% knockback (this weapon only) | Multiply `damage` by 1.5, `knockback` by 2.0 |
-| **Berserker Fury** | -30% cooldown (this weapon only) | Multiply `cooldown` by 0.7 |
-
-**Technical Notes:**
-- Greatsword is sprite-based 180° horizontal slash
-- Cannot modify arc width (fixed sprite animation)
-- Mirror Slash creates independent weapon instance
+### Passives (Limited to 3)
+- Lifesteal, Magnet, Lucky Coins
+- Scarcity creates meaningful choice
+- Can't stack same passive
 
 ---
 
-### AutoCrossbow (3 upgrades)
+## Rarity Design
 
-| Upgrade | Effect | Implementation |
-|---------|--------|----------------|
-| **Dual Crossbows** | Fire 2 arrows simultaneously at different enemies | Spawn 2 `ArrowProjectile` instances, each targets `FindNearestEnemy()` independently |
-| **Piercing Bolts** | Arrows pierce +1 enemy | Increment `ArrowProjectile.pierceCount` by 1 |
-| **Triple Barrage** | Fire 3 arrows simultaneously | Spawn 3 arrows. **Requires Player Level 15+** |
+**Weight Distribution:**
+| Rarity | Weight | Frequency | Purpose |
+|--------|--------|-----------|---------|
+| Common | 100 | ~53% | Repeatable stats (consistency) |
+| Uncommon | 50 | ~26% | Most weapon upgrades |
+| Rare | 25 | ~13% | Powerful weapon upgrades |
+| Epic | 10 | ~5% | Game-changing upgrades |
+| Passive | 30 | ~16% | Utility upgrades |
 
-**Balance:** Triple Barrage is gated to prevent early-game dominance.
-
----
-
-### Holy Water (3 upgrades)
-
-| Upgrade | Effect | Implementation |
-|---------|--------|----------------|
-| **Sanctified Expansion** | Puddle radius +40% | Multiply `DamagePuddle` collider radius by 1.4 |
-| **Burning Touch** | Damage scales +6% of enemy max HP | `finalDamage = baseDamage + (enemyMaxHP × 0.06)` per tick |
-| **Eternal Flame** | Puddle lasts 2x duration (4s → 8s) | Multiply `baseDuration` by 2.0 |
-
-**Why Scaling?** Makes Holy Water always relevant:
-- vs Skeleton (10 HP): 5 + 0.6 = **5.6 damage/tick**
-- vs Boss (200 HP): 5 + 12 = **17 damage/tick**
+**Design Rationale:**
+- Commons dominate = consistent power growth
+- Epics are exciting but rare = memorable moments
+- Passives slightly biased = encourages diversity
 
 ---
 
-### Magic Orbitals (2 upgrades)
+## Prerequisite System
 
-| Upgrade | Effect | Implementation |
-|---------|--------|----------------|
-| **Expanded Orbit** | Orbit radius +40% | Increase `targetRadius` from 2.0m to 2.8m |
-| **Overcharged Spheres** | Each orbital does +30% damage | Multiply damage of each `OrbitalBall` by 1.3 |
+**Current:** Triple Crossbow requires Dual first
 
-**Note:** Magic Orbitals spawn with **3 balls by default**. Upgrades enhance effectiveness, not quantity.
+**Goals:**
+- Creates upgrade progression paths
+- Prevents overpowered early-game combos
+- Adds unlock satisfaction
 
----
-
-## Passive Skills
-
-Permanent buffs that **don't take weapon slots**. Max **3 passives per run**.
-
-| Passive | Effect | Unlock Level |
-|---------|--------|--------------|
-| **Lifesteal** | Heal 3% of damage dealt | Level 5+ |
-| **Magnet** | Pickup radius +50% | Level 3+ |
-| **Lucky Coins** | Gold drops give +40% more gold | Level 6+ |
-
-**Logic:** 15% chance to appear in level-up pool if unlock condition met.
+**Future Expansion:**
+- Multi-tier trees (Normal → Dual → Triple → Quad?)
+- Cross-weapon prerequisites (Mirror Slash + Dual Crossbows → Special Combo?)
 
 ---
 
-## Stat Boosts
+## Balance Philosophy
 
-Temporary in-run bonuses. Stackable up to **5 times**.
+### Power Curve Target
+- **Minute 1-5:** Survive, unlock first weapon
+- **Minute 5-10:** Comfortable, 2-3 weapons, some upgrades
+- **Minute 10-20:** Powerful, 3-4 weapons, synergies online
+- **Minute 20+:** Godmode, screen-filling carnage
 
-| Stat | Effect Per Stack | Max Stacks | Notes |
-|------|------------------|------------|-------|
-| **Might** | +10% damage (character multiplier) | 5 (= +50%) | Stacks **multiplicatively** with Weapon Damage |
+### Anti-Frustration Design
+- Repeatable stats always available (never "dead" level-up)
+- Weight system biases toward useful upgrades
+- Passive limit prevents analysis paralysis
 
-**Why only Might?** `PlayerMaxHP` and `PlayerMoveSpeed` already exist as universal upgrades. Might is unique as a character-level damage multiplier.
-
-**Damage Calculation Example:**
-```
-Base Weapon Damage: 100
-Weapon Damage Upgrade (+20%): 100 × 1.2 = 120
-Might (3 stacks, +30%): 120 × 1.3 = 156 total damage
-```
-
----
-
-## Upgrade Selection Logic
-
-### Card Pool Generation
-
-**Weights:**
-- Weapon-Specific Upgrades: **30%** (if weapon equipped)
-- Universal Upgrades: **40%**
-- Passive Skills: **15%** (if unlock level met)
-- Stat Boosts: **15%**
-
-**Filtering Rules:**
-1. Remove "New Weapon" if player has 4 weapons
-2. Remove weapon-specific upgrades if weapon not equipped
-3. Prevent duplicate cards in same selection
-4. Check unlock gates (e.g., Triple Barrage requires Level 15+)
+### Scaling Considerations
+- Repeatable stats use multiplicative scaling (+20%, not +5 flat)
+- HP scaling damage keeps upgrades relevant vs high-HP enemies
+- Attack speed has diminishing returns (cooldown can't go below threshold)
 
 ---
 
-## Unlock Gates
+## Upgrade Unlock Conditions
 
-To prevent overpowered early builds:
+**Current System:**
+- Weapon-specific: Check if weapon equipped
+- Passive: Check count < 3
+- NewWeapon: Check not already equipped
+- Prerequisites: Check specific upgrade applied
 
-| Upgrade | Requirement |
-|---------|-------------|
-| **Mirror Slash** | Greatsword equipped for 3+ minutes |
-| **Dual Crossbows** | AutoCrossbow equipped for 2+ minutes |
-| **Triple Barrage** | AutoCrossbow equipped + **Player Level 15+** |
-| **Burning Touch** | Holy Water equipped for 5+ minutes |
-| **Expanded Orbit** | Magic Orbitals equipped for 4+ minutes |
-
-**Implementation:** Track weapon equip time using `Time.time` on weapon instantiation.
-
----
-
-## Data Structure
-
-### UpgradeData ScriptableObject
-
-```csharp
-[CreateAssetMenu(fileName = \"Upgrade\", menuName = \"PixelVanguard/Upgrade Data\")]
-public class UpgradeData : ScriptableObject {
-    [Header(\"Identity\")]
-    public string upgradeName;
-    public string description;
-    public Sprite icon;
-    
-    [Header(\"Upgrade Type\")]
-    public UpgradeType type;
-    
-    [Header(\"Effect\")]
-    public float value; // Amount (e.g., 50 for +50% damage)
-    
-    [Header(\"Weapon (only for NewWeapon type)\")]
-    public WeaponData weaponToEquip;
-}
-
-public enum UpgradeType {
-    // Existing
-    PlayerMoveSpeed,
-    PlayerMaxHP,
-    WeaponAttackSpeed,
-    WeaponDamage,
-    NewWeapon,
-    
-    // Greatsword
-    GreatswordMirrorSlash,
-    GreatswordDamageBoost,
-    GreatswordCooldownBoost,
-    
-    // Crossbow
-    CrossbowDualShot,
-    CrossbowTripleShot,
-    CrossbowPierce,
-    
-    // Holy Water
-    HolyWaterRadius,
-    HolyWaterScaling,
-    HolyWaterDuration,
-    
-    // Magic Orbitals
-    OrbitalsExpandedOrbit,
-    OrbitalsOverchargedSpheres,
-    
-    // Passives
-    PassiveLifesteal,
-    PassiveMagnet,
-    PassiveLuckyCoin,
-    
-    // Stat
-    StatMight
-}
-```
+**Design Space:**
+- Time-gated upgrades (appear after X minutes)
+- Kill-count gates (unlock after 100 kills)
+- Combo unlocks (get A+B to unlock C)
 
 ---
 
-## Implementation Notes
+## Visual Design
 
-### UpgradeManager Changes
+**Level-Up Panel:**
+- 3 upgrade cards
+- Icon + Name + Description
+- Rarity color coding
+- Hover/tap: Show detailed stats
 
-```csharp
-// Track passive skill count (max 3)
-private int passiveSkillCount = 0;
-
-// Track stat boost stacks (max 5 per stat)
-private Dictionary<UpgradeType, int> statStacks = new();
-
-// Track weapon equip time for unlock gates
-private Dictionary<WeaponType, float> weaponEquipTimes = new();
-
-public void ApplyUpgrade(UpgradeData upgrade) {
-    switch (upgrade.type) {
-        // Existing cases...
-        
-        case UpgradeType.GreatswordMirrorSlash:
-            ApplyMirrorSlash();
-            break;
-            
-        case UpgradeType.CrossbowDualShot:
-            ApplyCrossbowMultiShot(2);
-            break;
-            
-        case UpgradeType.HolyWaterScaling:
-            ApplyHolyWaterScaling(0.06f); // 6% scaling
-            break;
-            
-        case UpgradeType.PassiveLifesteal:
-            if (passiveSkillCount < 3) {
-                ApplyLifesteal(0.03f); // 3% lifesteal
-                passiveSkillCount++;
-            }
-            break;
-            
-        case UpgradeType.StatMight:
-            if (GetStatStack(UpgradeType.StatMight) < 5) {
-                ApplyMightStack(0.10f); // +10% damage
-                IncrementStatStack(UpgradeType.StatMight);
-            }
-            break;
-    }
-}
-```
+**Upgrade Card Anatomy:**
+- **Icon:** Visual representation
+- **Name:** Short, punchy (e.g., "Mirror Slash")
+- **Description:** Clear effect ("Spawn 2nd greatsword")
+- **Stats:** Numerical impact ("+50% damage")
 
 ---
 
-## Balancing Philosophy
+## Future Enhancements
 
-1. **Early Power Surge** - Universal upgrades (Attack Speed, Damage) provide immediate payoff
-2. **Mid-Game Build** - Weapon-specific upgrades create specialized builds (15-30 minutes)
-3. **Late-Game Scaling** - HP-based scaling (Holy Water) keeps weapons relevant
-4. **Strategic Choice** - Passives vs Stats vs Weapon Upgrades create meaningful decisions
+### Planned
+- Upgrade rerolls (spend gold to refresh options)
+- Upgrade previews (see next 3 levels)
+- Upgrade locking (bank one upgrade for later)
 
-**Target difficulty curve:** Player should survive ~15 minutes on first run, 25+ with optimal builds.
+### Considered
+- Negative upgrades (risk-reward)
+- Upgrade fusion (combine 2 weak → 1 strong)
+- Character-specific upgrades
+- Curse system (powerful but costly)
+
+---
+
+## Technical Notes
+
+**Implementation:** 4-class modular system
+- Track er (state)
+- Validator (filtering)
+- Applicator (effects)
+- Manager (orchestration)
+
+**Benefits:**
+-  Easy to add new upgrades (edit Applicator only)
+- Testable in isolation
+- Clear separation of concerns
