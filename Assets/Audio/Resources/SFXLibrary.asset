@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63169918457229444aad65434a4cf3c3, type: 3}
+  m_Name: SFXLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.SFXLibrary
+  greatswordSwing: {fileID: 8300000, guid: e2007331fcfa75444b39eaf77a5a6163, type: 3}
+  crossbowFire: {fileID: 8300000, guid: aef9653d3c688fb4b83d6ac42515dee6, type: 3}
+  xpPickup: {fileID: 8300000, guid: 0ad52f88c9f1b9649af0c1cf0ed3191f, type: 3}
+  levelUp: {fileID: 8300000, guid: d408ceb3fc3e6a84b858a42cae6db82e, type: 3}
+  upgradeSelect: {fileID: 8300000, guid: 68c92f57f6097d943b71a40b9bd4e8c5, type: 3}
+  goldPickup: {fileID: 8300000, guid: 512568f2c3d3e934c91ccf7e1c65f322, type: 3}
+  healthPotion: {fileID: 8300000, guid: 1e690bf29d2d2dd4096925eb8ce18501, type: 3}
+  buttonClick: {fileID: 8300000, guid: 8458416aebd50be428ddd7cd020bbe6f, type: 3}
+  backgroundMusic: {fileID: 8300000, guid: 5ffff1cc65207f14e98d23f9ea51b269, type: 3}

@@ -38,6 +38,9 @@ namespace PixelVanguard.Gameplay
 
             GameObject puddleObj = Instantiate(puddlePrefab, spawnPos, Quaternion.identity);
             
+            // Fix: Apply radius multiplier to scale
+            puddleObj.transform.localScale = Vector3.one * puddleRadiusMultiplier;
+            
             // Initialize puddle
             DamagePuddle puddleScript = puddleObj.GetComponent<DamagePuddle>();
             if (puddleScript != null)

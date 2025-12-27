@@ -69,9 +69,55 @@ namespace PixelVanguard.Gameplay
         {
             // Calculate direction to player
             Vector2 direction = (player.position - transform.position).normalized;
+            
+            // Apply separation force to prevent clumping
+            Vector2 separationForce = CalculateSeparation();
+            
+            // Combine chase + separation (90% chase, 10% separation)
+            Vector2 finalDirection = (direction * 0.9f + separationForce * 0.1f).normalized;
 
-            // Move toward player
-            rb.linearVelocity = direction * moveSpeed;
+            // Move with combined direction
+            rb.linearVelocity = finalDirection * moveSpeed;
+        }
+        
+        /// <summary>
+        /// Calculate separation force to keep enemies from cl umping.
+        /// Enemies gently push each other apart for better spread.
+        /// </summary>
+        private Vector2 CalculateSeparation()
+        {
+            // Check for nearby enemies (small radius for performance)
+            Collider2D[] nearbyEnemies = Physics2D.OverlapCircleAll(
+                transform.position, 1f, LayerMask.GetMask("Enemy"));
+            
+            if (nearbyEnemies.Length <= 1) // Only self found
+                return Vector2.zero;
+            
+            Vector2 separationForce = Vector2.zero;
+            int count = 0;
+            
+            foreach (var other in nearbyEnemies)
+            {
+                if (other.gameObject == gameObject) continue; // Skip self
+                
+                // Calculate push-away vector
+                Vector2 away = (Vector2)(transform.position - other.transform.position);
+                float distance = away.magnitude;
+                
+                if (distance > 0 && distance < 1f) // Only if very close
+                {
+                    // Stronger push when closer
+                    separationForce += away.normalized / distance;
+                    count++;
+                }
+            }
+            
+            if (count > 0)
+            {
+                separationForce /= count; // Average
+            }
+            
+            return separationForce.normalized;
         }
 
         /// <summary>

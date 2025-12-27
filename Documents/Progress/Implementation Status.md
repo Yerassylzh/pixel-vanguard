@@ -80,10 +80,15 @@
 - [ ] Meta progression (permanent upgrades)
 - [ ] Multiple characters (only Knight exists)
 - [ ] Boss enemies
-- [ ] Audio implementation (SFX spec complete, assets needed)
 - [ ] Settings menu (volume, controls)
 - [ ] Achievements
 - [ ] Localization
+
+## ✅ COMPLETED (Dec 2024)
+
+- [x] Event-driven Audio System (AudioManager + SFXLibrary)
+- [x] Weapon fire event system (WeaponBase.OnWeaponFired)
+- [x] Health potion pickup event (GameEvents.OnHealthPotionPickup)
 
 ## ✅ SPECIFICATIONS COMPLETE
 
@@ -96,15 +101,15 @@ None - all major bugs resolved
 
 ## 📊 CODEBASE METRICS
 
-**Total Scripts:** ~50  
-**Lines of Code:** ~8,000  
-**Core Systems:** 9 (Player, Weapons, Enemies, Upgrades, Progression, UI, Services, Camera, Input)  
-**ScriptableObjects:** 4 types (Character, Weapon, Enemy, Upgrade)
+**Total Scripts:** ~55  
+**Lines of Code:** ~9,000  
+**Core Systems:** 10 (Player, Weapons, Enemies, Upgrades, Progression, UI, Services, Camera, Input, Audio)  
+**ScriptableObjects:** 5 types (Character, Weapon, Enemy, Upgrade, SFXLibrary)
 
 ## 🎯 NEXT PRIORITIES
 
-1. Integrate lifesteal into weapon hit events
-2. Integrate gold bonus into loot drops
-3. Add audio system
+1. Import audio assets and configure AudioManager
+2. Integrate lifesteal into weapon hit events
+3. Integrate gold bonus into loot drops
 4. Create additional characters
 5. Implement shop system

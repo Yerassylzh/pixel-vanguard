@@ -82,7 +82,8 @@ namespace PixelVanguard.Gameplay
                 // Heal player
                 playerHealth.Heal(healAmount);
                 
-                // Play SFX or VFX here in future
+                // Fire event (AudioManager listens to this)
+                Core.GameEvents.TriggerHealthPotionPickup(healAmount);
 
                 // Destroy object
                 Destroy(gameObject);

@@ -23,6 +23,7 @@ namespace PixelVanguard.Core
         public static event Action<int> OnEnemyKilled; // killCount
         public static event Action<float> OnXPGained; // xp amount
         public static event Action<int> OnGoldCollected; // gold amount
+        public static event Action<float> OnHealthPotionPickup; // heal amount
 
         // Weapon Events
         public static event Action<string> OnWeaponEquipped; // weaponID
@@ -44,6 +45,7 @@ namespace PixelVanguard.Core
         public static void TriggerEnemyKilled(int totalKills) => OnEnemyKilled?.Invoke(totalKills);
         public static void TriggerXPGained(float amount) => OnXPGained?.Invoke(amount);
         public static void TriggerGoldCollected(int amount) => OnGoldCollected?.Invoke(amount);
+        public static void TriggerHealthPotionPickup(float healAmount) => OnHealthPotionPickup?.Invoke(healAmount);
         
         public static void TriggerWeaponEquipped(string weaponID) => OnWeaponEquipped?.Invoke(weaponID);
         public static void TriggerWeaponUpgraded(string weaponID, int newLevel) => OnWeaponUpgraded?.Invoke(weaponID, newLevel);
@@ -65,6 +67,7 @@ namespace PixelVanguard.Core
             OnEnemyKilled = null;
             OnXPGained = null;
             OnGoldCollected = null;
+            OnHealthPotionPickup = null;
             OnWeaponEquipped = null;
             OnWeaponUpgraded = null;
             OnPlatformChanged = null;

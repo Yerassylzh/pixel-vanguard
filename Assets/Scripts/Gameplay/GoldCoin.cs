@@ -72,6 +72,7 @@ namespace PixelVanguard.Gameplay
 
         private void CollectGold()
         {
+            // Fire gold collected event (AudioManager listens to this)
             Core.GameEvents.TriggerGoldCollected(goldAmount);
             Destroy(gameObject);
         }

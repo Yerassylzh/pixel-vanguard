@@ -24,12 +24,14 @@
 - **AutoCrossbow** - Multi-target arrows (Dual/Triple upgrade), pierce support, knockback 45
 - **HolyWater** - DoT puddles with HP scaling, knockback 20
 - **MagicOrbitals** - Continuous orbit shields, knockback 50
+  - *Performance optimized: TryGetComponent, periodic cleanup, 0.5s damage interval*
 
 **WeaponBase:**
 - Auto-fire system (cooldown-based `Update()`)
 - Upgrade API: `IncreaseDamage(multiplier)`, `IncreaseAttackSpeed(multiplier)`
 - `GetFinalDamage()` - Applies character damage multiplier
 - Cloning support (`CopyStatsFrom()`, `isClone` flag)
+- `OnWeaponFired` event - For audio system integration
 
 **WeaponManager:**
 - Max 4 equipped weapons simultaneously
@@ -101,6 +103,44 @@ EnemyHealth.TakeDamage()
         ├─► DamageFlash.HandleDamage() → Flash()
         └─► DamageNumberListener.HandleDamage() → Spawn number
 ```
+
+## ✅ Audio System
+
+**Architecture:** Event-Driven (Zero Coupling)
+
+**AudioManager:**
+- Singleton with `DontDestroyOnLoad`
+- Created in Main Menu scene, persists to Game scene
+- Subscribes to `GameEvents` for automatic audio playback
+- Dynamically subscribes to weapon `OnWeaponFired` events
+
+**SFXLibrary (ScriptableObject):**
+- Centralized audio clip storage
+- 9 clips: Greatsword, Crossbow, XP, Gold, Potion, Level Up, Upgrade, Button, Music
+
+**Event Flow:**
+```
+XPGem.CollectXP()
+  → GameEvents.TriggerXPGained()
+    → AudioManager.HandleXPPickup()
+      → PlaySFX(xpPickup)
+
+WeaponBase.Fire()
+  → OnWeaponFired event
+    → AudioManager.HandleWeaponFire(weaponType)
+      → PlaySFX(greatswordSwing/crossbowFire)
+```
+
+**Features:**
+- Pitch randomization (±10% variation)
+- Compressed In Memory audio
+- No coupling to game logic
+- Handles starter weapons + runtime-equipped weapons
+- UI manual calls: `PlayUpgradeSelect()`, `PlayButtonClick()`
+
+**New Events Added:**
+- `GameEvents.OnHealthPotionPickup` - Triggered by HealthPotion
+- `WeaponBase.OnWeaponFired` - Triggered by all weapons when firing
 
 ## ✅ Enemy Systems
 
@@ -179,8 +219,8 @@ Skeleton, Crawler, Goblin, Ghost, ArmoredOrc, Slime
 
 ```
 Assets/Scripts/
-├── Core/ - CharacterManager, GameEvents, PlatformDetector, ServiceLocator
-├── Data/ - ScriptableObject definitions (4 types)
+├── Core/ - CharacterManager, GameEvents, AudioManager, PlatformDetector, ServiceLocator
+├── Data/ - ScriptableObject definitions (5 types: Character, Weapon, Enemy, Upgrade, SFXLibrary)
 ├── Interfaces/ - IDamageable (event-driven damage)
 ├── Gameplay/
 │   ├── Player/ - PlayerController, PlayerMovement, PlayerInput, PlayerHealth, PlayerAnimationController
@@ -196,12 +236,16 @@ Assets/Scripts/
 
 ## Design Patterns
 
-**Singletons:** GameManager, PlayerController, CharacterManager, DamageNumberSpawner  
-**Event-Driven:** IDamageable events for damage feedback (VFX)  
-**ScriptableObjects:** All configuration data (designer-friendly)  
+**Singletons:** GameManager, PlayerController, CharacterManager, DamageNumberSpawner, AudioManager  
+**Event-Driven:** 
+- IDamageable events for damage feedback (VFX)  
+- GameEvents for audio triggers (XP, Gold, Health Potion, Level Up)
+- WeaponBase.OnWeaponFired for weapon audio
+**ScriptableObjects:** All configuration data (Character, Weapon, Enemy, Upgrade, SFXLibrary)  
 **Events:** `GameEvents` static class for decoupled communication  
 **Service Locator:** Cross-cutting concerns (save, ads, platform)  
-**Object Pooling:** Damage numbers (performance optimization)
+**Object Pooling:** Damage numbers, weapons  
+**Dynamic Subscription:** AudioManager subscribes to runtime-equipped weapons
 
 ## Code Conventions
 

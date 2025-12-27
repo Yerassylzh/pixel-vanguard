@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: goblin
   displayName: Goblin
   maxHealth: 25
-  moveSpeed: 1.9
+  moveSpeed: 1.6
   contactDamage: 7
   weightResistance: 0
   xpDrop: 5

@@ -20,6 +20,10 @@ namespace PixelVanguard.Gameplay
         
         // Track per-enemy damage cooldowns
         private readonly Dictionary<int, float> enemyCooldowns = new();
+        
+        // Performance optimization: cleanup timer
+        private float lastCleanupTime = 0f;
+        private const float cleanupInterval = 5f;
 
         private CircleCollider2D ballCollider;
 
@@ -42,11 +46,21 @@ namespace PixelVanguard.Gameplay
 
         private void Update()
         {
-            // Update all enemy cooldowns
+            // Performance: Only clean up cooldown dictionary every 5 seconds
+            if (Time.time - lastCleanupTime > cleanupInterval)
+            {
+                CleanupCooldowns();
+                lastCleanupTime = Time.time;
+            }
+        }
+        
+        private void CleanupCooldowns()
+        {
+            // Update all enemy cooldowns and remove expired ones
             var enemyIds = new List<int>(enemyCooldowns.Keys);
             foreach (var enemyId in enemyIds)
             {
-                enemyCooldowns[enemyId] -= Time.deltaTime;
+                enemyCooldowns[enemyId] -= cleanupInterval;
                 if (enemyCooldowns[enemyId] <= 0f)
                 {
                     enemyCooldowns.Remove(enemyId);
@@ -63,14 +77,14 @@ namespace PixelVanguard.Gameplay
             // Check if this specific enemy is on cooldown
             if (enemyCooldowns.ContainsKey(enemyId)) return;
 
-            // Get enemy health component
-            var enemyHealth = collision.GetComponent<EnemyHealth>();
-            if (enemyHealth == null || !enemyHealth.IsAlive) return;
+            // Performance: Use TryGetComponent (faster than GetComponent)
+            if (!collision.TryGetComponent<EnemyHealth>(out var enemyHealth)) return;
+            if (!enemyHealth.IsAlive) return;
 
             // Calculate knockback direction (away from ball)
             Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
 
-            // Deal damage (REFACTORED: Direct call instead of EnemyDamageUtility)
+            // Deal damage
             enemyHealth.TakeDamage(damage, knockbackDir, knockback);
             
             // Start cooldown for this enemy

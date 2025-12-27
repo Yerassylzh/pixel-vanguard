@@ -169,14 +169,16 @@ namespace PixelVanguard.VFX
         
         private void ReturnToPool()
         {
-            // Return to pool parent to maintain hierarchy
+            // Return to spawner's pool
             if (DamageNumberSpawner.Instance != null)
             {
-                transform.SetParent(DamageNumberSpawner.Instance.PoolParent, false);
+                DamageNumberSpawner.Instance.ReturnToPool(gameObject);
             }
-            
-            // Disable
-            gameObject.SetActive(false);
+            else
+            {
+                // Fallback: just disable
+                gameObject.SetActive(false);
+            }
         }
     }
 }

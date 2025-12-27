@@ -14,6 +14,9 @@ namespace PixelVanguard.Gameplay
         [SerializeField] private GameObject orbitalPrefab;
         [SerializeField] private int orbitalCount = 3;
         
+        // Performance: Cap orbital count to prevent lag
+        private const int maxOrbitalCount = 6;
+        
         [Header("Orbit Settings")]
         [SerializeField] private float targetRadius = 2.5f;
         [SerializeField] private float orbitSpeed = 180f; // Degrees per second
@@ -126,7 +129,14 @@ namespace PixelVanguard.Gameplay
                 return;
             }
 
-            for (int i = 0; i < orbitalCount; i++)
+            // Performance: Cap orbital count
+            int cappedCount = Mathf.Min(orbitalCount, maxOrbitalCount);
+            if (orbitalCount > maxOrbitalCount)
+            {
+                Debug.LogWarning($"[MagicOrbitalsWeapon] Orbital count capped at {maxOrbitalCount} for performance");
+            }
+
+            for (int i = 0; i < cappedCount; i++)
             {
                 // Spawn at player position (will be positioned by orbit logic)
                 GameObject orbObj = Instantiate(orbitalPrefab, player.position, Quaternion.identity);
@@ -137,7 +147,8 @@ namespace PixelVanguard.Gameplay
                 OrbitalBall ball = orbObj.GetComponent<OrbitalBall>();
                 if (ball != null)
                 {
-                    ball.Initialize(GetFinalDamage(), knockback, 0.1f); // 0.1s damage tick
+                    // Performance: Increased interval from 0.1s to 0.5s for less frequent checks
+                    ball.Initialize(GetFinalDamage(), knockback, 0.5f);
                     activeBalls.Add(ball);
                 }
                 else

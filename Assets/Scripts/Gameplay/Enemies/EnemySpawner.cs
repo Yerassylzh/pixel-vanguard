@@ -12,11 +12,11 @@ namespace PixelVanguard.Gameplay
         [Header("Spawn Configuration")]
         [SerializeField] private List<Data.EnemyData> enemyTypes = new List<Data.EnemyData>();
         [SerializeField] private float spawnInterval = 2f; // Seconds between spawns
-        [SerializeField] private int maxEnemies = 100; // Max enemies on screen
+        [SerializeField] private int maxEnemies = 123; // Max enemies on screen (Vampire Survivors style)
 
         [Header("Difficulty Scaling")]
         [SerializeField] private float difficultyIncreaseRate = 0.1f; // Spawn rate increase per minute
-        [SerializeField] private float maxSpawnRate = 10f; // Max enemies per interval
+        [SerializeField] private float maxSpawnRate = 3f; // Max spawn rate multiplier (capped for balance)
 
         [Header("Spawn Area")]
         [SerializeField] private float spawnDistanceFromCamera = 12f; // Units from camera edge
@@ -24,6 +24,9 @@ namespace PixelVanguard.Gameplay
         private Camera mainCamera;
         private float nextSpawnTime = 0f;
         private int currentEnemyCount = 0;
+        
+        // FIFO queue for enemy removal (Vampire Survivors style)
+        private Queue<GameObject> spawnedEnemies = new Queue<GameObject>();
 
         private void Start()
         {
@@ -64,8 +67,8 @@ namespace PixelVanguard.Gameplay
         }
 
         /// <summary>
-        /// Spawn multiple enemies at once (Vampire Survivors style).
-        /// Spawns 2-4 enemies per wave depending on game time.
+        /// Spawn multiple enemies distributed across edges (Vampire Survivors style).
+        /// Spawns 2-4 enemies per wave, one per edge to prevent clumping.
         /// </summary>
         private void SpawnEnemyWave()
         {
@@ -76,16 +79,22 @@ namespace PixelVanguard.Gameplay
             int enemiesToSpawn = 2 + Mathf.FloorToInt(minutesElapsed / 2f);
             enemiesToSpawn = Mathf.Clamp(enemiesToSpawn, 2, 4);
             
-            // Spawn multiple enemies
+            // Spawn enemies distributed across different edges (prevents clumping)
             for (int i = 0; i < enemiesToSpawn; i++)
             {
-                if (currentEnemyCount >= maxEnemies) break;
-                SpawnSingleEnemy();
+                int forcedEdge = i % 4; // 0=top, 1=right, 2=bottom, 3=left
+                SpawnSingleEnemy(forcedEdge);
             }
         }
 
-        private void SpawnSingleEnemy()
+        private void SpawnSingleEnemy(int forcedEdge = -1)
         {
+            // FIFO: If at cap, destroy oldest enemy before spawning new
+            if (currentEnemyCount >= maxEnemies)
+            {
+                RemoveOldestEnemy();
+            }
+            
             // Get enemy data based on spawn eligibility
             var enemyData = GetEnemyDataForCurrentTime();
             if (enemyData == null)
@@ -94,8 +103,10 @@ namespace PixelVanguard.Gameplay
                 return;
             }
 
-            // Calculate spawn position at screen edge
-            Vector3 spawnPosition = GetRandomSpawnPosition();
+            // Calculate spawn position at screen edge (use forced edge if specified)
+            Vector3 spawnPosition = forcedEdge >= 0 
+                ? GetSpawnPositionAtEdge(forcedEdge) 
+                : GetRandomSpawnPosition();
 
             GameObject enemyObj;
 
@@ -123,8 +134,28 @@ namespace PixelVanguard.Gameplay
             {
                 ai.SetMoveSpeed(enemyData.moveSpeed);
             }
-
+            
+            // Track in FIFO queue
+            spawnedEnemies.Enqueue(enemyObj);
             currentEnemyCount++;
+        }
+        
+        /// <summary>
+        /// Remove oldest spawned enemy (FIFO queue)
+        /// </summary>
+        private void RemoveOldestEnemy()
+        {
+            while (spawnedEnemies.Count > 0)
+            {
+                GameObject oldest = spawnedEnemies.Dequeue();
+                
+                if (oldest != null)
+                {
+                    Destroy(oldest);
+                    currentEnemyCount--;
+                    return;
+                }
+            }
         }
 
         private GameObject CreatePlaceholderEnemy(Data.EnemyData enemyData, Vector3 position)
@@ -236,6 +267,59 @@ namespace PixelVanguard.Gameplay
             // If all attempts failed, return last calculated position anyway
             // (Better to spawn in blocked area than not spawn at all)
             return CalculateSpawnPosition();
+        }
+
+        /// <summary>
+        /// Get spawn position at specific edge (for distributed spawning)
+        /// </summary>
+        private Vector3 GetSpawnPositionAtEdge(int edge)
+        {
+            const int maxAttempts = 10;
+            
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                Vector3 pos = CalculateSpawnPositionAtEdge(edge);
+                
+                if (IsValidSpawnPosition(pos))
+                {
+                    return pos;
+                }
+            }
+            
+            // Fallback: return position anyway
+            return CalculateSpawnPositionAtEdge(edge);
+        }
+        
+        private Vector3 CalculateSpawnPositionAtEdge(int edge)
+        {
+            float cameraHeight = mainCamera.orthographicSize * 2f;
+            float cameraWidth = cameraHeight * mainCamera.aspect;
+            Vector3 cameraPos = mainCamera.transform.position;
+            
+            float x = 0f;
+            float y = 0f;
+            
+            switch (edge)
+            {
+                case 0: // Top
+                    x = Random.Range(cameraPos.x - cameraWidth / 2f, cameraPos.x + cameraWidth / 2f);
+                    y = cameraPos.y + cameraHeight / 2f + spawnDistanceFromCamera;
+                    break;
+                case 1: // Right
+                    x = cameraPos.x + cameraWidth / 2f + spawnDistanceFromCamera;
+                    y = Random.Range(cameraPos.y - cameraHeight / 2f, cameraPos.y + cameraHeight / 2f);
+                    break;
+                case 2: // Bottom
+                    x = Random.Range(cameraPos.x - cameraWidth / 2f, cameraPos.x + cameraWidth / 2f);
+                    y = cameraPos.y - cameraHeight / 2f - spawnDistanceFromCamera;
+                    break;
+                case 3: // Left
+                    x = cameraPos.x - cameraWidth / 2f - spawnDistanceFromCamera;
+                    y = Random.Range(cameraPos.y - cameraHeight / 2f, cameraPos.y + cameraHeight / 2f);
+                    break;
+            }
+            
+            return new Vector3(x, y, 0f);
         }
 
         private Vector3 CalculateSpawnPosition()

@@ -24,6 +24,9 @@ namespace PixelVanguard.Gameplay
         
         // Clone tracking - prevents Start() from overwriting copied stats
         private bool isClone = false;
+        
+        // Weapon Fire Event (for audio system)
+        public event System.Action OnWeaponFired;
 
         protected virtual void Awake()
         {
@@ -62,6 +65,7 @@ namespace PixelVanguard.Gameplay
             if (cooldownTimer <= 0f)
             {
                 Fire();
+                OnWeaponFired?.Invoke(); // Fire audio event
                 cooldownTimer = cooldown;
             }
         }

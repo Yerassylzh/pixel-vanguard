@@ -76,7 +76,7 @@ namespace PixelVanguard.Gameplay
 
         private void CollectXP()
         {
-            // Fire XP gained event
+            // Fire XP gained event (AudioManager listens to this)
             Core.GameEvents.TriggerXPGained(xpAmount);
 
             // Destroy gem

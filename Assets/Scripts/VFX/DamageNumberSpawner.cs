@@ -20,7 +20,7 @@ namespace PixelVanguard.VFX
         
         [Header("Pool Settings")]
         [Tooltip("Initial pool size")]
-        [SerializeField] private int poolSize = 50;
+        [SerializeField] private int poolSize = 300; // Pre-instantiate 300, never create more
         
         [Header("Color Settings")]
         [SerializeField] private Color normalDamageColor = Color.white;
@@ -60,96 +60,83 @@ namespace PixelVanguard.VFX
                 return;
             }
             
-            // Create pool parent
-            poolParent = new GameObject("DamageNumber Pool").transform;
-            poolParent.SetParent(canvas.transform);
+            // Create pool parent as UI element (RectTransform)
+            GameObject poolGO = new GameObject("DamageNumber Pool");
+            poolParent = poolGO.AddComponent<RectTransform>();
+            poolParent.SetParent(canvas.transform, false);
             
-            // Pre-instantiate pool
+            // Set poolParent to fill canvas (so local coords match canvas coords)
+            RectTransform poolRect = poolParent as RectTransform;
+            poolRect.anchorMin = Vector2.zero;
+            poolRect.anchorMax = Vector2.one;
+            poolRect.offsetMin = Vector2.zero;
+            poolRect.offsetMax = Vector2.zero;
+            
+            // Pre-instantiate ALL pool objects (never create more at runtime)
+            Debug.Log($"[DamageNumberSpawner] Pre-instantiating {poolSize} damage numbers...");
             for (int i = 0; i < poolSize; i++)
             {
-                CreateNewPoolObject();
+                GameObject obj = Instantiate(damageNumberPrefab, poolParent);
+                obj.name = $"DamageNumber_{i:000}";
+                obj.SetActive(false);
+                pool.Enqueue(obj);
             }
             
-            Debug.Log($"[DamageNumberSpawner] Pool created with {poolSize} objects");
+            Debug.Log($"[DamageNumberSpawner] Pool created with {poolSize} objects. NO MORE WILL BE CREATED.");
         }
         
         /// <summary>
         /// Spawn a damage number at world position.
+        /// Uses pooled objects - NO instantiation at runtime!
         /// </summary>
         public void SpawnDamageNumber(Vector3 worldPosition, float damage, DamageNumberType type)
         {
-            Debug.Log($"[DamageNumberSpawner] SpawnDamageNumber called: {damage} at {worldPosition}, type: {type}");
+            if (canvas == null || damageNumberPrefab == null) return;
             
-            if (canvas == null)
-            {
-                Debug.LogError("[DamageNumberSpawner] Canvas not assigned!");
-                return;
-            }
-            
-            // Get from pool
+            // Get from pool (already parented to poolParent, don't reparent!)
             GameObject numberObj = GetFromPool();
             if (numberObj == null)
             {
-                Debug.LogError("[DamageNumberSpawner] Failed to get object from pool!");
+                Debug.LogError("[DamageNumberSpawner] Pool exhausted and recycling failed!");
                 return;
             }
             
-            Debug.Log($"[DamageNumberSpawner] Got pooled object: {numberObj.name}");
-            
-            // CRITICAL: Get the correct camera for this canvas mode
+            // Get camera for coordinate conversion
             Camera renderCamera = null;
             if (canvas.renderMode == RenderMode.ScreenSpaceCamera)
             {
-                renderCamera = canvas.worldCamera;
-                if (renderCamera == null)
-                {
-                    renderCamera = Camera.main;
-                    Debug.LogWarning("[DamageNumberSpawner] Canvas worldCamera not assigned, using Camera.main");
-                }
+                renderCamera = canvas.worldCamera ?? Camera.main;
             }
-            // For ScreenSpaceOverlay, camera should be null
             
-            Debug.Log($"[DamageNumberSpawner] Canvas mode: {canvas.renderMode}, Using camera: {renderCamera?.name ?? "null (overlay)"}");
-            
-            // Convert world position to screen position
+            // Convert world → screen → poolParent local (NOT canvas!)
             Vector2 screenPos = renderCamera != null 
                 ? renderCamera.WorldToScreenPoint(worldPosition) 
                 : Camera.main.WorldToScreenPoint(worldPosition);
             
-            Debug.Log($"[DamageNumberSpawner] World pos: {worldPosition}, Screen pos: {screenPos}");
-            
-            // Convert screen position to canvas local position
-            RectTransform canvasRect = canvas.transform as RectTransform;
-            bool success = RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect,
-                screenPos,
-                renderCamera, // Use the same camera as canvas
-                out Vector2 localPos
-            );
-            
-            if (!success)
+            // CRITICAL: Convert to poolParent space, since objects are parented there
+            RectTransform poolRect = poolParent as RectTransform;
+            if (poolRect == null)
             {
-                Debug.LogError("[DamageNumberSpawner] Failed to convert screen point to local point!");
-                numberObj.SetActive(false);
+                Debug.LogError("[DamageNumberSpawner] poolParent is not a RectTransform!");
+                ReturnToPool(numberObj);
                 return;
             }
             
-            Debug.Log($"[DamageNumberSpawner] Canvas local pos: {localPos}, Success: {success}");
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                poolRect, screenPos, renderCamera, out Vector2 localPos))
+            {
+                Debug.LogWarning("[DamageNumberSpawner] Failed to convert position, skipping");
+                ReturnToPool(numberObj);
+                return;
+            }
             
-            // CRITICAL FIX: Reparent to canvas BEFORE positioning to avoid transform issues
+            // Position the number (NO REPARENTING - stays in poolParent)
             RectTransform rectTransform = numberObj.GetComponent<RectTransform>();
-            rectTransform.SetParent(canvas.transform, false); // worldPositionStays = false
-            
-            // Reset transform to ensure clean state
+            rectTransform.anchoredPosition = localPos;
             rectTransform.localScale = Vector3.one;
             rectTransform.localRotation = Quaternion.identity;
             
-            // Set position in canvas space
-            rectTransform.anchoredPosition = localPos;
-            
-            Debug.Log($"[DamageNumberSpawner] Final anchored position: {rectTransform.anchoredPosition}");
-            
-            // Initialize with color based on type
+            // Initialize
             Color color = GetColorForType(type);
             DamageNumber damageNumber = numberObj.GetComponent<DamageNumber>();
             if (damageNumber != null)
@@ -157,38 +144,59 @@ namespace PixelVanguard.VFX
                 damageNumber.Initialize(damage, color, worldPosition);
             }
             
-            // Activate
+            // Activate (object is already parented to poolParent, never moves)
             numberObj.SetActive(true);
         }
         
         private GameObject GetFromPool()
         {
             // Try to get inactive object from pool
-            while (pool.Count > 0)
+            if (pool.Count > 0)
             {
                 GameObject obj = pool.Dequeue();
-                if (obj != null && !obj.activeInHierarchy)
+                if (obj != null)
                 {
                     return obj;
                 }
             }
             
-            // Pool exhausted, create new one
-            return CreateNewPoolObject();
-        }
-        
-        private GameObject CreateNewPoolObject()
-        {
-            if (damageNumberPrefab == null)
+            // Pool exhausted - forcibly reuse oldest active number
+            Debug.LogWarning("[DamageNumberSpawner] Pool exhausted! Force-recycling active damage number.");
+            
+            // Find any active damage number in canvas and recycle it
+            DamageNumber[] activeNumbers = canvas.GetComponentsInChildren<DamageNumber>();
+            if (activeNumbers.Length > 0)
             {
-                Debug.LogError("[DamageNumberSpawner] Damage number prefab not assigned!");
-                return null;
+                GameObject recycled = activeNumbers[0].gameObject;
+                recycled.SetActive(false);
+                ReturnToPool(recycled);
+                
+                // Now get it from pool
+                if (pool.Count > 0)
+                {
+                    return pool.Dequeue();
+                }
             }
             
-            GameObject newObj = Instantiate(damageNumberPrefab, poolParent);
-            newObj.SetActive(false);
-            pool.Enqueue(newObj);
-            return newObj;
+            Debug.LogError("[DamageNumberSpawner] CRITICAL: No objects in pool to recycle!");
+            return null;
+        }
+        
+        /// <summary>
+        /// Return object to pool. Objects never leave poolParent, just get disabled.
+        /// </summary>
+        public void ReturnToPool(GameObject obj)
+        {
+            if (obj == null) return;
+            
+            // Just disable - object is already in poolParent
+            obj.SetActive(false);
+            
+            // Add back to pool queue
+            if (!pool.Contains(obj))
+            {
+                pool.Enqueue(obj);
+            }
         }
         
         private Color GetColorForType(DamageNumberType type)
