@@ -67,6 +67,16 @@ namespace PixelVanguard.Gameplay
             }
         }
 
+        private void OnEnable()
+        {
+            Core.GameEvents.OnPlayerRevived += OnPlayerRevived;
+        }
+
+        private void OnDisable()
+        {
+            Core.GameEvents.OnPlayerRevived -= OnPlayerRevived;
+        }
+
         /// <summary>
         /// Apply damage to the player.
         /// </summary>
@@ -86,6 +96,9 @@ namespace PixelVanguard.Gameplay
 
             // Fire damage event for feedback systems
             OnDamaged?.Invoke(damage, transform.position);
+
+            // Fire audio event
+            Core.GameEvents.TriggerPlayerDamaged(damage);
 
             Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
 
@@ -157,6 +170,27 @@ namespace PixelVanguard.Gameplay
 
             // NOTE: Actual game over logic handled by GameManager
             // ReviveManager will check if revive is available
+        }
+
+        /// <summary>
+        /// Revive player with full health.
+        /// Called when player watches revive ad.
+        /// </summary>
+        private void OnPlayerRevived()
+        {
+            UnityEngine.Debug.Log("[PlayerHealth] Player revived with full HP");
+
+            // Restore to full health
+            currentHealth = maxHealth;
+
+            // Re-enable player control
+            if (playerController != null)
+            {
+                playerController.enabled = true;
+            }
+
+            // Trigger health changed event for UI update
+            Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
         }
 
         private void OnCollisionStay2D(Collision2D collision)

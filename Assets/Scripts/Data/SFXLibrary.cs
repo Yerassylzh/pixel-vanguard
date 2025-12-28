@@ -22,8 +22,16 @@ namespace PixelVanguard.Data
         public AudioClip goldPickup;
         public AudioClip healthPotion;
 
+        [Header("Combat")]
+        public AudioClip playerDamage;
+
+        [Header("Weapon Spawns")]
+        public AudioClip magicOrbitalSpawn;
+        public AudioClip holyWaterThrow;
+
         [Header("UI")]
         public AudioClip buttonClick;
+        public AudioClip gameOver;
 
         [Header("Music")]
         public AudioClip backgroundMusic;

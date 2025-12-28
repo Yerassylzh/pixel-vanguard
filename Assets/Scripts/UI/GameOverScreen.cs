@@ -9,17 +9,14 @@ namespace PixelVanguard.UI
 {
     /// <summary>
     /// Game Over screen displayed when player dies.
-    /// Shows session stats and provides restart option.
+    /// Offers revive (with ad) or quit to stats screen.
     /// </summary>
     public class GameOverScreen : MonoBehaviour
     {
         [Header("UI References")]
         [SerializeField] private GameObject gameOverPanel;
-        [SerializeField] private TextMeshProUGUI survivalTimeText;
-        [SerializeField] private TextMeshProUGUI killCountText;
-        [SerializeField] private TextMeshProUGUI levelText;
-        [SerializeField] private Button restartButton;
-        [SerializeField] private Button mainMenuButton;
+        [SerializeField] private Button reviveButton;
+        [SerializeField] private Button quitButton;
 
         private void Start()
         {
@@ -30,8 +27,8 @@ namespace PixelVanguard.UI
             }
 
             // Setup button listeners
-            if (restartButton != null) restartButton.onClick.AddListener(Restart);
-            if (mainMenuButton != null) mainMenuButton.onClick.AddListener(ReturnToMainMenu);
+            if (reviveButton != null) reviveButton.onClick.AddListener(OnReviveClicked);
+            if (quitButton != null) quitButton.onClick.AddListener(OnQuitClicked);
         }
 
         private void OnEnable()
@@ -51,55 +48,69 @@ namespace PixelVanguard.UI
 
         private void ShowGameOver()
         {
-            if (GameManager.Instance == null || GameManager.Instance.CurrentSession == null)
-            {
-                Debug.LogWarning("[GameOverScreen] GameManager or CurrentSession not found!");
-                return;
-            }
-
-            var session = GameManager.Instance.CurrentSession;
-
-            // Display stats
-            if (survivalTimeText != null)
-            {
-                survivalTimeText.text = $"Time: {session.GetFormattedTime()}";
-            }
-
-            if (killCountText != null)
-            {
-                killCountText.text = $"Kills: {session.killCount}";
-            }
-
-            if (levelText != null)
-            {
-                levelText.text = $"Level: {session.levelReached}";
-            }
-
             // Show panel
             if (gameOverPanel != null)
             {
                 gameOverPanel.SetActive(true);
             }
 
-            Debug.Log($"[GameOverScreen] Game Over - Time: {session.GetFormattedTime()}, Kills: {session.killCount}, Level: {session.levelReached}");
+            Debug.Log("[GameOverScreen] Game Over - Revive or Quit?");
         }
 
-        private void Restart()
+        private void OnReviveClicked()
         {
+            Debug.Log("[GameOverScreen] Revive clicked");
+
+            // TODO: Watch ad (placeholder for now)
+            // AdManager.ShowRewardedAd(() => { RevivePlayer(); });
+
+            // For now, revive immediately
+            RevivePlayer();
+        }
+
+        private void RevivePlayer()
+        {
+            Debug.Log("[GameOverScreen] Player revived!");
+
+            // Hide panel
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.SetActive(false);
+            }
+
+            // Tell GameManager to revive player
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RevivePlayer();
+            }
+        }
+
+        private void OnQuitClicked()
+        {
+            Debug.Log("[GameOverScreen] Quit clicked - loading stats scene");
+
+            // Hide this panel
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.SetActive(false);
+            }
+
+            // TODO: Load dedicated game over stats scene
+            // For now, log stats and return to main menu
+            if (GameManager.Instance != null && GameManager.Instance.CurrentSession != null)
+            {
+                var session = GameManager.Instance.CurrentSession;
+                Debug.Log($"[GameOverScreen] Stats - Time: {session.GetFormattedTime()}, Kills: {session.killCount}, Level: {session.levelReached}, Gold: {session.goldCollected}");
+            }
+
             // Restore time scale
             Time.timeScale = 1f;
 
-            // Reload current scene
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-
-        private void ReturnToMainMenu()
-        {
-            // TODO: Load main menu scene
-            Debug.Log("[GameOverScreen] Main Menu not implemented yet - restarting instead");
+            // TODO: Replace with actual stats scene loading
+            // SceneManager.LoadScene("GameOverStatsScene");
             
-            // For now, just restart
-            Restart();
+            // For now, reload game scene
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 }

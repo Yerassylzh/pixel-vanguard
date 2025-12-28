@@ -113,10 +113,18 @@ EnemyHealth.TakeDamage()
 - Created in Main Menu scene, persists to Game scene
 - Subscribes to `GameEvents` for automatic audio playback
 - Dynamically subscribes to weapon `OnWeaponFired` events
+- Minimum cooldown cap: 0.5s (prevents machine gun effect)
 
 **SFXLibrary (ScriptableObject):**
 - Centralized audio clip storage
-- 9 clips: Greatsword, Crossbow, XP, Gold, Potion, Level Up, Upgrade, Button, Music
+- 13 clips total:
+  - **Weapons:** Greatsword, Crossbow
+  - **Progression:** XP, Level Up, Upgrade Select
+  - **Collectibles:** Gold, Health Potion
+  - **Combat:** Player Damage
+  - **Weapon Spawns:** Magic Orbital Spawn, Holy Water Throw
+  - **UI:** Button Click, Game Over
+  - **Music:** Background Music (looping)
 
 **Event Flow:**
 ```
@@ -129,6 +137,11 @@ WeaponBase.Fire()
   → OnWeaponFired event
     → AudioManager.HandleWeaponFire(weaponType)
       → PlaySFX(greatswordSwing/crossbowFire)
+
+PlayerHealth.TakeDamage()
+  → GameEvents.TriggerPlayerDamaged()
+    → AudioManager.HandlePlayerDamage()
+      → PlaySFX(playerDamage)
 ```
 
 **Features:**
@@ -136,11 +149,42 @@ WeaponBase.Fire()
 - Compressed In Memory audio
 - No coupling to game logic
 - Handles starter weapons + runtime-equipped weapons
+- Attack speed cap prevents ridiculous fire rates
 - UI manual calls: `PlayUpgradeSelect()`, `PlayButtonClick()`
 
-**New Events Added:**
+**Events Added:**
 - `GameEvents.OnHealthPotionPickup` - Triggered by HealthPotion
+- `GameEvents.OnPlayerDamaged` - Triggered by PlayerHealth
+- `GameEvents.OnWeaponSpawned` - Triggered by MagicOrbitals/HolyWater
 - `WeaponBase.OnWeaponFired` - Triggered by all weapons when firing
+
+## ✅ UI Systems
+
+**HUD (Screen-Space):**
+- XP Slider with level display
+- Timer (MM:SS format)
+- Kill counter
+- Event-driven updates (OnXPGained)
+
+**PlayerHealthBarUI (World-Space):**
+- Follows player character in world space
+- Black background, red slider fill
+- Auto-finds player via `PlayerController.Instance`
+- Updates via `OnPlayerHealthChanged` event
+- Billboard effect (always faces camera)
+- Position: Configurable offset below player (default: -0.8 units)
+
+**Architecture:**
+- Screen-Space HUD: Traditional corner UI
+- World-Space Health: Floats with player for instant visibility
+- Both use event-driven updates (zero coupling)
+- Supports multiple character prefabs automatically
+
+**Adaptive UI Components:**
+- `FixedHeightPanel`: Maintains fixed height, adjusts width by orientation
+  - Portrait: Full width
+  - Landscape: Square (width = height)
+  - Used for Level Up panel to ensure consistent sizing
 
 ## ✅ Enemy Systems
 
@@ -229,7 +273,7 @@ Assets/Scripts/
 │   ├── Upgrades/ - UpgradeManager, UpgradeTracker, UpgradeValidator, UpgradeApplicator
 │   └── Collectibles - XPGem, GoldCoin, HealthPotion, GameManager, GameSession
 ├── VFX/ - DamageFlash, DamageNumber, DamageNumberListener, DamageNumberSpawner
-├── UI/ - HUD, LevelUpPanel, PauseMenu, GameOverScreen, VirtualJoystick
+├── UI/ - HUD, PlayerHealthBarUI, LevelUpPanel, FixedHeightPanel, UIButtonSound, PauseMenu, GameOverScreen, VirtualJoystick
 ├── Services/ - Interfaces + Implementations
 └── Utils/ - AutoFPS60Setter
 ```

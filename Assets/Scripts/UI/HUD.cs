@@ -10,10 +10,6 @@ namespace PixelVanguard.UI
     /// </summary>
     public class HUD : MonoBehaviour
     {
-        [Header("Health Bar")]
-        [SerializeField] private Slider hpSlider;
-        [SerializeField] private TextMeshProUGUI hpText;
-
         [Header("XP Bar")]
         [SerializeField] private Slider xpSlider;
         [SerializeField] private TextMeshProUGUI levelText;
@@ -21,14 +17,13 @@ namespace PixelVanguard.UI
         [Header("Stats Display")]
         [SerializeField] private TextMeshProUGUI timerText;
         [SerializeField] private TextMeshProUGUI killCountText;
+        [SerializeField] private TextMeshProUGUI goldText;
 
         [Header("XP Progression")]
         [SerializeField] private int xpPerLevel = 100;
         [SerializeField] private float xpScalingPerLevel = 1.2f;
 
         // Runtime tracking
-        private float currentHP;
-        private float maxHP;
         private int currentXP = 0;
         private int currentLevel = 1;
         private int xpNeededForNextLevel;
@@ -42,14 +37,12 @@ namespace PixelVanguard.UI
         private void OnEnable()
         {
             // Subscribe to events
-            Core.GameEvents.OnPlayerHealthChanged += UpdateHealth;
             Core.GameEvents.OnXPGained += AddXP;
         }
 
         private void OnDisable()
         {
             // Unsubscribe from events
-            Core.GameEvents.OnPlayerHealthChanged -= UpdateHealth;
             Core.GameEvents.OnXPGained -= AddXP;
         }
 
@@ -57,25 +50,7 @@ namespace PixelVanguard.UI
         {
             UpdateTimer();
             UpdateKillCount();
-        }
-
-        private void UpdateHealth(float current, float max)
-        {
-            currentHP = current;
-            maxHP = max;
-
-            // Update HP slider
-            if (hpSlider != null)
-            {
-                hpSlider.maxValue = maxHP;
-                hpSlider.value = currentHP;
-            }
-
-            // Update HP text
-            if (hpText != null)
-            {
-                hpText.text = $"{Mathf.CeilToInt(currentHP)} / {Mathf.CeilToInt(maxHP)}";
-            }
+            UpdateGoldCount();
         }
 
         private void AddXP(float amount)
@@ -139,7 +114,16 @@ namespace PixelVanguard.UI
             if (killCountText != null && Gameplay.GameManager.Instance != null)
             {
                 int kills = Gameplay.GameManager.Instance.KillCount;
-                killCountText.text = $"Kills: {kills}";
+                killCountText.text = $"{kills}";
+            }
+        }
+
+        private void UpdateGoldCount()
+        {
+            if (goldText != null && Gameplay.GameManager.Instance != null)
+            {
+                int gold = Gameplay.GameManager.Instance.GoldCollected;
+                goldText.text = $"{gold}";
             }
         }
     }

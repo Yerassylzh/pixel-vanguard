@@ -13,13 +13,13 @@ namespace PixelVanguard.Data
         [Tooltip("Display name shown on upgrade card")]
         public string upgradeName;
 
+        [Header("Display")]
         [Tooltip("Description explaining what this upgrade does")]
-        [TextArea(2, 3)]
+        [TextArea(2, 4)]
         public string description;
+        public Sprite icon; // Icon displayed in Level Up panel
 
-        public Sprite icon; // For future card visuals
-
-        [Header("Upgrade Type")]
+        [Header("Upgrade Properties")]
         public UpgradeType type;
 
         [Header("Effect")]

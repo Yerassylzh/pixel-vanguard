@@ -151,6 +151,15 @@ namespace PixelVanguard.Gameplay
         {
             float oldCooldown = cooldown;
             cooldown *= multiplier;
+            
+            // BALANCE CAP: Minimum cooldown to prevent ridiculous fire rates
+            const float MIN_COOLDOWN = 0.5f; // Can't fire faster than ~2x per second
+            if (cooldown < MIN_COOLDOWN)
+            {
+                Debug.LogWarning($"⚡ [{weaponData.displayName}] Hit minimum cooldown cap ({MIN_COOLDOWN}s)");
+                cooldown = MIN_COOLDOWN;
+            }
+            
             Debug.Log($"⚡ [{weaponData.displayName}] ATTACK SPEED: {oldCooldown:F2}s → {cooldown:F2}s (-{((1 - multiplier) * 100):F0}% cooldown)");
         }
 

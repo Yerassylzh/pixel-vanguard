@@ -86,9 +86,21 @@
 
 ## ✅ COMPLETED (Dec 2024)
 
+**Audio System:**
 - [x] Event-driven Audio System (AudioManager + SFXLibrary)
 - [x] Weapon fire event system (WeaponBase.OnWeaponFired)
 - [x] Health potion pickup event (GameEvents.OnHealthPotionPickup)
+- [x] Player damage SFX (GameEvents.OnPlayerDamaged)
+- [x] Weapon spawn SFX (GameEvents.OnWeaponSpawned)
+- [x] Attack speed balancing (0.15s minimum cooldown cap)
+- [x] Dynamic weapon subscription (AudioManager auto-subscribes to equipped weapons)
+- [x] 13 SFX clips + looping background music
+
+**UI System:**
+- [x] World-space player health bar (PlayerHealthBarUI)
+- [x] HUD cleanup (removed HP bar, kept XP/Timer/Kills/Gold)
+- [x] Event-driven UI updates (zero coupling)
+- [x] Revive system (Revive/Quit buttons, ad placeholder)
 
 ## ✅ SPECIFICATIONS COMPLETE
 
@@ -108,7 +120,7 @@ None - all major bugs resolved
 
 ## 🎯 NEXT PRIORITIES
 
-1. Import audio assets and configure AudioManager
+1. Implement Pause Menu and Game Over UI
 2. Integrate lifesteal into weapon hit events
 3. Integrate gold bonus into loot drops
 4. Create additional characters

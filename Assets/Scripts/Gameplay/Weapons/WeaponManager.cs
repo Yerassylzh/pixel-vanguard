@@ -90,16 +90,19 @@ namespace PixelVanguard.Gameplay
                 return false;
             }
 
-            // Add to equipped list
-            var instance = new WeaponInstance
+            // Track weapon
+            var weaponInstance = new WeaponInstance
             {
                 weaponData = weaponData,
                 weaponObject = weaponObj,
                 weaponScript = weaponScript
             };
-            equippedWeapons.Add(instance);
+            equippedWeapons.Add(weaponInstance);
 
-            Debug.Log($"[WeaponManager] Equipped: {weaponData.displayName}");
+            // Fire weapon equipped event (for audio system)
+            Core.GameEvents.TriggerWeaponEquipped(weaponData.weaponID);
+
+            Debug.Log($"[WeaponManager] ✅ Equipped: {weaponData.displayName} (ID: {weaponData.weaponID})");
             return true;
         }
 

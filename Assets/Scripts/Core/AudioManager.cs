@@ -64,7 +64,11 @@ namespace PixelVanguard.Core
             GameEvents.OnGoldCollected += HandleGoldPickup;
             GameEvents.OnPlayerLevelUp += HandleLevelUp;
             GameEvents.OnHealthPotionPickup += HandleHealthPotion;
+            GameEvents.OnPlayerDamaged += HandlePlayerDamage;
             GameEvents.OnWeaponEquipped += HandleWeaponEquipped;
+            GameEvents.OnWeaponSpawned += HandleWeaponSpawn;
+            GameEvents.OnGameOver += HandleGameOver;
+            GameEvents.OnUpgradeSelected += HandleUpgradeSelected;
         }
 
         private void OnDisable()
@@ -74,7 +78,11 @@ namespace PixelVanguard.Core
             GameEvents.OnGoldCollected -= HandleGoldPickup;
             GameEvents.OnPlayerLevelUp -= HandleLevelUp;
             GameEvents.OnHealthPotionPickup -= HandleHealthPotion;
+            GameEvents.OnPlayerDamaged -= HandlePlayerDamage;
             GameEvents.OnWeaponEquipped -= HandleWeaponEquipped;
+            GameEvents.OnWeaponSpawned -= HandleWeaponSpawn;
+            GameEvents.OnGameOver -= HandleGameOver;
+            GameEvents.OnUpgradeSelected -= HandleUpgradeSelected;
             
             // Unsubscribe from all weapon events
             UnsubscribeFromAllWeapons();
@@ -98,6 +106,10 @@ namespace PixelVanguard.Core
         private void HandleGoldPickup(int amount) => PlaySFX(sfxLibrary?.goldPickup);
         private void HandleLevelUp() => PlaySFX(sfxLibrary?.levelUp);
         private void HandleHealthPotion(float healAmount) => PlaySFX(sfxLibrary?.healthPotion);
+        private void HandlePlayerDamage(float damage) => PlaySFX(sfxLibrary?.playerDamage);
+        private void HandleWeaponSpawn() => PlaySFX(sfxLibrary?.magicOrbitalSpawn); // Generic weapon spawn
+        private void HandleGameOver(GameOverReason reason) => PlaySFX(sfxLibrary?.gameOver);
+        private void HandleUpgradeSelected() => PlaySFX(sfxLibrary?.upgradeSelect);
 
         /// <summary>
         /// When weapon is equipped, find its instance and subscribe to fire event.

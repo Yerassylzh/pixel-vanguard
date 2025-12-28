@@ -117,6 +117,9 @@ namespace PixelVanguard.Gameplay
             // Set active IMMEDIATELY to prevent race condition with cooldown
             isActive = true;
 
+            // Fire audio event (orbitals appearing)
+            Core.GameEvents.TriggerWeaponSpawned();
+
             SpawnOrbitals();
             StartCoroutine(AnimateRadius(0f, targetRadius, fadeInDuration, null));
         }

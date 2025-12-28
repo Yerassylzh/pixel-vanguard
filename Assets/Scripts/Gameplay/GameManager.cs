@@ -143,9 +143,10 @@ namespace PixelVanguard.Gameplay
             // Finalize session stats
             FinalizeSession();
 
-            // TODO: In the future, check if ReviveManager wants to offer a revive
-            // For now, end the game immediately
-            EndGame(Core.GameOverReason.PlayerDied);
+            // Transition to Reviving state (offers revive option)
+            SetState(GameState.Reviving);
+            Time.timeScale = 0f; // Pause for revive decision
+            Core.GameEvents.TriggerGameOver(Core.GameOverReason.PlayerDied);
         }
 
         private void FinalizeSession()
@@ -164,6 +165,28 @@ namespace PixelVanguard.Gameplay
             SetState(GameState.LevelUp);
             Time.timeScale = 0f; // Pause for card selection
             Log($"Level Up - Now Level {currentLevel}");
+        }
+
+        /// <summary>
+        /// Revive player with full health and resume game.
+        /// Called from GameOverScreen when player watches ad.
+        /// </summary>
+        public void RevivePlayer()
+        {
+            if (currentState != GameState.Reviving)
+            {
+                Debug.LogWarning("[GameManager] Cannot revive - not in Reviving state");
+                return;
+            }
+
+            Log("Player revived!");
+
+            // Resume game
+            SetState(GameState.Playing);
+            Time.timeScale = 1f;
+
+            // Trigger revive event (PlayerHealth will restore to full)
+            Core.GameEvents.TriggerPlayerRevived();
         }
 
         private void Log(string message)

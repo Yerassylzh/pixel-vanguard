@@ -155,15 +155,19 @@ namespace PixelVanguard.VFX
                 ? renderCamera.WorldToScreenPoint(worldPosition)
                 : Camera.main.WorldToScreenPoint(worldPosition);
             
-            // Convert screen to canvas local
-            RectTransform canvasRect = canvas.transform as RectTransform;
+            // Convert screen to local space of the PARENT (poolParent)
+            // Using canvas directly causes issues if poolParent has different scaling/offsets
+            RectTransform parentRect = transform.parent as RectTransform;
+            if (parentRect == null) parentRect = canvas.transform as RectTransform; // Fallback
+
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect,
+                parentRect,
                 screenPos,
                 renderCamera,
                 out Vector2 localPos))
             {
-                rectTransform.anchoredPosition = localPos;
+                // Use anchoredPosition3D to enforce Z=0 (fixes visibility issues in ScreenSpaceCamera)
+                rectTransform.anchoredPosition3D = new Vector3(localPos.x, localPos.y, 0f);
             }
         }
         

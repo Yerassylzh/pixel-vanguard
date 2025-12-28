@@ -27,6 +27,9 @@ namespace PixelVanguard.Gameplay
                 return;
             }
 
+            // Fire audio event (holy water thrown)
+            Core.GameEvents.TriggerWeaponSpawned();
+
             SpawnPuddle();
         }
 

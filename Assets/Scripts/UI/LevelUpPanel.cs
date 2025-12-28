@@ -20,9 +20,15 @@ namespace PixelVanguard.UI
         [SerializeField] private Button option3Button;
 
         [Header("Button Labels")]
-        [SerializeField] private TextMeshProUGUI option1Text;
-        [SerializeField] private TextMeshProUGUI option2Text;
-        [SerializeField] private TextMeshProUGUI option3Text;
+        [SerializeField] private TextMeshProUGUI option1TitleText;
+        [SerializeField] private TextMeshProUGUI option1DescText;
+        [SerializeField] private Image option1Icon;
+        [SerializeField] private TextMeshProUGUI option2TitleText;
+        [SerializeField] private TextMeshProUGUI option2DescText;
+        [SerializeField] private Image option2Icon;
+        [SerializeField] private TextMeshProUGUI option3TitleText;
+        [SerializeField] private TextMeshProUGUI option3DescText;
+        [SerializeField] private Image option3Icon;
 
         [Header("Upgrade Settings")]
         [SerializeField] private UpgradeManager upgradeManager;
@@ -86,29 +92,47 @@ namespace PixelVanguard.UI
                 option2Upgrade = upgrades.Length > 1 ? upgrades[1] : null;
                 option3Upgrade = upgrades.Length > 2 ? upgrades[2] : null;
 
-                // Set button labels
-                if (option1Text != null && option1Upgrade != null)
+                // Set button labels and icons
+                if (option1TitleText != null && option1DescText != null && option1Upgrade != null)
                 {
-                    option1Text.text = $"{option1Upgrade.upgradeName}\n<size=19>{option1Upgrade.description}</size>";
+                    option1TitleText.text = option1Upgrade.upgradeName;
+                    option1DescText.text = option1Upgrade.description;
+                    if (option1Icon != null)
+                    {
+                        option1Icon.sprite = option1Upgrade.icon;
+                        option1Icon.enabled = option1Upgrade.icon != null;
+                    }
                 }
 
-                if (option2Text != null && option2Upgrade != null)
+                if (option2TitleText != null && option2DescText != null && option2Upgrade != null)
                 {
-                    option2Text.text = $"{option2Upgrade.upgradeName}\n<size=19>{option2Upgrade.description}</size>";
+                    option2TitleText.text = option2Upgrade.upgradeName;
+                    option2DescText.text = option2Upgrade.description;
+                    if (option2Icon != null)
+                    {
+                        option2Icon.sprite = option2Upgrade.icon;
+                        option2Icon.enabled = option2Upgrade.icon != null;
+                    }
                 }
 
-                if (option3Text != null && option3Upgrade != null)
+                if (option3TitleText != null && option3DescText != null && option3Upgrade != null)
                 {
-                    option3Text.text = $"{option3Upgrade.upgradeName}\n<size=19>{option3Upgrade.description}</size>";
+                    option3TitleText.text = option3Upgrade.upgradeName;
+                    option3DescText.text = option3Upgrade.description;
+                    if (option3Icon != null)
+                    {
+                        option3Icon.sprite = option3Upgrade.icon;
+                        option3Icon.enabled = option3Upgrade.icon != null;
+                    }
                 }
             }
             else
             {
                 Debug.LogWarning("[LevelUpPanel] UpgradeManager not found!");
                 // Fallback labels
-                if (option1Text != null) option1Text.text = "No upgrades available";
-                if (option2Text != null) option2Text.text = "No upgrades available";
-                if (option3Text != null) option3Text.text = "No upgrades available";
+                if (option1TitleText != null) option1TitleText.text = "No upgrades";
+                if (option2TitleText != null) option2TitleText.text = "No upgrades";
+                if (option3TitleText != null) option3TitleText.text = "No upgrades";
             }
 
             // Show panel
@@ -127,6 +151,9 @@ namespace PixelVanguard.UI
             if (upgrade != null && upgradeManager != null)
             {
                 upgradeManager.ApplyUpgrade(upgrade);
+                
+                // Trigger upgrade selected SFX
+                Core.GameEvents.TriggerUpgradeSelected();
             }
             ClosePanel();
         }
