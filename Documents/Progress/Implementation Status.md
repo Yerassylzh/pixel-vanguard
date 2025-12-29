@@ -64,15 +64,44 @@
 
 ## ⚠️ PARTIAL IMPLEMENTATION
 
-### Lifesteal (Storage Done, Integration Pending)
+### ~~Lifesteal~~ ✅ COMPLETE
 - [x] Stored in UpgradeTracker
 - [x] Exposed via `UpgradeManager.GetLifestealPercent()`
-- [ ] Apply healing on weapon hits
+- [x] Applied in `WeaponBase.DealDamageWithLifesteal()` helper method
 
-### Gold Bonus (Storage Done, Integration Pending)
+### ~~Gold Bonus~~ ✅ COMPLETE
 - [x] Stored in UpgradeTracker
 - [x] Exposed via `UpgradeManager.GetGoldBonusPercent()`
-- [ ] Apply multiplier in `EnemyHealth.DropLoot()`
+- [x] Applied multiplier in `EnemyHealth.DropLoot()`
+
+### ~~SaveData Model~~ ✅ COMPLETE
+- [x] ISaveService interface (platform-agnostic, async)
+- [x] SaveData model with high scores (longestTime, highestKills, highestLevel, mostGold)
+- [x] PlayerPrefsSaveService (JSON + PlayerPrefs)
+- [x] Removed redundant "luck" stat (confused with Lucky Coins passive)
+- [x] UpdateHighScores() helper method
+
+### SessionData ✅ COMPLETE
+- [x] DontDestroyOnLoad singleton
+- [x] Tracks current run (time, kills, gold, level, gameOverReason)
+- [x] Auto-updated by GameManager
+- [x] Ready for Results Scene to read
+
+### Results Scene ✅ COMPLETE (CODE)
+- [x] ResultsController.cs with full logic
+- [x] Reads SessionData for stats display
+- [x] Checks and updates high scores
+- [x] "Watch Ad" button doubles gold (placeholder)
+- [x] Saves progress to ISaveService
+- [x] GameOverScreen loads Results Scene on "Quit"
+- [ ] Scene built in Unity editor (USER task)
+
+### Enemy Spawn Bounds ✅ COMPLETE
+- [x] Optional rectangular bounds using 2 Transform markers (top-left, bottom-right)
+- [x] Spawn validation checks bounds before colliders
+- [x] Visual Gizmo feedback (green rectangle + corner spheres)
+- [x] Backward compatible (bounds are optional)
+- [x] Prevents enemies from spawning outside island/playable area
 
 ## 📋 NOT IMPLEMENTED
 

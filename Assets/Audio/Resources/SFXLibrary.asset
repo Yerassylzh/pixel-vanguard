@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63169918457229444aad65434a4cf3c3, type: 3}
   m_Name: SFXLibrary
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.SFXLibrary
-  greatswordSwing: {fileID: 8300000, guid: bef8a9c771139384aba3f911d4a277c9, type: 3}
+  greatswordSwing: {fileID: 8300000, guid: 1d130cb89d58f794ab08294ffe55e214, type: 3}
   crossbowFire: {fileID: 8300000, guid: e7ad5ca0c653d3a45a7aec591d913ca9, type: 3}
   xpPickup: {fileID: 8300000, guid: 0ad52f88c9f1b9649af0c1cf0ed3191f, type: 3}
   levelUp: {fileID: 8300000, guid: d408ceb3fc3e6a84b858a42cae6db82e, type: 3}
@@ -22,6 +22,6 @@ MonoBehaviour:
   playerDamage: {fileID: 8300000, guid: 8ab7cd22e7809ae40ac39f4718b0da4c, type: 3}
   magicOrbitalSpawn: {fileID: 8300000, guid: 3999f0bd9b10be641aa527722c2f4836, type: 3}
   holyWaterThrow: {fileID: 8300000, guid: 0b7dc53cc1daf9a4390739dd18930995, type: 3}
-  buttonClick: {fileID: 8300000, guid: cd377288a912a734ab893be473ec1e78, type: 3}
+  buttonClick: {fileID: 8300000, guid: 54789ee82263900448b4a63120c8abe4, type: 3}
   gameOver: {fileID: 8300000, guid: 9526b145098117246b0adc38c4147acd, type: 3}
   backgroundMusic: {fileID: 8300000, guid: 5ffff1cc65207f14e98d23f9ea51b269, type: 3}

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Health Boost
   description: Increase max HP by 10
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 88f26bc982f704a4e821775e61520140, type: 3}
   type: 1
   value: 10
   weaponToEquip: {fileID: 0}
+  rarityWeight: 100

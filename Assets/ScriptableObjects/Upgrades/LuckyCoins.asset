@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Lucky Coins
   description: Gold drops give +40% more gold
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7790b0de90d18b149a757359f66e6eee, type: 3}
   type: 18
   value: 40
   weaponToEquip: {fileID: 0}

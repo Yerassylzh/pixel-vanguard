@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Mirror Slash
   description: Spawn 2nd greatsword on opposite side
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: eb517ea18dc6c2f44b0f17221701defc, type: 3}
   type: 5
   value: 0
   weaponToEquip: {fileID: 0}

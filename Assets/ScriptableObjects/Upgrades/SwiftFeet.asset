@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Swift Feet
   description: Increase move speed by 20%
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 2393a1a050a5b5e4584809126219390a, type: 3}
   type: 0
   value: 20
+  weaponToEquip: {fileID: 0}
+  rarityWeight: 100

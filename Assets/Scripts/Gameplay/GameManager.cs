@@ -66,6 +66,12 @@ namespace PixelVanguard.Gameplay
             if (currentState == GameState.Playing)
             {
                 gameTime += Time.deltaTime;
+                
+                // Update SessionData
+                if (SessionData.Instance != null)
+                {
+                    SessionData.Instance.survivalTime = gameTime;
+                }
             }
         }
 
@@ -81,6 +87,13 @@ namespace PixelVanguard.Gameplay
             currentKillCount = 0;
             currentGoldCollected = 0;
             currentLevel = 1; // Reset level to 1
+
+            // Initialize SessionData singleton
+            if (SessionData.Instance != null)
+            {
+                SessionData.Instance.ResetSession();
+                Log("SessionData initialized and reset");
+            }
 
             // Transition to playing state
             SetState(GameState.Playing);
@@ -129,11 +142,23 @@ namespace PixelVanguard.Gameplay
         private void OnEnemyKilled(int totalKills)
         {
             currentKillCount = totalKills;
+            
+            // Update SessionData
+            if (SessionData.Instance != null)
+            {
+                SessionData.Instance.killCount = totalKills;
+            }
         }
 
         private void OnGoldCollected(int amount)
         {
             currentGoldCollected += amount;
+            
+            // Update SessionData
+            if (SessionData.Instance != null)
+            {
+                SessionData.Instance.goldCollected = currentGoldCollected;
+            }
         }
 
         private void OnPlayerDeath()
@@ -143,10 +168,20 @@ namespace PixelVanguard.Gameplay
             // Finalize session stats
             FinalizeSession();
 
+            // Update SessionData with final stats
+            if (SessionData.Instance != null)
+            {
+                SessionData.Instance.gameOverReason = Core.GameOverReason.PlayerDied;
+            }
+
             // Transition to Reviving state (offers revive option)
             SetState(GameState.Reviving);
             Time.timeScale = 0f; // Pause for revive decision
             Core.GameEvents.TriggerGameOver(Core.GameOverReason.PlayerDied);
+
+            // TODO: If player doesn't revive within X seconds, load Results Scene
+            // For now, GameOverScreen handles the "Quit" button which can load Results Scene
+            // StartCoroutine(LoadResultsSceneAfterTimeout(10f));
         }
 
         private void FinalizeSession()
@@ -162,6 +197,13 @@ namespace PixelVanguard.Gameplay
         private void OnPlayerLevelUp()
         {
             currentLevel++;
+            
+            // Update SessionData
+            if (SessionData.Instance != null)
+            {
+                SessionData.Instance.levelReached = currentLevel;
+            }
+            
             SetState(GameState.LevelUp);
             Time.timeScale = 0f; // Pause for card selection
             Log($"Level Up - Now Level {currentLevel}");

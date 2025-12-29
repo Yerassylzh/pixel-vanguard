@@ -41,7 +41,8 @@ namespace PixelVanguard.Core
             {
                 return service as T;
             }
-            throw new Exception($"[ServiceLocator] Service {type.Name} not registered! Did Bootstrap complete?");
+            Debug.Log($"[ServiceLocator] Service {type.Name} not registered! Did Bootstrap complete?");
+            return null;
         }
 
         /// <summary>

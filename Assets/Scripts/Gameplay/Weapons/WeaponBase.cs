@@ -22,6 +22,9 @@ namespace PixelVanguard.Gameplay
         // Player reference
         protected Transform player;
         
+        // Cached manager reference for lifesteal
+        private UpgradeManager upgradeManager;
+        
         // Clone tracking - prevents Start() from overwriting copied stats
         private bool isClone = false;
         
@@ -51,6 +54,9 @@ namespace PixelVanguard.Gameplay
             {
                 LoadStatsFromData();
             }
+
+            // Cache UpgradeManager reference
+            upgradeManager = FindAnyObjectByType<UpgradeManager>();
         }
 
         protected virtual void Update()
@@ -187,6 +193,42 @@ namespace PixelVanguard.Gameplay
             cooldown -= cooldownReduction;
 
             Debug.Log($"🔼 [{weaponData.displayName}] LEVEL {level}: Damage {oldDamage:F1}→{damage:F1}, Cooldown {oldCooldown:F2}s→{cooldown:F2}s");
+        }
+
+        /// <summary>
+        /// Deal damage to an enemy and apply lifesteal if available.
+        /// Centralized method to ensure consistent lifesteal across all weapons.
+        /// </summary>
+        /// <param name="enemyHealth">Target enemy health component</param>
+        /// <param name="damageAmount">Damage to deal</param>
+        /// <param name="knockbackDirection">Direction of knockback</param>
+        /// <param name="knockbackForce">Force of knockback</param>
+        protected void DealDamageWithLifesteal(EnemyHealth enemyHealth, float damageAmount, Vector2 knockbackDirection, float knockbackForce)
+        {
+            if (enemyHealth == null || !enemyHealth.IsAlive) return;
+
+            // Deal damage to enemy
+            enemyHealth.TakeDamage(damageAmount, knockbackDirection, knockbackForce);
+
+            // Apply lifesteal if upgrade exists
+            if (upgradeManager != null)
+            {
+                float lifestealPercent = upgradeManager.GetLifestealPercent();
+                if (lifestealPercent > 0f)
+                {
+                    float healAmount = damageAmount * (lifestealPercent / 100f);
+                    
+                    // Heal player (find via PlayerController singleton)
+                    if (PlayerController.Instance != null)
+                    {
+                        PlayerHealth playerHealth = PlayerController.Instance.GetComponent<PlayerHealth>();
+                        if (playerHealth != null && playerHealth.IsAlive)
+                        {
+                            playerHealth.Heal(healAmount);
+                        }
+                    }
+                }
+            }
         }
     }
 }

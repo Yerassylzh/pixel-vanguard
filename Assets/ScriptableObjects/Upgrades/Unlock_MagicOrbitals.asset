@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Magic Orbitals
   description: Magical shields orbit continuously, damaging enemies.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: fcd233ddc5fce5a4e9e98e520fa24afb, type: 3}
   type: 4
   value: 0
   weaponToEquip: {fileID: 11400000, guid: de15370806b57d943bcca55806fe0c25, type: 2}

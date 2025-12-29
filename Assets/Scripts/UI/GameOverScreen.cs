@@ -87,7 +87,7 @@ namespace PixelVanguard.UI
 
         private void OnQuitClicked()
         {
-            Debug.Log("[GameOverScreen] Quit clicked - loading stats scene");
+            Debug.Log("[GameOverScreen] Quit clicked - loading Results Scene");
 
             // Hide this panel
             if (gameOverPanel != null)
@@ -95,22 +95,11 @@ namespace PixelVanguard.UI
                 gameOverPanel.SetActive(false);
             }
 
-            // TODO: Load dedicated game over stats scene
-            // For now, log stats and return to main menu
-            if (GameManager.Instance != null && GameManager.Instance.CurrentSession != null)
-            {
-                var session = GameManager.Instance.CurrentSession;
-                Debug.Log($"[GameOverScreen] Stats - Time: {session.GetFormattedTime()}, Kills: {session.killCount}, Level: {session.levelReached}, Gold: {session.goldCollected}");
-            }
-
-            // Restore time scale
+            // Restore time scale for scene transition
             Time.timeScale = 1f;
 
-            // TODO: Replace with actual stats scene loading
-            // SceneManager.LoadScene("GameOverStatsScene");
-            
-            // For now, reload game scene
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            // Load Results Scene
+            SceneManager.LoadScene("ResultsScene");
         }
     }
 }

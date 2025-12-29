@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Magnet Field
   description: Pickup radius +50%
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 84c35847c06707e488168a2eb2ade702, type: 3}
   type: 17
   value: 50
   weaponToEquip: {fileID: 0}

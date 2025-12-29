@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Holy Water
   description: Throws flasks that create damaging puddles on impact.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7dd92eeedd4505748aaefb4144b009e0, type: 3}
   type: 4
   value: 0
   weaponToEquip: {fileID: 11400000, guid: 693c8a640da667b498c7fb6496de5fb7, type: 2}

@@ -20,6 +20,18 @@ namespace PixelVanguard.Gameplay
 
         [Header("Spawn Area")]
         [SerializeField] private float spawnDistanceFromCamera = 12f; // Units from camera edge
+        
+        [Header("Spawn Bounds (Optional)")]
+        [Tooltip("Top-left corner of allowed spawn rectangle (leave empty for no bounds)")]
+        [SerializeField] private Transform spawnBoundsTopLeft;
+        [Tooltip("Bottom-right corner of allowed spawn rectangle (leave empty for no bounds)")]
+        [SerializeField] private Transform spawnBoundsBottomRight;
+        [Tooltip("Show spawn bounds in Scene view")]
+        [SerializeField] private bool showBoundsGizmo = true;
+        
+        [Header("Collision Detection")]
+        [Tooltip("Layers to check for blocking spawn (e.g., Ground, Water, Obstacles)")]
+        [SerializeField] private LayerMask blockedLayers = -1; // Default: check all layers
 
         private Camera mainCamera;
         private float nextSpawnTime = 0f;
@@ -319,7 +331,12 @@ namespace PixelVanguard.Gameplay
                     break;
             }
             
-            return new Vector3(x, y, 0f);
+            Vector3 position = new Vector3(x, y, 0f);
+            
+            // CRITICAL FIX: Clamp position to bounds if defined
+            position = ClampToBounds(position);
+            
+            return position;
         }
 
         private Vector3 CalculateSpawnPosition()
@@ -356,22 +373,84 @@ namespace PixelVanguard.Gameplay
                     break;
             }
 
-            return new Vector3(x, y, 0f);
+            Vector3 position = new Vector3(x, y, 0f);
+            
+            // CRITICAL FIX: Clamp position to bounds if defined
+            position = ClampToBounds(position);
+            
+            return position;
         }
 
         private bool IsValidSpawnPosition(Vector3 position)
         {
-            // Check for colliders at spawn position (e.g., walls blocking isolated areas)
-            // Use a small circle to detect if position is blocked
+            // Position is already clamped to bounds in CalculateSpawnPosition()
+            // Now just check for blocking colliders
+            
             float checkRadius = 0.5f;
 
-            // Check on Enemy layer and Default layer (where walls/obstacles usually are)
-            int layerMask = LayerMask.GetMask("Default", "Ground");
-
-            Collider2D hit = Physics2D.OverlapCircle(position, checkRadius, layerMask);
+            // Use configurable layer mask (set in Inspector)
+            Collider2D hit = Physics2D.OverlapCircle(position, checkRadius, blockedLayers);
 
             // Position is valid if NO collider was found
             return hit == null;
+        }
+        
+        /// <summary>
+        /// Clamp position to spawn bounds rectangle if bounds are defined.
+        /// Returns original position if no bounds are set.
+        /// </summary>
+        private Vector3 ClampToBounds(Vector3 position)
+        {
+            // If no bounds defined, return original position
+            if (spawnBoundsTopLeft == null || spawnBoundsBottomRight == null)
+            {
+                return position;
+            }
+            
+            // Get bounds corners
+            Vector2 topLeft = spawnBoundsTopLeft.position;
+            Vector2 bottomRight = spawnBoundsBottomRight.position;
+            
+            // Ensure corners are in correct order
+            float minX = Mathf.Min(topLeft.x, bottomRight.x);
+            float maxX = Mathf.Max(topLeft.x, bottomRight.x);
+            float minY = Mathf.Min(topLeft.y, bottomRight.y);
+            float maxY = Mathf.Max(topLeft.y, bottomRight.y);
+            
+            // Clamp position to rectangle
+            float clampedX = Mathf.Clamp(position.x, minX, maxX);
+            float clampedY = Mathf.Clamp(position.y, minY, maxY);
+            
+            return new Vector3(clampedX, clampedY, position.z);
+        }
+        
+        /// <summary>
+        /// Check if position is within the defined rectangular spawn bounds.
+        /// Returns true if no bounds are defined (allows spawning anywhere).
+        /// </summary>
+        private bool IsWithinSpawnBounds(Vector3 position)
+        {
+            // If no bounds defined, allow all positions
+            if (spawnBoundsTopLeft == null || spawnBoundsBottomRight == null)
+            {
+                return true;
+            }
+            
+            // Get bounds corners
+            Vector2 topLeft = spawnBoundsTopLeft.position;
+            Vector2 bottomRight = spawnBoundsBottomRight.position;
+            
+            // Ensure corners are in correct order (swap if needed)
+            float minX = Mathf.Min(topLeft.x, bottomRight.x);
+            float maxX = Mathf.Max(topLeft.x, bottomRight.x);
+            float minY = Mathf.Min(topLeft.y, bottomRight.y);
+            float maxY = Mathf.Max(topLeft.y, bottomRight.y);
+            
+            // Check if position is within rectangle
+            bool withinBounds = position.x >= minX && position.x <= maxX && 
+                               position.y >= minY && position.y <= maxY;
+            
+            return withinBounds;
         }
 
         private Sprite placeholderSprite;
@@ -408,11 +487,35 @@ namespace PixelVanguard.Gameplay
 
             Gizmos.color = Color.yellow;
 
-            // Draw spawn boundaries
+            // Draw spawn boundaries (camera-based)
             float outerWidth = cameraWidth + spawnDistanceFromCamera * 2f;
             float outerHeight = cameraHeight + spawnDistanceFromCamera * 2f;
 
             Gizmos.DrawWireCube(cameraPos, new Vector3(outerWidth, outerHeight, 0f));
+            
+            // Draw rectangular spawn bounds if defined
+            if (showBoundsGizmo && spawnBoundsTopLeft != null && spawnBoundsBottomRight != null)
+            {
+                Vector2 topLeft = spawnBoundsTopLeft.position;
+                Vector2 bottomRight = spawnBoundsBottomRight.position;
+                
+                // Calculate center and size
+                float minX = Mathf.Min(topLeft.x, bottomRight.x);
+                float maxX = Mathf.Max(topLeft.x, bottomRight.x);
+                float minY = Mathf.Min(topLeft.y, bottomRight.y);
+                float maxY = Mathf.Max(topLeft.y, bottomRight.y);
+                
+                Vector3 center = new Vector3((minX + maxX) / 2f, (minY + maxY) / 2f, 0f);
+                Vector3 size = new Vector3(maxX - minX, maxY - minY, 0f);
+                
+                // Draw in green to distinguish from camera bounds
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireCube(center, size);
+                
+                // Draw corners as small spheres
+                Gizmos.DrawWireSphere(new Vector3(minX, maxY, 0f), 0.5f); // Top-left
+                Gizmos.DrawWireSphere(new Vector3(maxX, minY, 0f), 0.5f); // Bottom-right
+            }
         }
     }
 }

@@ -20,6 +20,12 @@ namespace PixelVanguard.Services
         public List<string> statLevelKeys = new List<string>();
         public List<int> statLevelValues = new List<int>();
 
+        // High Scores (for leaderboards and main menu display)
+        public int longestSurvivalTime = 0;   // Seconds
+        public int highestKillCount = 0;
+        public int highestLevelReached = 0;
+        public int mostGoldInRun = 0;
+
         /// <summary>
         /// Create a default save for new players.
         /// </summary>
@@ -34,12 +40,12 @@ namespace PixelVanguard.Services
             // Knight is always unlocked by default
             data.unlockedCharacterIDs.Add("knight");
 
-            // Initialize stat levels to 0
-            data.SetStatLevel("might", 0);
-            data.SetStatLevel("vitality", 0);
-            data.SetStatLevel("greaves", 0);
-            data.SetStatLevel("magnet", 0);
-            data.SetStatLevel("luck", 0);
+            // Initialize shop permanent upgrade levels to 0
+            data.SetStatLevel("vitality", 0);  // Max HP bonus
+            data.SetStatLevel("might", 0);     // Damage bonus
+            data.SetStatLevel("greaves", 0);   // Move speed bonus
+            data.SetStatLevel("magnet", 0);    // Collection radius bonus
+            // Note: "luck" removed - was redundant with Lucky Coins passive upgrade
 
             return data;
         }
@@ -68,6 +74,41 @@ namespace PixelVanguard.Services
                 statLevelKeys.Add(key);
                 statLevelValues.Add(value);
             }
+        }
+
+        /// <summary>
+        /// Update high scores if current session beats them.
+        /// Returns true if any new record was set.
+        /// </summary>
+        public bool UpdateHighScores(int survivalTime, int killCount, int levelReached, int goldInRun)
+        {
+            bool newRecord = false;
+
+            if (survivalTime > longestSurvivalTime)
+            {
+                longestSurvivalTime = survivalTime;
+                newRecord = true;
+            }
+
+            if (killCount > highestKillCount)
+            {
+                highestKillCount = killCount;
+                newRecord = true;
+            }
+
+            if (levelReached > highestLevelReached)
+            {
+                highestLevelReached = levelReached;
+                newRecord = true;
+            }
+
+            if (goldInRun > mostGoldInRun)
+            {
+                mostGoldInRun = goldInRun;
+                newRecord = true;
+            }
+
+            return newRecord;
         }
 
         /// <summary>

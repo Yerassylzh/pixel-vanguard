@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Expanded Orbit
   description: Orbit radius +40%
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7fc0850aa60e6ef40b19bb7f6af16d29, type: 3}
   type: 14
   value: 30
   weaponToEquip: {fileID: 0}

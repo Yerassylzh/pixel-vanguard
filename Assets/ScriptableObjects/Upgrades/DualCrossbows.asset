@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Dual Crossbows
   description: Fire 2 arrows simultaneously
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e90f9fc3b398a8647a0ecb368c3656c6, type: 3}
   type: 8
   value: 2
   weaponToEquip: {fileID: 0}

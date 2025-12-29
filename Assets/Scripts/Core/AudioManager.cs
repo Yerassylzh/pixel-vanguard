@@ -69,6 +69,9 @@ namespace PixelVanguard.Core
             GameEvents.OnWeaponSpawned += HandleWeaponSpawn;
             GameEvents.OnGameOver += HandleGameOver;
             GameEvents.OnUpgradeSelected += HandleUpgradeSelected;
+            
+            // Subscribe to scene changes to control music
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void OnDisable()
@@ -86,18 +89,35 @@ namespace PixelVanguard.Core
             
             // Unsubscribe from all weapon events
             UnsubscribeFromAllWeapons();
+            
+            // Unsubscribe from scene changes
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
         private void Start()
         {
-            // Auto-start background music
-            if (sfxLibrary != null && sfxLibrary.backgroundMusic != null)
+            // Auto-start background music ONLY in GameScene
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            Debug.Log($"Current scene: {currentScene}");
+            if (currentScene == "GameScene" && sfxLibrary != null && sfxLibrary.backgroundMusic != null)
             {
                 PlayMusic(sfxLibrary.backgroundMusic);
             }
             
             // Subscribe to starter weapons (weapons equipped before AudioManager exists)
             SubscribeToStarterWeapons();
+        }
+        
+        private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+        {
+            if (scene.name == "GameScene" && sfxLibrary != null && sfxLibrary.backgroundMusic != null)
+            {
+                PlayMusic(sfxLibrary.backgroundMusic);
+            }
+            else
+            {
+                StopMusic();
+            }
         }
 
         #region Event Handlers

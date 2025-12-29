@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Piercing Bolts
   description: Arrows pierce +1 enemy
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 849409702ce6d6445acf40b109d6024d, type: 3}
   type: 10
   value: 1
   weaponToEquip: {fileID: 0}

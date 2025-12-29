@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Triple Barrage
   description: Fire 3 arrows simultaneously
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e9bd4bb28f230c444af938141866fdc0, type: 3}
   type: 9
   value: 3
   weaponToEquip: {fileID: 0}

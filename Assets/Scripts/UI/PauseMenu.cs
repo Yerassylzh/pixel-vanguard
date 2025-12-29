@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using PixelVanguard.Core;
 using PixelVanguard.Gameplay;
+using UnityEngine.SceneManagement;
 
 namespace PixelVanguard.UI
 {
@@ -187,9 +188,9 @@ namespace PixelVanguard.UI
         {
             // TODO: Load main menu scene
             Debug.Log("[PauseMenu] Return to Main Menu - not implemented yet");
-            
+
             // For now, just unpause
-            Resume();
+            SceneManager.LoadScene("MainMenuScene");
         }
     }
 }

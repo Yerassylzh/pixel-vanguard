@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   upgradeName: Burning Touch
   description: Damage scales +6% of enemy max HP
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 363a997f9335d6044ba3526e11aa2785, type: 3}
   type: 12
   value: 6
   weaponToEquip: {fileID: 0}
