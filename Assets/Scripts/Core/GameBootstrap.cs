@@ -34,13 +34,29 @@ namespace PixelVanguard.Core
             Debug.Log("[GameBootstrap] ✅ Initialization complete!");
         }
 
-        private void InitializeServiceLocator()
+        private async void InitializeServiceLocator()
         {
             if (ServiceLocator.Get<ISaveService>() == null)
             {
                 var saveService = new PlayerPrefsSaveService();
                 ServiceLocator.Register<ISaveService>(saveService);
-                Debug.Log("[GameBootstrap] ServiceLocator registered");
+                Debug.Log("[GameBootstrap] ✅ SaveService registered");
+            }
+            
+            if (ServiceLocator.Get<IAdService>() == null)
+            {
+                var adService = new PlaceholderAdService();
+                await adService.Initialize(); // Initialize before registering!
+                ServiceLocator.Register<IAdService>(adService);
+                Debug.Log("[GameBootstrap] ✅ PlaceholderAdService registered & initialized");
+            }
+            
+            if (ServiceLocator.Get<IIAPService>() == null)
+            {
+                var iapService = new PlaceholderIAPService();
+                await iapService.Initialize(); // Initialize before registering!
+                ServiceLocator.Register<IIAPService>(iapService);
+                Debug.Log("[GameBootstrap] ✅ PlaceholderIAPService registered & initialized");
             }
         }
 

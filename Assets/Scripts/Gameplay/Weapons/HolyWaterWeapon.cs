@@ -27,10 +27,11 @@ namespace PixelVanguard.Gameplay
                 return;
             }
 
-            // Fire audio event (holy water thrown)
-            Core.GameEvents.TriggerWeaponSpawned();
-
             SpawnPuddle();
+            
+            // Fire audio event (holy water thrown)
+            // Note: Uses GameEvents instead of TriggerWeaponFiredEvent because AudioManager listens to this
+            Core.GameEvents.TriggerWeaponSpawned();
         }
 
         private void SpawnPuddle()

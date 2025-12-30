@@ -158,7 +158,9 @@ namespace PixelVanguard.Gameplay
                 spriteRenderer.color = c;
             }
             UpdateVisuals(true);
-        
+            
+            // Play sword swing audio
+            TriggerWeaponFiredEvent();
         }
 
 

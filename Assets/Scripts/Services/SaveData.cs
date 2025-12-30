@@ -26,6 +26,11 @@ namespace PixelVanguard.Services
         public int highestLevelReached = 0;
         public int mostGoldInRun = 0;
 
+        // Ad Tracking (for monetization)
+        public int adsWatchedForPack1 = 0;  // 5 ads → 1990 gold
+        public int adsWatchedForPack2 = 0;  // 10 ads → 4990 gold
+        public string lastAdWatchedTime = "";  // ISO 8601 timestamp
+
         /// <summary>
         /// Create a default save for new players.
         /// </summary>

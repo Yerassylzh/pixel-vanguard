@@ -1,6 +1,6 @@
 # Implementation Status
 
-**Last Updated:** Dec 26, 2024
+**Last Updated:** Dec 30, 2024
 
 ## ✅ CORE GAMEPLAY (100%)
 
@@ -103,10 +103,22 @@
 - [x] Backward compatible (bounds are optional)
 - [x] Prevents enemies from spawning outside island/playable area
 
+### Shop System ✅ COMPLETE (CODE)
+- [x] ShopController with 4 stat upgrades + 2 ad packs + IAP
+- [x] UpgradeCard (level display, cost scaling, effect text)
+- [x] AdPackCard (progress tracking, cooldown timer)
+- [x] DetailsPanel (info display for selected items)
+- [x] IAdService + PlaceholderAdService (60s cooldown)
+- [x] IIAPService + PlaceholderIAPService (price localization)
+- [x] SaveData extensions (ad progress, timestamp)
+- [x] Service registration in GameBootstrap
+- [ ] Unity UI setup (USER task)
+- [ ] Real SDK integration (production)
+
 ## 📋 NOT IMPLEMENTED
 
-- [ ] Shop system (gold spending)
-- [ ] Meta progression (permanent upgrades)
+- [x] ~~Shop system~~ → ✅ COMPLETE
+- [ ] Meta progression (permanent upgrades across runs)
 - [ ] Multiple characters (only Knight exists)
 - [ ] Boss enemies
 - [ ] Settings menu (volume, controls)

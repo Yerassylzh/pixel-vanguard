@@ -112,10 +112,8 @@ namespace PixelVanguard.UI
 
         private void OnShopClicked()
         {
-            Debug.Log("[MainMenu] Shop clicked - Ignoring for now");
-            
-            // TODO: Implement shop
-            // ShowPanel(shopPanel);
+            Debug.Log("[MainMenu] Shop clicked");
+            ShowPanel(shopPanel);
         }
 
         private void OnSettingsClicked()

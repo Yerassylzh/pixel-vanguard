@@ -643,6 +643,110 @@ Assets/Scripts/
 
 ---
 
+## 🎨 Main Menu & Settings Systems
+
+### **GameBootstrap (Core Initialization)**
+**File:** `Core/GameBootstrap.cs`
+
+Persistent singleton (`DontDestroyOnLoad`) that initializes core services on app startup.
+
+**Responsibilities:**
+- Service registration (`ServiceLocator` + `PlayerPrefsSaveService`)
+- Audio settings initialization
+- Persists across all scenes
+
+**Lifecycle:**
+1. Main Menu Scene loads → `GameBootstrap.Awake()` runs
+2. Registers services → Loads saved audio settings
+3. Waits for AudioManager → Applies volumes
+4. Persists for entire app lifetime
+
+### **GameSettings (Static Manager)**
+**File:** `Core/GameSettings.cs`
+
+Centralized settings management with `PlayerPrefs` persistence.
+
+**Properties:**
+- `ShowDamageNumbers` (bool) - Default: true
+- `ShowFPS` (bool) - Default: false  
+- `SFXVolume` (float) - Default: 0.4
+- `MusicVolume` (float) - Default: 0.5
+- `Language` (string) - Default: "en"
+
+**Integration:**
+- `DamageNumberSpawner` checks `ShowDamageNumbers` before spawning
+- `FPSCounter` respects `ShowFPS` for visibility
+- `AudioManager` loads volumes on startup
+- `SettingsController` reads/writes all settings
+
+### **MainMenuManager**
+**File:** `UI/MainMenuManager.cs`
+
+Controls Main Menu scene navigation and displays persistent data (gold).
+
+**Button Handlers:**
+- **Play** → Loads GameScene
+- **Shop** → (Placeholder)
+- **Settings** → Shows SettingsPanel
+- **Quit** → Exits application
+
+### **SettingsController (Apply Button Pattern)**
+**File:** `UI/SettingsController.cs`
+
+Settings UI with pending changes pattern - changes only save on "Apply".
+
+**Features:**
+- Language toggle (English ↔ Русский)
+- Volume sliders (Music, SFX) with real-time preview
+- Checkboxes for Show Damage / Show FPS (image-based sprite swap)
+- External links (Telegram, Privacy Policy)
+- Gold display from SaveData
+
+**Flow:**
+1. User adjusts settings → **Pending** (not saved)
+2. Volume changes apply immediately for **preview**
+3. Click "Apply" → All changes save to PlayerPrefs
+4. Click "Back" → Discards pending, reverts volumes
+
+### **AudioManager (Scene-Aware)**
+**File:** `Core/AudioManager.cs`
+
+Existing singleton extended with scene-based music control.
+
+**Scene Behavior:**
+- `MainMenuScene` → Music **stops**
+- `GameScene` → Game music **starts**
+- `ResultsScene` → Music **continues** from GameScene
+
+**Integration:**
+- `GameBootstrap` applies saved volumes on startup
+- `SettingsController` adjusts volumes in real-time
+- `OnSceneLoaded()` event controls music per scene
+
+### **FPSCounter**
+**File:** `UI/FPSCounter.cs`
+
+Displays real-time FPS with color-coded performance indicators.
+
+**Color Coding:**
+- Green: 55+ FPS (Good)
+- Yellow: 30-54 FPS (Fair)  
+- Red: <30 FPS (Poor)
+
+**Toggle:** `GameSettings.ShowFPS` (via Settings panel)
+
+### **ResultsController**
+**File:** `UI/ResultsController.cs`
+
+Updated with Main Menu integration and ServiceLocator fallback.
+
+**Changes:**
+- Main Menu button loads `MainMenuScene` (was placeholder)
+- Watch Ad button doubles gold (placeholder for ad SDK)
+- Fallback initialization if ServiceLocator missing (Editor testing)
+
+---
+
 ## 📖 Related Documentation
 
 | Topic | Document |

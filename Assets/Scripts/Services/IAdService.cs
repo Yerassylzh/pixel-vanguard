@@ -4,36 +4,38 @@ using System.Threading.Tasks;
 namespace PixelVanguard.Services
 {
     /// <summary>
-    /// Platform-agnostic interface for ad services.
-    /// Implementations: AdMobService (Android), YandexAdService (Web), NoAdService (Desktop/Fallback)
+    /// Interface for rewarded ad services.
+    /// Implement this for Unity Ads, AdMob, Yandex Ads, etc.
     /// </summary>
     public interface IAdService
     {
         /// <summary>
-        /// Check if a rewarded ad is ready to show.
+        /// Is a rewarded ad ready to show?
         /// </summary>
         bool IsRewardedAdReady();
 
         /// <summary>
-        /// Show a rewarded ad. Callback returns true if user watched the ad completely.
+        /// Show a rewarded ad.
         /// </summary>
-        /// <param name="onComplete">Called with success status when ad finishes or fails</param>
-        void ShowRewardedAd(Action<bool> onComplete);
+        /// <param name="onAdWatched">Callback when ad is successfully watched</param>
+        /// <param>
+        /// <param name="onAdFailed">Callback when ad fails to show or is skipped</param>
+        Task<bool> ShowRewardedAd();
 
         /// <summary>
-        /// Check if an interstitial ad is ready to show.
-        /// </summary>
-        bool IsInterstitialAdReady();
-
-        /// <summary>
-        /// Show an interstitial ad. Callback called when ad finishes or fails.
-        /// </summary>
-        /// <param name="onComplete">Called when ad closes</param>
-        void ShowInterstitialAd(Action onComplete);
-
-        /// <summary>
-        /// Initialize the ad service. Call during Bootstrap.
+        /// Initialize the ad service (called by GameBootstrap).
         /// </summary>
         Task Initialize();
+
+        /// <summary>
+        /// Check if ad cooldown period has passed (60 seconds).
+        /// </summary>
+        bool CanWatchAd(string lastWatchedTime);
+
+        /// <summary>
+        /// Get remaining cooldown time in seconds.
+        /// Returns 0 if cooldown is over.
+        /// </summary>
+        int GetCooldownRemainingSeconds(string lastWatchedTime);
     }
 }

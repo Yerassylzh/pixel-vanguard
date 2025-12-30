@@ -41,7 +41,7 @@ namespace PixelVanguard.Gameplay
 
             if (targets.Count == 0)
             {
-                // No enemies in range - this is normal, just skip firing
+                // No enemies in range - don't play sound, just return
                 return;
             }
 
@@ -50,6 +50,9 @@ namespace PixelVanguard.Gameplay
             {
                 FireArrowAt(target);
             }
+            
+            // Only play sound if we actually fired
+            TriggerWeaponFiredEvent();
         }
 
         private void FireArrowAt(Transform target)

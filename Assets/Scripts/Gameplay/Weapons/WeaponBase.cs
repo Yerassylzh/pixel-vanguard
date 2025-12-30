@@ -71,15 +71,24 @@ namespace PixelVanguard.Gameplay
             if (cooldownTimer <= 0f)
             {
                 Fire();
-                OnWeaponFired?.Invoke(); // Fire audio event
+                // Audio event removed - weapons call OnWeaponFired themselves
                 cooldownTimer = cooldown;
             }
         }
+
 
         /// <summary>
         /// Fire the weapon (implemented by subclasses).
         /// </summary>
         protected abstract void Fire();
+
+        /// <summary>
+        /// Call this from subclass after successful fire to play audio.
+        /// </summary>
+        protected void TriggerWeaponFiredEvent()
+        {
+            OnWeaponFired?.Invoke();
+        }
 
         /// <summary>
         /// Load base stats from WeaponData.

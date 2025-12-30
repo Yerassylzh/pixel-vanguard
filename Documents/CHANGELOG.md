@@ -4,6 +4,72 @@
 
 ---
 
+## December 30, 2024
+
+### Shop System Implementation ✅
+**New Features:**
+- Complete shop UI system with stat upgrades, ad packs, and IAP
+- 4 stat upgrade cards: Might, Vitality, Greaves, Magnet
+- 2 ad reward packs (5 ads → 1,990 gold, 10 ads → 4,990 gold)
+- Special Offer IAP card ($4.99 placeholder)
+- Details panel for item information
+- Ad cooldown system (60 seconds)
+- Persistent progress tracking
+
+**Services Added:**
+- `IAdService` + `PlaceholderAdService` (rewarded ads with cooldown)
+- `IIAPService` + `PlaceholderIAPService` (in-app purchases)
+- Service initialization in GameBootstrap
+
+**SaveData Extensions:**
+- `adsWatchedForPack1` / `adsWatchedForPack2` (progress tracking)
+- `lastAdWatchedTime` (cooldown timestamp)
+
+**Files Created:**
+- `ShopController.cs` - Main shop logic
+- `UpgradeCard.cs` - Stat upgrade UI
+- `AdPackCard.cs` - Ad reward UI with cooldown
+- `DetailsPanel.cs` - Item info display
+- `IAdService.cs` + `PlaceholderAdService.cs`
+- `IIAPService.cs` + `PlaceholderIAPService.cs`
+
+**Documentation:**
+- [Shop System.md](file:///c:/Users/Honor/Unity%20Games/Pixel%20Vanguard/Documents/Progress/Shop%20System.md) in Progress folder
+- Complete technical docs in `.gemini/brain/` artifacts
+
+---
+
+### Bug Fixes (Critical)
+
+**Crossbow Audio Bug:**
+- **Fixed:** Firing sound played when no enemies present
+- **Solution:** Moved `OnWeaponFired` trigger inside `Fire()` after target check
+- **Files:** `WeaponBase.cs`, `AutoCrossbowWeapon.cs`, all weapon classes
+
+**Shop Costs Showing 0:**
+- **Fixed:** Unity execution order race condition
+- **Solution:** Moved card initialization from `Start()` to `Awake()`
+- **File:** `ShopController.cs`
+
+**Effect Text Showing +0%:**
+- **Fixed:** Displayed current level instead of next level bonus
+- **Solution:** Changed formula to `(level + 1) * bonus`
+- **File:** `UpgradeCard.cs`
+
+**Service Initialization:**
+- **Fixed:** IAP/Ad services not initialized before use
+- **Solution:** Added `await service.Initialize()` in GameBootstrap
+- **File:** `GameBootstrap.cs`
+
+**Ad Progress Display:**
+- **Fixed:** Showed total gold instead of ads remaining
+- **Solution:** Changed format to `"(X/Y)"` progress display
+- **File:** `AdPackCard.cs`
+
+**Details:** See [session_bugfixes_summary.md](file:///C:/Users/Honor/.gemini/antigravity/brain/4653feb0-0b4a-4e94-a2b5-0e036de540dc/session_bugfixes_summary.md)
+
+---
+
 ## December 24, 2024
 
 ### Refactoring: Player System Split

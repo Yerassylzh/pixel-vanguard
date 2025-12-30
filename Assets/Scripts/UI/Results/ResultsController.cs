@@ -257,7 +257,7 @@ namespace PixelVanguard.UI
                 SessionData.Instance.ResetSession();
             }
 
-            SceneManager.LoadScene("GameScene"); // Placeholder
+            SceneManager.LoadScene("MainMenuScene"); // Placeholder
         }
 
         /// <summary>
