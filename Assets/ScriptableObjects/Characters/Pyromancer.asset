@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Pyromancer
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.CharacterData
   characterID: pyromancer
-  displayName: The Pyromancer
+  displayName: Pyromancer
   description: High damage, low HP mage
-  portrait: {fileID: 0}
+  portrait: {fileID: -752329884264146722, guid: 99085b2cbaa8d4a4798577445ef9ffd3, type: 3}
   idleSprite: {fileID: 0}
   characterPrefab: {fileID: 7630985173914735179, guid: 3b11ac68748050b4ea63d988d6dfc126, type: 3}
   maxHealth: 100

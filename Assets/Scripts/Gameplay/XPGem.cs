@@ -26,7 +26,7 @@ namespace PixelVanguard.Gameplay
             gemCollider.isTrigger = true; // Must be trigger for pickup
         }
 
-        private void Start()
+        private async void Start()
         {
             // Find player
             var playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -37,6 +37,31 @@ namespace PixelVanguard.Gameplay
             else
             {
                 Debug.LogWarning("[XPGem] Player not found!");
+            }
+            
+            // Apply Magnet upgrade
+            await ApplyMagnetUpgrade();
+        }
+        
+        /// <summary>
+        /// Load Magnet upgrade and increase collection range.
+        /// </summary>
+        private async System.Threading.Tasks.Task ApplyMagnetUpgrade()
+        {
+            float baseRange = 3f; // Default
+            var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
+            if (saveService != null)
+            {
+                var saveData = await saveService.LoadData();
+                int magnetLevel = saveData.GetStatLevel("magnet");
+                float radiusBonus = magnetLevel * 0.10f;
+                magnetRange = baseRange * (1f + radiusBonus);
+                
+                Debug.Log($"[XPGem] Base Range: {baseRange}, Magnet: Lv{magnetLevel} (+{radiusBonus * 100}%) → Final: {magnetRange:F2}");
+            }
+            else
+            {
+                magnetRange = baseRange;
             }
         }
 

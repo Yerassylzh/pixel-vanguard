@@ -12,6 +12,10 @@ namespace PixelVanguard.Core
         [Tooltip("Character to use if no selection made (The Knight)")]
         [SerializeField] private Data.CharacterData defaultCharacter;
 
+        [Header("All Characters")]
+        [Tooltip("All available characters (assign same list as CharacterSelectController)")]
+        [SerializeField] private Data.CharacterData[] allCharacters;
+
         [Header("Spawn Settings")]
         [Tooltip("Where to spawn the player (leave empty for (0,0,0))")]
         [SerializeField] private Transform spawnPoint;
@@ -31,13 +35,18 @@ namespace PixelVanguard.Core
 
         private void Awake()
         {
-            // If no character selected (e.g., playing directly from GameScene), use default
+            // If no character selected via static variable, load from SaveData
+            if (SelectedCharacter == null)
+            {
+                LoadSelectedCharacterFromSave();
+            }
+
+            // Final fallback to default character
             if (SelectedCharacter == null)
             {
                 if (defaultCharacter != null)
                 {
                     SelectedCharacter = defaultCharacter;
-                    Debug.Log($"[CharacterManager] Using default character: {defaultCharacter.displayName}");
                 }
                 else
                 {
@@ -45,13 +54,29 @@ namespace PixelVanguard.Core
                     return;
                 }
             }
-            else
-            {
-                Debug.Log($"[CharacterManager] Selected character: {SelectedCharacter.displayName}");
-            }
 
             // Spawn the player
             SpawnPlayer();
+        }
+
+        private void LoadSelectedCharacterFromSave()
+        {
+            var saveService = ServiceLocator.Get<Services.ISaveService>();
+            if (saveService == null || allCharacters == null || allCharacters.Length == 0)
+                return;
+
+            var saveData = saveService.LoadDataSync();
+            string selectedID = saveData.selectedCharacterID;
+
+            // Find the character by ID from the Inspector-assigned list
+            foreach (var character in allCharacters)
+            {
+                if (character != null && character.characterID.ToLower() == selectedID.ToLower())
+                {
+                    SelectedCharacter = character;
+                    return;
+                }
+            }
         }
 
         private void SpawnPlayer()

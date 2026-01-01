@@ -43,6 +43,12 @@ namespace PixelVanguard.UI
             ApplySavedAudioSettings();
         }
 
+        private void OnEnable()
+        {
+            // Refresh gold whenever panel is enabled (returning from shop/character select)
+            RefreshGoldDisplay();
+        }
+
         /// <summary>
         /// Load and apply saved audio settings to AudioManager.
         /// </summary>
@@ -103,11 +109,8 @@ namespace PixelVanguard.UI
 
         private void OnPlayClicked()
         {
-            Debug.Log("[MainMenu] Play clicked - Loading GameScene");
-            
-            // For now, directly load GameScene
-            // TODO: Show Character Select first (Vampire Survivors style)
-            SceneManager.LoadScene("GameScene");
+            Debug.Log("[MainMenu] Play clicked - Showing Character Selection");
+            ShowPanel(characterPanel);
         }
 
         private void OnShopClicked()

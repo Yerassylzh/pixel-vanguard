@@ -14,9 +14,19 @@ namespace PixelVanguard.Services
         Task<SaveData> LoadData();
 
         /// <summary>
+        /// Load player save data synchronously. Returns default data if no save exists.
+        /// </summary>
+        SaveData LoadDataSync();
+
+        /// <summary>
         /// Save player data. Should handle both local and cloud saves if available.
         /// </summary>
         Task SaveData(SaveData data);
+
+        /// <summary>
+        /// Save player data synchronously. Should handle both local and cloud saves if available.
+        /// </summary>
+        void SaveDataSync(SaveData data);
 
         /// <summary>
         /// Check if cloud save is available (Yandex only).

@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: Santa
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.CharacterData
   characterID: santa
-  displayName: Santa Claus
+  displayName: Santa
   description: Santa
-  portrait: {fileID: 0}
+  portrait: {fileID: -8667129744124496047, guid: eebd63fcad5fac946b50d2115a4af8d3, type: 3}
   idleSprite: {fileID: 0}
   characterPrefab: {fileID: 3468128102079773424, guid: 42f937795e9a91a40811d8d6ca20ac91, type: 3}
   maxHealth: 90
   moveSpeed: 4.3
   baseDamageMultiplier: 1.1
   starterWeapon: {fileID: 11400000, guid: 693c8a640da667b498c7fb6496de5fb7, type: 2}
-  unlockType: 2
-  goldCost: 10000
+  unlockType: 1
+  goldCost: 5990
   adWatchCount: 10

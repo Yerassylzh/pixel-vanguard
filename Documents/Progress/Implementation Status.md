@@ -1,12 +1,13 @@
 # Implementation Status
 
-**Last Updated:** Dec 30, 2024
+**Last Updated:** Dec 31, 2024
 
 ## ✅ CORE GAMEPLAY (100%)
 
 ### Player System
 - [x] 4-component architecture (Controller, Movement, Input, Health)
-- [x] Character selection system
+- [x] Character selection system with unlock mechanics
+- [x] Shop upgrades integrated into gameplay (Vitality, Might, Greaves, Magnet)
 - [x] New Input System + Virtual Joystick
 - [x] Animation (walk/idle, facing direction preservation)
 - [x] Damage cooldown & invincibility frames
@@ -45,11 +46,39 @@
 
 ## ✅ UI & MENUS (100%)
 
+- [x] Main menu with settings, shop, character selection
+- [x] Character selection screen (unlock, purchase, select)
+- [x] Shop system (upgrades, ad packs, IAP)
 - [x] HUD (HP bar, XP bar, timer, stats)
 - [x] Level-up panel
 - [x] Pause menu
 - [x] Game over screen
+- [x] Results screen with high scores
 - [x] Platform-aware joystick
+
+## ✅ CHARACTER SELECTION SYSTEM (100%)
+
+**Core Features:**
+- [x] Visual card grid with character icons
+- [x] Locked/unlocked states (59% opacity for locked)
+- [x] Gold-based purchase system
+- [x] Character details panel with stats
+- [x] Shop upgrades applied to displayed stats
+- [x] 3-state action button (BUY/CONFIRM/PLAY)
+- [x] Selection persistence
+- [x] Main menu integration
+
+**Default Characters:**
+- [x] Knight (free starter)
+- [x] Pyromancer (free starter)
+- [ ] Ranger, Santa, Zombie (purchasable)
+
+**Files:**
+- [x] `CharacterCard.cs` - Character card UI
+- [x] `CharacterDetailsPanel.cs` - Stats display
+- [x] `CharacterSelectController.cs` - Selection logic
+- [x] `SaveData` extensions for character tracking
+- [x] `ISaveService` synchronous methods
 
 ## ✅ TECHNICAL (100%)
 

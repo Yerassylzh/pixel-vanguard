@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponID: greatsword
   displayName: Greatsword
   description: Powerful periodic swing attack
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7f4585c8f789e14429794fb53bc858c2, type: 3}
   type: 0
   baseDamage: 5
   cooldown: 3.5

@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Knight
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.CharacterData
   characterID: knight
-  displayName: The Knight
+  displayName: Knight
   description: Balanced warrior
-  portrait: {fileID: 0}
+  portrait: {fileID: 261902397457451500, guid: f25c8f45ffe15c84d84d3bd357a8a4f2, type: 3}
   idleSprite: {fileID: 0}
   characterPrefab: {fileID: 4666537409914712190, guid: 1a79bd3446576194781d2b9e93b835a1, type: 3}
   maxHealth: 100

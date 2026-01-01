@@ -45,10 +45,10 @@ namespace PixelVanguard.Gameplay
             currentHealth = maxHealth; 
         }
 
-        private void Start()
+        private async void Start()
         {
-            // Load max health from selected character
-            LoadCharacterStats();
+            // Load max health from selected character + shop upgrades
+            await LoadCharacterStats();
 
             currentHealth = maxHealth;
             Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
@@ -208,24 +208,49 @@ namespace PixelVanguard.Gameplay
         }
 
         /// <summary>
-        /// Load stats from selected character.
-        /// Called in Start() to initialize character-specific values.
+        /// Load stats from selected character and apply shop upgrades (Vitality, Might).
+        /// Called in Start() to initialize character-specific values + shop bonuses.
         /// </summary>
-        private void LoadCharacterStats()
+        private async System.Threading.Tasks.Task LoadCharacterStats()
         {
             var selectedCharacter = Core.CharacterManager.SelectedCharacter;
-            if (selectedCharacter != null)
+            if (selectedCharacter == null)
             {
-                maxHealth = selectedCharacter.maxHealth;
-                characterDamageMultiplier = selectedCharacter.baseDamageMultiplier; // Initialize from character
-                Debug.Log($"[PlayerHealth] Loaded character stats: MaxHP={maxHealth}, DamageMulti={characterDamageMultiplier}");
+                Debug.LogWarning("[PlayerHealth] No character selected!");
+                maxHealth = 100f; // Fallback
+                characterDamageMultiplier = 1f;
+                return;
+            }
+
+            // Get base stats from character
+            float baseHealth = selectedCharacter.maxHealth;
+            float baseDamageMultiplier = selectedCharacter.baseDamageMultiplier;
+
+            // Load save data to get shop upgrades
+            var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
+            if (saveService != null)
+            {
+                var saveData = await saveService.LoadData();
+
+                // Apply Vitality upgrade (+10 HP per level)
+                int vitalityLevel = saveData.GetStatLevel("vitality");
+                int healthBonus = vitalityLevel * 10;
+                maxHealth = baseHealth + healthBonus;
+
+                // Apply Might upgrade (+10% damage per level)
+                int mightLevel = saveData.GetStatLevel("might");
+                float damageBonus = mightLevel * 0.10f;
+                characterDamageMultiplier = baseDamageMultiplier * (1f + damageBonus);
+
+                Debug.Log($"[PlayerHealth] {selectedCharacter.displayName} - Base HP: {baseHealth}, Vitality: Lv{vitalityLevel} (+{healthBonus}) → Final HP: {maxHealth}");
+                Debug.Log($"[PlayerHealth] Base Damage: {baseDamageMultiplier}x, Might: Lv{mightLevel} (+{damageBonus * 100}%) → Final: {characterDamageMultiplier:F2}x");
             }
             else
             {
-                // Fallback to default if no character selected
-                maxHealth = 100f;
-                characterDamageMultiplier = 1f;
-                Debug.LogWarning("[PlayerHealth] No character selected, using defaults: HP=100, DamageMult=1");
+                // Fallback: use base stats
+                maxHealth = baseHealth;
+                characterDamageMultiplier = baseDamageMultiplier;
+                Debug.LogWarning("[PlayerHealth] SaveService not found, using base stats");
             }
         }
     }

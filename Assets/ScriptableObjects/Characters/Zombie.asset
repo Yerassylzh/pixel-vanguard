@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Zombie
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.CharacterData
   characterID: zombie
-  displayName: The Zombie
+  displayName: Zombie
   description: Zombie with pumpkin head
-  portrait: {fileID: 0}
+  portrait: {fileID: -2957290449409275481, guid: 212a95737b80acd4f80882a071006db1, type: 3}
   idleSprite: {fileID: 0}
   characterPrefab: {fileID: 4020933243460161695, guid: b6258b1f466368146a495216cfcbf40d, type: 3}
   maxHealth: 130
@@ -23,5 +23,5 @@ MonoBehaviour:
   baseDamageMultiplier: 1
   starterWeapon: {fileID: 11400000, guid: c8b3bdb59fa32974584e72137d5852b4, type: 2}
   unlockType: 1
-  goldCost: 2500
+  goldCost: 25990
   adWatchCount: 5

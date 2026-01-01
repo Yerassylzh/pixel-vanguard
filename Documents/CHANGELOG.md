@@ -4,6 +4,90 @@
 
 ---
 
+## December 31, 2024
+
+### Character Selection System ✅
+**New Features:**
+- Complete character selection screen with gold-based unlock system
+- Visual feedback for locked/unlocked characters (59% opacity for locked)
+- Dynamic 3-state action button (BUY/CONFIRM/PLAY)
+- Character details panel showing stats + shop upgrades applied
+- Main menu integration (Play → Character Selection → GameScene)
+- Synchronous save/load for plugin compatibility
+
+**Files Created:**
+- `CharacterCard.cs` - Individual character card UI
+- `CharacterDetailsPanel.cs` - Character stats + weapon display
+- `CharacterSelectController.cs` - Main selection controller
+
+**SaveData Extensions:**
+- `unlockedCharacterIDs` (List<string>)
+- `selectedCharacterID` (string)
+- `IsCharacterUnlocked()` / `UnlockCharacter()` helper methods
+- Default unlocked: Knight + Pyromancer
+
+**ISaveService Extensions:**
+- `LoadDataSync()` - Synchronous save loading
+- `SaveDataSync()` - Synchronous save writing
+- Implemented in `PlayerPrefsSaveService.cs`
+
+**Navigation Flow:**
+```
+Main Menu → PLAY
+         ↓
+Character Selection → BACK (Main Menu)
+         ↓ PLAY
+    GameScene
+```
+
+**Documentation:**
+- [character_selection_system_documentation.md](file:///C:/Users/Honor/.gemini/antigravity/brain/4653feb0-0b4a-4e94-a2b5-0e036de540dc/character_selection_system_documentation.md) - Complete technical docs
+
+---
+
+### Shop Upgrades Integration ✅
+**Applied shop upgrades to gameplay:**
+- **Vitality** → `PlayerHealth`: +10 HP per level
+- **Might** → `PlayerHealth`: +10% damage per level  
+- **Greaves** → `PlayerMovement`: +5% speed per level
+- **Magnet** → Collectibles (`XPGem`, `GoldCoin`, `HealthPotion`): +10% range per level
+
+**Modified Files:**
+- `PlayerHealth.cs` - Async stat loading with Vitality/Might upgrades
+- `PlayerMovement.cs` - Async stat loading with Greaves upgrade
+- `XPGem.cs`, `GoldCoin.cs`, `HealthPotion.cs` - Async magnet upgrade application
+
+**Character Details Panel:**
+- Shows base stats for locked characters
+- Shows final stats (base + shop upgrades) for unlocked characters
+- Format: `Health: 150 (100 +50)` shows base + bonus
+
+---
+
+### Bug Fixes ✅
+
+**Gold Display Issues:**
+- Fixed main menu gold not updating after earning/spending
+- Fixed character selection gold not updating when panel re-opens
+- Solution: Added `OnEnable()` refresh to both controllers
+
+**Character Card Opacity:**
+- Fixed purchased character remaining at 59% opacity after unlock
+- Solution: Re-initialize card with `isLocked = false` after purchase
+
+**Character Selection Persistence (CRITICAL):**
+- Fixed selected character not spawning after app restart
+- Issue: Static `CharacterManager.SelectedCharacter` reset to null on restart
+- Solution: CharacterManager loads `selectedCharacterID` from SaveData on Awake
+- **Requirement:** CharacterManager must have `All Characters` array assigned in Inspector
+
+**Modified Files:**
+- `MainMenuManager.cs` - Added OnEnable gold refresh
+- `CharacterSelectController.cs` - Added OnEnable gold refresh + card opacity update after purchase
+- `CharacterManager.cs` - Added SaveData loading + All Characters array field
+
+---
+
 ## December 30, 2024
 
 ### Shop System Implementation ✅

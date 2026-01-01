@@ -85,12 +85,6 @@ namespace PixelVanguard.UI
             // Setup buttons
             backButton.onClick.AddListener(OnBackClicked);
             iapBuyButton.onClick.AddListener(OnIAPBuyClicked);
-            
-            // Setup IAP card click (for details)
-            if (iapCardButton != null)
-            {
-                iapCardButton.onClick.AddListener(OnIAPCardClicked);
-            }
 
             // Start cooldown timer coroutine
             cooldownCoroutine = StartCoroutine(UpdateAdCooldownTimer());
@@ -167,6 +161,17 @@ namespace PixelVanguard.UI
             if (iapIcon != null && iapIconImage != null)
             {
                 iapIconImage.sprite = iapIcon;
+            }
+            
+            // Setup IAP card click (to show details)
+            if (iapCardButton != null)
+            {
+                iapCardButton.onClick.AddListener(OnIAPCardClicked);
+                Debug.Log("[ShopController] IAP card button wired to OnIAPCardClicked");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopController] iapCardButton is null - assign in Inspector!");
             }
         }
 
@@ -341,15 +346,23 @@ namespace PixelVanguard.UI
 
         private void UpdateIAPButton()
         {
-            if (iapService != null && iapService.IsInitialized)
+            if (iapService == null)
             {
-                string price = iapService.GetLocalizedPrice(ProductIDs.GOLD_PACK_LARGE);
-                iapButtonText.text = price;
-            }
-            else
-            {
+                Debug.LogWarning("[ShopController] IAP service is null!");
                 iapButtonText.text = "---";
+                return;
             }
+            
+            if (!iapService.IsInitialized)
+            {
+                Debug.LogWarning("[ShopController] IAP service not initialized!");
+                iapButtonText.text = "---";
+                return;
+            }
+            
+            string price = iapService.GetLocalizedPrice(ProductIDs.GOLD_PACK_LARGE);
+            Debug.Log($"[ShopController] IAP price retrieved: {price}");
+            iapButtonText.text = price;
         }
 
         private IEnumerator UpdateAdCooldownTimer()

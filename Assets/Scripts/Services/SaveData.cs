@@ -42,8 +42,9 @@ namespace PixelVanguard.Services
                 selectedCharacterID = "knight"
             };
 
-            // Knight is always unlocked by default
+            // Free starter characters (always unlocked by default)
             data.unlockedCharacterIDs.Add("knight");
+            data.unlockedCharacterIDs.Add("pyromancer");
 
             // Initialize shop permanent upgrade levels to 0
             data.SetStatLevel("vitality", 0);  // Max HP bonus
@@ -135,10 +136,37 @@ namespace PixelVanguard.Services
                 unlockedCharacterIDs.Add("knight");
             }
 
+            // Ensure pyromancer is always unlocked (free starter)
+            if (!unlockedCharacterIDs.Contains("pyromancer"))
+            {
+                unlockedCharacterIDs.Add("pyromancer");
+            }
+
             // Ensure selected character is unlocked
             if (!unlockedCharacterIDs.Contains(selectedCharacterID))
             {
                 selectedCharacterID = "knight";
+            }
+        }
+
+        /// <summary>
+        /// Check if a character is unlocked.
+        /// </summary>
+        public bool IsCharacterUnlocked(string characterId)
+        {
+            return unlockedCharacterIDs.Contains(characterId.ToLower());
+        }
+
+        /// <summary>
+        /// Unlock a character (for purchase system).
+        /// </summary>
+        public void UnlockCharacter(string characterId)
+        {
+            string id = characterId.ToLower();
+            if (!unlockedCharacterIDs.Contains(id))
+            {
+                unlockedCharacterIDs.Add(id);
+                Debug.Log($"[SaveData] Character unlocked: {id}");
             }
         }
     }

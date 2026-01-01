@@ -19,9 +19,9 @@ namespace PixelVanguard.Gameplay
             rb.gravityScale = 0f;
         }
 
-        private void Start()
+        private async void Start()
         {
-            LoadCharacterStats();
+            await LoadCharacterStats();
         }
 
         /// <summary>
@@ -55,20 +55,37 @@ namespace PixelVanguard.Gameplay
         }
 
         /// <summary>
-        /// Load movement speed from selected character.
+        /// Load movement speed from selected character and apply Greaves upgrade.
         /// </summary>
-        private void LoadCharacterStats()
+        private async System.Threading.Tasks.Task LoadCharacterStats()
         {
             var selectedCharacter = Core.CharacterManager.SelectedCharacter;
-            if (selectedCharacter != null)
-            {
-                moveSpeed = selectedCharacter.moveSpeed;
-                Debug.Log($"[PlayerMovement] Loaded character speed: {moveSpeed}");
-            }
-            else
+            if (selectedCharacter == null)
             {
                 moveSpeed = 5f; // Default
                 Debug.LogWarning("[PlayerMovement] No character selected, using default speed: 5");
+                return;
+            }
+
+            float baseSpeed = selectedCharacter.moveSpeed;
+
+            // Load save data to get Greaves upgrade
+            var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
+            if (saveService != null)
+            {
+                var saveData = await saveService.LoadData();
+
+                // Apply Greaves upgrade (+5% speed per level)
+                int greavesLevel = saveData.GetStatLevel("greaves");
+                float speedBonus = greavesLevel * 0.05f;
+                moveSpeed = baseSpeed * (1f + speedBonus);
+
+                Debug.Log($"[PlayerMovement] {selectedCharacter.displayName} - Base Speed: {baseSpeed}, Greaves: Lv{greavesLevel} (+{speedBonus * 100}%) → Final: {moveSpeed:F2}");
+            }
+            else
+            {
+                moveSpeed = baseSpeed;
+                Debug.LogWarning("[PlayerMovement] SaveService not found, using base speed");
             }
         }
     }

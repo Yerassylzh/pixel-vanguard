@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponID: magicorbitals
   displayName: MagicOrbitals
   description: Orbiting shields for defense
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 4a27af960f729754f8ef0bf6bc03248a, type: 3}
   type: 1
   baseDamage: 8
   cooldown: 15

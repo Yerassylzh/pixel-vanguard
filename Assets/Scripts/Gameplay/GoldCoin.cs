@@ -26,7 +26,7 @@ namespace PixelVanguard.Gameplay
             coinCollider.isTrigger = true;
         }
 
-        private void Start()
+        private async void Start()
         {
             var playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null)
@@ -36,6 +36,31 @@ namespace PixelVanguard.Gameplay
             else
             {
                 Debug.LogWarning("[GoldCoin] Player not found!");
+            }
+            
+            // Apply Magnet upgrade
+            await ApplyMagnetUpgrade();
+        }
+        
+        /// <summary>
+        /// Load Magnet upgrade and increase collection range.
+        /// </summary>
+        private async System.Threading.Tasks.Task ApplyMagnetUpgrade()
+        {
+            float baseRange = 3f; // Default
+            var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
+            if (saveService != null)
+            {
+                var saveData = await saveService.LoadData();
+                int magnetLevel = saveData.GetStatLevel("magnet");
+                float radiusBonus = magnetLevel * 0.10f;
+                magnetRange = baseRange * (1f + radiusBonus);
+                
+                Debug.Log($"[GoldCoin] Base Range: {baseRange}, Magnet: Lv{magnetLevel} (+{radiusBonus * 100}%) → Final: {magnetRange:F2}");
+            }
+            else
+            {
+                magnetRange = baseRange;
             }
         }
 

@@ -22,6 +22,12 @@ namespace PixelVanguard.Services
 
         public async Task<SaveDataType> LoadData()
         {
+            await Task.CompletedTask;
+            return LoadDataSync();
+        }
+
+        public SaveDataType LoadDataSync()
+        {
             if (cachedData != null)
             {
                 return cachedData;
@@ -34,7 +40,6 @@ namespace PixelVanguard.Services
                 {
                     cachedData = JsonUtility.FromJson<SaveDataType>(json);
                     cachedData.Validate();
-                    Debug.Log("[PlayerPrefsSaveService] Loaded save data");
                 }
                 catch (System.Exception e)
                 {
@@ -44,15 +49,19 @@ namespace PixelVanguard.Services
             }
             else
             {
-                Debug.Log("[PlayerPrefsSaveService] No save found, creating default");
                 cachedData = SaveDataType.CreateDefault();
             }
 
-            await Task.CompletedTask;
             return cachedData;
         }
 
         public async Task SaveData(SaveDataType data)
+        {
+            SaveDataSync(data);
+            await Task.CompletedTask;
+        }
+
+        public void SaveDataSync(SaveDataType data)
         {
             if (data == null)
             {
@@ -64,9 +73,6 @@ namespace PixelVanguard.Services
             string json = JsonUtility.ToJson(data, true);
             PlayerPrefs.SetString(SAVE_KEY, json);
             PlayerPrefs.Save();
-
-            Debug.Log("[PlayerPrefsSaveService] Save data written to PlayerPrefs");
-            await Task.CompletedTask;
         }
 
         public bool IsCloudSaveAvailable()

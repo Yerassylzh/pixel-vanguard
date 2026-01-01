@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Ranger
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.CharacterData
   characterID: ranger
-  displayName: The Ranger
+  displayName: Ranger
   description: Fast archer with precision
-  portrait: {fileID: 0}
+  portrait: {fileID: 173965216026590543, guid: fe56eeae07d38d94b93dcc2e24254bf4, type: 3}
   idleSprite: {fileID: 0}
   characterPrefab: {fileID: 7754090624489383594, guid: 2d087128f8c20284da6e91b85076bfee, type: 3}
   maxHealth: 100
@@ -23,5 +23,5 @@ MonoBehaviour:
   baseDamageMultiplier: 1
   starterWeapon: {fileID: 11400000, guid: de15370806b57d943bcca55806fe0c25, type: 2}
   unlockType: 1
-  goldCost: 1500
+  goldCost: 990
   adWatchCount: 5
