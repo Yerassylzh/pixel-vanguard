@@ -55,9 +55,7 @@ namespace PixelVanguard.Gameplay
                 var saveData = saveService.LoadData();
                 int magnetLevel = saveData.GetStatLevel("magnet");
                 float radiusBonus = magnetLevel * 0.10f;
-                magnetRange = baseRange * (1f + radiusBonus);
-                
-                Debug.Log($"[XPGem] Base Range: {baseRange}, Magnet: Lv{magnetLevel} (+{radiusBonus * 100}%) → Final: {magnetRange:F2}");
+                magnetRange = baseRange * (1f + radiusBonus);  
             }
             else
             {

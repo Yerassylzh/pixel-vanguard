@@ -16,7 +16,6 @@ namespace PixelVanguard.Services
         {
             // YG2.saves is automatically loaded by PluginYG on game start
             // No explicit initialization needed
-            Debug.Log("[YandexSaveService] Initialized - using Yandex cloud storage");
         }
 
         public bool IsCloudSaveAvailable()

@@ -14,20 +14,16 @@ namespace PixelVanguard.Services
         public bool IsInitialized => _initialized;
 
         public async Task<bool> Initialize()
-        {
-            Debug.Log("[PlaceholderIAP] Initializing (placeholder)");
-            
+        {            
             // Simulate initialization delay
             await Task.Delay(500);
             
             _initialized = true;
-            Debug.Log("[PlaceholderIAP] Initialized successfully");
             return true;
         }
 
         public async Task<bool> PurchaseProduct(string productId)
         {
-            Debug.Log($"[PlaceholderIAP] Purchasing {productId} (placeholder - instant success)");
             
             // Simulate purchase flow delay
             await Task.Delay(1000);
@@ -38,7 +34,6 @@ namespace PixelVanguard.Services
 
         public async Task RestorePurchases()
         {
-            Debug.Log("[PlaceholderIAP] Restoring purchases (placeholder)");
             await Task.CompletedTask;
         }
 

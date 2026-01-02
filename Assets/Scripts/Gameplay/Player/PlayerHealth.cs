@@ -155,8 +155,6 @@ namespace PixelVanguard.Gameplay
 
         private void Die()
         {
-            UnityEngine.Debug.Log("Player Died");
-
             Core.GameEvents.TriggerPlayerDeath();
 
             // Disable player control
@@ -164,9 +162,6 @@ namespace PixelVanguard.Gameplay
             {
                 playerController.enabled = false;
             }
-
-            Debug.Log($"[PlayerHealth] ❤️ Max HP: {MaxHealth}");
-            Debug.Log($"[PlayerHealth] ❤️ Current HP: {CurrentHealth}");
 
             // NOTE: Actual game over logic handled by GameManager
             // ReviveManager will check if revive is available
@@ -241,9 +236,6 @@ namespace PixelVanguard.Gameplay
                 int mightLevel = saveData.GetStatLevel("might");
                 float damageBonus = mightLevel * 0.10f;
                 characterDamageMultiplier = baseDamageMultiplier * (1f + damageBonus);
-
-                Debug.Log($"[PlayerHealth] {selectedCharacter.displayName} - Base HP: {baseHealth}, Vitality: Lv{vitalityLevel} (+{healthBonus}) → Final HP: {maxHealth}");
-                Debug.Log($"[PlayerHealth] Base Damage: {baseDamageMultiplier}x, Might: Lv{mightLevel} (+{damageBonus * 100}%) → Final: {characterDamageMultiplier:F2}x");
             }
             else
             {

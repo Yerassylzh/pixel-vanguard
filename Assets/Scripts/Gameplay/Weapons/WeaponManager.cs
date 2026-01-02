@@ -248,8 +248,6 @@ namespace PixelVanguard.Gameplay
                 };
                 equippedWeapons.Add(mirrorInstance);
             }
-            
-            Debug.Log("[WeaponManager] Mirror Slash activated!");
         }
     }
 

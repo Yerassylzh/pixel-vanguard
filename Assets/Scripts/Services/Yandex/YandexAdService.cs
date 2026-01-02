@@ -120,7 +120,6 @@ namespace PixelVanguard.Services
             
             // If task not completed yet (user closed ad without watching), fail the task
             rewardedAdTask?.TrySetResult(false);
-            Debug.Log("HERE");
         }
     }
 }

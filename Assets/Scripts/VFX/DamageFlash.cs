@@ -45,7 +45,6 @@ namespace PixelVanguard.VFX
             if (damageable != null)
             {
                 damageable.OnDamaged += HandleDamage;
-                Debug.Log($"[DamageFlash] Subscribed to OnDamaged on {gameObject.name}");
             }
         }
         

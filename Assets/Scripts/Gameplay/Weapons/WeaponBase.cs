@@ -153,7 +153,6 @@ namespace PixelVanguard.Gameplay
         {
             float oldDamage = damage;
             damage *= multiplier;
-            Debug.Log($"⚔️ [{weaponData.displayName}] DAMAGE: {oldDamage:F1} → {damage:F1} (+{(damage - oldDamage):F1}, +{((multiplier - 1) * 100):F0}%)");
         }
 
         /// <summary>
@@ -173,7 +172,6 @@ namespace PixelVanguard.Gameplay
                 cooldown = MIN_COOLDOWN;
             }
             
-            Debug.Log($"⚡ [{weaponData.displayName}] ATTACK SPEED: {oldCooldown:F2}s → {cooldown:F2}s (-{((1 - multiplier) * 100):F0}% cooldown)");
         }
 
         /// <summary>
@@ -184,7 +182,6 @@ namespace PixelVanguard.Gameplay
         {
             float oldKnockback = knockback;
             knockback *= multiplier;
-            Debug.Log($"💥 [{weaponData.displayName}] KNOCKBACK: {oldKnockback:F1} → {knockback:F1}");
         }
 
         /// <summary>
@@ -198,8 +195,6 @@ namespace PixelVanguard.Gameplay
 
             damage += damageBonus;
             cooldown -= cooldownReduction;
-
-            Debug.Log($"🔼 [{weaponData.displayName}] LEVEL {level}: Damage {oldDamage:F1}→{damage:F1}, Cooldown {oldCooldown:F2}s→{cooldown:F2}s");
         }
 
         /// <summary>

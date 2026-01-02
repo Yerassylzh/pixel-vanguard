@@ -12,12 +12,8 @@ namespace PixelVanguard.Services
     {
         public void Initialize()
         {
-            Debug.Log("[YandexLanguageProvider] Initialized - using Yandex language detection");
-
             // Subscribe to Yandex language events
             YG2.onSwitchLang += OnYandexLanguageChanged;
-
-            Debug.Log($"[YandexLanguageProvider] Current Yandex language: {YG2.lang}");
         }
 
         public string GetCurrentLanguage()
@@ -29,7 +25,6 @@ namespace PixelVanguard.Services
                 return "ru";
             
             // Default to English for all other languages
-            Debug.Log($"[YandexLanguageProvider] Yandex lang '{yandexLang}' → using English");
             return "en";
         }
 
@@ -43,22 +38,18 @@ namespace PixelVanguard.Services
             // Validate language code
             if (languageCode != "en" && languageCode != "ru")
             {
-                Debug.LogWarning($"[YandexLanguageProvider] Unsupported language: {languageCode}");
                 return;
             }
 
             // Tell Yandex to switch language
             YG2.SwitchLanguage(languageCode);
-            Debug.Log($"[YandexLanguageProvider] Switched Yandex language to: {languageCode}");
         }
 
         /// <summary>
         /// Called when Yandex language changes externally (e.g., user changes in their account).
         /// </summary>
         private void OnYandexLanguageChanged(string newLang)
-        {
-            Debug.Log($"[YandexLanguageProvider] Yandex language changed to: {newLang}");
-            
+        {            
             // Map to supported language
             string mappedLang = (newLang == "ru") ? "ru" : "en";
             

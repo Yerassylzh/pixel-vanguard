@@ -26,10 +26,6 @@ namespace PixelVanguard.Gameplay
             {
                 Debug.LogError($"[DamageNumberListener] No IDamageable component found on {gameObject.name}!");
             }
-            else
-            {
-                Debug.Log($"[DamageNumberListener] Found IDamageable on {gameObject.name}");
-            }
         }
         
         private void OnEnable()
@@ -38,7 +34,6 @@ namespace PixelVanguard.Gameplay
             {
                 damageable.OnDamaged += HandleDamage;
                 damageable.OnHealed += HandleHeal;
-                Debug.Log($"[DamageNumberListener] Subscribed to events on {gameObject.name}");
             }
         }
         
@@ -53,7 +48,6 @@ namespace PixelVanguard.Gameplay
         
         private void HandleDamage(float damage, Vector3 position)
         {
-            Debug.Log($"[DamageNumberListener] HandleDamage called: {damage} at {position}, Spawner exists: {DamageNumberSpawner.Instance != null}");
             if (DamageNumberSpawner.Instance != null)
             {
                 DamageNumberSpawner.Instance.SpawnDamageNumber(position, damage, damageType);

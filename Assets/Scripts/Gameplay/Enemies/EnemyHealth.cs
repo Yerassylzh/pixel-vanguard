@@ -64,7 +64,6 @@ namespace PixelVanguard.Gameplay
             currentHealth -= damage;
 
             // Fire damage event for feedback systems
-            Debug.Log($"[EnemyHealth] TakeDamage: {damage} dmg, firing OnDamaged event, subscribers: {OnDamaged?.GetInvocationList().Length ?? 0}");
             OnDamaged?.Invoke(damage, transform.position);
 
             float actualKnockback = knockbackForce * (1f - enemyData.weightResistance);
@@ -144,11 +143,6 @@ namespace PixelVanguard.Gameplay
             {
                 float bonus = upgradeManager.GetGoldBonusPercent();
                 int finalGold = Mathf.RoundToInt(baseGold * (1f + bonus));
-                
-                if (bonus > 0f)
-                {
-                    Debug.Log($"[EnemyHealth] 💰 Gold drop: {baseGold} → {finalGold} (+{(bonus * 100):F0}% bonus)");
-                }
                 
                 return finalGold;
             }

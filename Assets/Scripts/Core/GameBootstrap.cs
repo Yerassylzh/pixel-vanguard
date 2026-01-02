@@ -30,8 +30,6 @@ namespace PixelVanguard.Core
 
             // Load and apply audio settings
             InitializeAudioSettings();
-
-            Debug.Log("[GameBootstrap] ✅ Initialization complete!");
         }
 
         private void InitializeServiceLocator()

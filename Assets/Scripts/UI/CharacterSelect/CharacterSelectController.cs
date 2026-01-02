@@ -68,12 +68,10 @@ namespace PixelVanguard.UI.CharacterSelect
         {
             if (saveService != null)
             {
-                Debug.Log("[CharacterSelect] Loading fresh data for UI refresh...");
                 saveData = saveService.LoadData();
 
                 if (goldText != null)
                 {
-                    Debug.Log($"[CharacterSelect] Updating gold text to: {saveData.totalGold}");
                     goldText.text = saveData.totalGold.ToString();
                 }
                 else

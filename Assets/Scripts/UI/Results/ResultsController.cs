@@ -83,7 +83,6 @@ namespace PixelVanguard.UI
                 var saveData = saveService.LoadData();
                 if (saveData.adsRemoved)
                 {
-                    Debug.Log("[ResultsController] Ads removed - skipping interstitial");
                     return;
                 }
             }
@@ -91,7 +90,6 @@ namespace PixelVanguard.UI
             var adService = ServiceLocator.Get<IAdService>();
             if (adService != null)
             {
-                Debug.Log("[ResultsController] Showing interstitial ad");
                 adService.ShowInterstitialAd();
             }
             else
@@ -161,7 +159,6 @@ namespace PixelVanguard.UI
             if (isNewRecord && newRecordBadge != null)
             {
                 newRecordBadge.SetActive(true);
-                Debug.Log("[ResultsController] 🏆 NEW RECORD SET!");
             }
         }
 
@@ -191,8 +188,6 @@ namespace PixelVanguard.UI
 
         private async void OnWatchAdClicked()
         {
-            Debug.Log("[ResultsController] Watch Ad button clicked");
-
             var adService = ServiceLocator.Get<IAdService>();
             if (adService == null)
             {
@@ -224,8 +219,6 @@ namespace PixelVanguard.UI
 
             goldDoubled = true;
             int finalGold = baseGold * 2;
-
-            Debug.Log($"[ResultsController] 💰 Gold doubled: {baseGold} → {finalGold}");
 
             // Update display with visual feedback
             SetTextArray(goldTexts, $"{finalGold}");
@@ -276,14 +269,10 @@ namespace PixelVanguard.UI
             saveService.SaveData(saveData);
 
             dataSaved = true;
-
-            Debug.Log($"[ResultsController] ✅ Progress saved! Gold: {oldGold} → {saveData.totalGold} (+{goldAmount})");
         }
 
         private void OnMainMenuClicked()
         {
-            Debug.Log("[ResultsController] Main Menu button clicked");
-
             // Ensure data is saved before leaving
             if (!dataSaved)
             {
@@ -295,17 +284,13 @@ namespace PixelVanguard.UI
 
         private void ContinueToMenu()
         {
-            // TODO: Load main menu scene when implemented
-            // For now, reload game scene as placeholder
-            Debug.Log("[ResultsController] Loading Main Menu (placeholder: reloading game)");
-
             // Reset session data
             if (SessionData.Instance != null)
             {
                 SessionData.Instance.ResetSession();
             }
 
-            SceneManager.LoadScene("MainMenuScene"); // Placeholder
+            SceneManager.LoadScene("MainMenuScene");
         }
 
         /// <summary>

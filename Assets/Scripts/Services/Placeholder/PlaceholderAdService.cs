@@ -29,13 +29,11 @@ namespace PixelVanguard.Services
 
         public void ShowInterstitialAd()
         {
-            Debug.Log("[PlaceholderAd] Showing interstitial ad (placeholder)");
             // Placeholder: instant, no reward
         }
 
         public async Task Initialize()
         {
-            Debug.Log("[PlaceholderAd] Initialized (placeholder)");
             await Task.CompletedTask;
         }
 

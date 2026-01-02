@@ -98,7 +98,6 @@ namespace PixelVanguard.Core
         {
             // Auto-start background music ONLY in GameScene
             string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            Debug.Log($"Current scene: {currentScene}");
             if (currentScene == "GameScene" && sfxLibrary != null && sfxLibrary.backgroundMusic != null)
             {
                 PlayMusic(sfxLibrary.backgroundMusic);
@@ -153,8 +152,6 @@ namespace PixelVanguard.Core
                 // Subscribe to weapon fire event
                 weapon.OnWeaponFired += () => HandleWeaponFire(weaponData.type);
                 subscribedWeapons[weapon] = weaponData.type;
-                
-                Debug.Log($"[AudioManager] Subscribed to {weaponID} fire event");
             }
         }
 
@@ -195,8 +192,6 @@ namespace PixelVanguard.Core
                 
                 weapon.OnWeaponFired += () => HandleWeaponFire(weaponData.type);
                 subscribedWeapons[weapon] = weaponData.type;
-                
-                Debug.Log($"[AudioManager] Subscribed to starter weapon: {weaponData.weaponID}");
             }
         }
 

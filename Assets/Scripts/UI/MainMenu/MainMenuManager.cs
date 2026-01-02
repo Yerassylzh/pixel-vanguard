@@ -62,8 +62,6 @@ namespace PixelVanguard.UI
 
                 Core.AudioManager.Instance.SetSFXVolume(sfxVolume);
                 Core.AudioManager.Instance.SetMusicVolume(musicVolume);
-
-                Debug.Log($"[MainMenu] Applied audio settings - SFX: {sfxVolume:F2}, Music: {musicVolume:F2}");
             }
         }
 
@@ -113,7 +111,6 @@ namespace PixelVanguard.UI
 
         private void OnPlayClicked()
         {
-            Debug.Log("[MainMenu] Play clicked - Showing Character Selection");
             ShowPanel(characterPanel);
 
             // Refresh gold in character select panel
@@ -121,7 +118,6 @@ namespace PixelVanguard.UI
             var characterController = FindFirstObjectByType<CharacterSelectController>();
             if (characterController != null)
             {
-                Debug.Log("[MainMenu] Found CharacterSelectController - calling RefreshGoldAndUI()");
                 characterController.RefreshGoldAndUI();
             }
             else
@@ -132,13 +128,11 @@ namespace PixelVanguard.UI
 
         private void OnShopClicked()
         {
-            Debug.Log("[MainMenu] Shop clicked");
             ShowPanel(shopPanel);
         }
 
         private void OnSettingsClicked()
         {
-            Debug.Log("[MainMenu] Settings clicked");
             ShowPanel(settingsPanel);
 
             // Refresh gold in settings panel
@@ -146,7 +140,6 @@ namespace PixelVanguard.UI
             var settingsController = FindFirstObjectByType<SettingsController>();
             if (settingsController != null)
             {
-                Debug.Log("[MainMenu] Found SettingsController - calling RefreshGold()");
                 settingsController.RefreshGold();
             }
             else
@@ -157,8 +150,6 @@ namespace PixelVanguard.UI
 
         private void OnQuitClicked()
         {
-            Debug.Log("[MainMenu] Quit clicked");
-
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else

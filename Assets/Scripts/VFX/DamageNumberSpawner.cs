@@ -45,7 +45,6 @@ namespace PixelVanguard.VFX
                 return;
             }
             Instance = this;
-            Debug.Log($"[DamageNumberSpawner] Singleton initialized, Canvas: {canvas != null}, Prefab: {damageNumberPrefab != null}");
             
             // Validate
             if (canvas == null)
@@ -73,7 +72,6 @@ namespace PixelVanguard.VFX
             poolRect.offsetMax = Vector2.zero;
             
             // Pre-instantiate ALL pool objects (never create more at runtime)
-            Debug.Log($"[DamageNumberSpawner] Pre-instantiating {poolSize} damage numbers...");
             for (int i = 0; i < poolSize; i++)
             {
                 GameObject obj = Instantiate(damageNumberPrefab, poolParent);
@@ -81,8 +79,6 @@ namespace PixelVanguard.VFX
                 obj.SetActive(false);
                 pool.Enqueue(obj);
             }
-            
-            Debug.Log($"[DamageNumberSpawner] Pool created with {poolSize} objects. NO MORE WILL BE CREATED.");
         }
         
         /// <summary>

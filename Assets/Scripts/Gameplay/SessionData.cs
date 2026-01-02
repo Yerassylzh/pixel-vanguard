@@ -46,7 +46,6 @@ namespace PixelVanguard.Gameplay
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
-                Debug.Log("[SessionData] Initialized and persisted across scenes");
             }
             else
             {
@@ -66,8 +65,6 @@ namespace PixelVanguard.Gameplay
             goldCollected = 0;
             levelReached = 1;
             gameOverReason = GameOverReason.PlayerDied;
-            
-            Debug.Log("[SessionData] Session reset for new run");
         }
 
         /// <summary>

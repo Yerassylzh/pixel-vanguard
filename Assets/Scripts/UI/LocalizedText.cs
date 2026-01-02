@@ -26,7 +26,6 @@ namespace PixelVanguard.UI
             
             if (string.IsNullOrEmpty(translationKey))
             {
-                Debug.LogWarning($"[LocalizedText] Translation key not set on {gameObject.name}");
                 return;
             }
 
@@ -102,9 +101,6 @@ namespace PixelVanguard.UI
                 Debug.LogWarning("Translation key not set!");
                 return;
             }
-
-            // Show English preview
-            Debug.Log($"Key: {translationKey}\nEnglish: [Preview in Play Mode]");
         }
 #endif
     }

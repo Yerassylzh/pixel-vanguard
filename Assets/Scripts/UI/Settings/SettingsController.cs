@@ -90,7 +90,6 @@ namespace PixelVanguard.UI
             if (languageRow != null)
             {
                 languageRow.SetActive(false);
-                Debug.Log("[Settings] Language row hidden - Yandex platform controls language");
             }
 #endif
         }
@@ -148,7 +147,6 @@ namespace PixelVanguard.UI
                 var saveData = saveService.LoadData();
                 if (goldText != null)
                 {
-                    Debug.Log($"[Settings] Refreshing Gold Display: {saveData.totalGold}");
                     goldText.text = saveData.totalGold.ToString();
                 }
                 else
@@ -217,8 +215,6 @@ namespace PixelVanguard.UI
 
         private void OnApplyClicked()
         {
-            Debug.Log("[Settings] Applying changes...");
-
             // Save all pending changes to GameSettings (PlayerPrefs)
             GameSettings.Language = pendingLanguage;
             GameSettings.MusicVolume = pendingMusicVolume;
@@ -232,11 +228,6 @@ namespace PixelVanguard.UI
             {
                 fpsCounter.SetVisible(pendingShowFPS);
             }
-
-            Debug.Log("[Settings] ✅ All settings saved!");
-
-            // Optional: Show confirmation message
-            // ShowConfirmationMessage("Settings Saved!");
         }
 
         // ============================================
@@ -246,13 +237,11 @@ namespace PixelVanguard.UI
         private void OnContactUsClicked()
         {
             Application.OpenURL(telegramChatURL);
-            Debug.Log($"[Settings] Opening Telegram: {telegramChatURL}");
         }
 
         private void OnPrivacyPolicyClicked()
         {
             Application.OpenURL(privacyPolicyURL);
-            Debug.Log($"[Settings] Opening Privacy Policy: {privacyPolicyURL}");
         }
 
         // ============================================
@@ -261,43 +250,27 @@ namespace PixelVanguard.UI
 
         private async void OnRemoveAdsClicked()
         {
-            Debug.Log("[Settings] ========== REMOVE ADS CLICKED ==========");
 
             var iapService = Core.ServiceLocator.Get<Services.IIAPService>();
             if (iapService == null)
             {
-                Debug.LogError("[Settings] IAPService not found!");
                 return;
             }
 
-            Debug.Log("[Settings] Calling PurchaseProduct...");
             // Purchase remove ads
             bool success = await iapService.PurchaseProduct(Services.ProductIDs.REMOVE_ADS);
 
-            Debug.Log($"[Settings] Purchase result: {success}");
-
             if (success)
             {
-                Debug.Log("[Settings] Remove Ads purchased successfully!");
-
                 // Update save data
                 var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
                 if (saveService != null)
                 {
                     var saveData = saveService.LoadData();
-                    Debug.Log($"[Settings] BEFORE: adsRemoved = {saveData.adsRemoved}");
                     
                     saveData.adsRemoved = true;
-                    
-                    Debug.Log($"[Settings] AFTER: adsRemoved = {saveData.adsRemoved}");
-                    Debug.Log("[Settings] Calling SaveData...");
-                    
                     saveService.SaveData(saveData);
                     
-                    Debug.Log("[Settings] SaveData complete");
-                    
-                    // Pass the updated saveData directly (don't reload from disk yet)
-                    Debug.Log("[Settings] Calling RefreshRemoveAdsButton with updated data...");
                     RefreshRemoveAdsButton(saveData);
                 }
                 else
@@ -309,21 +282,15 @@ namespace PixelVanguard.UI
             {
                 Debug.LogWarning("[Settings] Remove Ads purchase failed or was cancelled");
             }
-            
-            Debug.Log("[Settings] ========== REMOVE ADS HANDLER END ==========");
         }
 
         private void RefreshRemoveAdsButton(Services.SaveData cachedData = null)
-        {
-            Debug.Log("[Settings] RefreshRemoveAdsButton called");
-            
+        {            
             if (removeAdsRow == null)
             {
                 Debug.LogError("[Settings] CRITICAL: removeAdsRow is NULL!");
                 return;
             }
-
-            Debug.Log($"[Settings] removeAdsRow exists: {removeAdsRow.name}");
 
             // Use cached data if provided (e.g., right after purchase), otherwise load
             Services.SaveData saveData = cachedData;
@@ -340,20 +307,13 @@ namespace PixelVanguard.UI
                     return;
                 }
             }
-            
-            Debug.Log($"[Settings] SaveData - adsRemoved: {saveData.adsRemoved}");
 
             if (saveData.adsRemoved)
             {
-                // Already purchased - hide entire row
-                Debug.Log("[Settings] *** HIDING ROW *** SetActive(false)");
                 removeAdsRow.SetActive(false);
-                Debug.Log($"[Settings] Row active state after hide: {removeAdsRow.activeSelf}");
             }
             else
             {
-                // Not purchased - show row with price
-                Debug.Log("[Settings] Not purchased - showing row");
                 removeAdsRow.SetActive(true);
                 
                 if (removeAdsButton != null)
@@ -367,7 +327,6 @@ namespace PixelVanguard.UI
                         {
                             string price = iapService.GetLocalizedPrice(Services.ProductIDs.REMOVE_ADS);
                             removeAdsButtonText.text = Core.LocalizationManager.GetFormatted("ui.settings.remove_ads", price);
-                            Debug.Log($"[Settings] Set price: {price}");
                         }
                         else
                         {
@@ -398,8 +357,6 @@ namespace PixelVanguard.UI
                 settingsPanel.SetActive(false);
                 mainMenuManager.ReturnToMainMenu();
             }
-
-            Debug.Log("[Settings] Back (changes discarded)");
         }
 
         // ============================================

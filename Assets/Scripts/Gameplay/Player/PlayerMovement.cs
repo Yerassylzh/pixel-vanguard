@@ -38,7 +38,6 @@ namespace PixelVanguard.Gameplay
         public void SetMoveSpeed(float speed)
         {
             moveSpeed = speed;
-            Debug.Log($"[PlayerMovement] Speed set to {moveSpeed}");
         }
 
         public float GetMoveSpeed() => moveSpeed;
@@ -79,8 +78,6 @@ namespace PixelVanguard.Gameplay
                 int greavesLevel = saveData.GetStatLevel("greaves");
                 float speedBonus = greavesLevel * 0.05f;
                 moveSpeed = baseSpeed * (1f + speedBonus);
-
-                Debug.Log($"[PlayerMovement] {selectedCharacter.displayName} - Base Speed: {baseSpeed}, Greaves: Lv{greavesLevel} (+{speedBonus * 100}%) → Final: {moveSpeed:F2}");
             }
             else
             {

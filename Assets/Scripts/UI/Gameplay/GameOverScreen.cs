@@ -56,12 +56,10 @@ namespace PixelVanguard.UI
                 gameOverPanel.SetActive(true);
             }
 
-            Debug.Log("[GameOverScreen] Game Over - Revive or Quit?");
         }
 
         private async void OnReviveClicked()
         {
-            Debug.Log("[GameOverScreen] Revive clicked - showing rewarded ad");
 
             var adService = ServiceLocator.Get<Services.IAdService>();
             if (adService == null)
@@ -75,7 +73,6 @@ namespace PixelVanguard.UI
 
             if (success)
             {
-                Debug.Log("[GameOverScreen] Ad watched successfully - reviving player");
                 
                 // CRITICAL: Delay revive to next frame to allow PluginYG Focus Pause to fully restore
                 StartCoroutine(RevivePlayerNextFrame());
@@ -109,8 +106,6 @@ namespace PixelVanguard.UI
 
         private void OnQuitClicked()
         {
-            Debug.Log("[GameOverScreen] Quit clicked - loading Results Scene");
-
             // Hide this panel
             if (gameOverPanel != null)
             {

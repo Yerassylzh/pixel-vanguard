@@ -76,14 +76,12 @@ namespace PixelVanguard.UI
                         pauseAction.Enable();
                         pauseAction.performed += OnPauseInput;
                         useInputActions = true;
-                        Debug.Log("[PauseMenu] Using Input Actions for pause");
                         return;
                     }
                 }
             }
 
             // Fallback: use Keyboard.current
-            Debug.Log("[PauseMenu] InputActions not configured, using Keyboard.current fallback");
             useInputActions = false;
         }
 
@@ -187,7 +185,6 @@ namespace PixelVanguard.UI
         private void ReturnToMainMenu()
         {
             // TODO: Load main menu scene
-            Debug.Log("[PauseMenu] Return to Main Menu - not implemented yet");
 
             // For now, just unpause
             SceneManager.LoadScene("MainMenuScene");
