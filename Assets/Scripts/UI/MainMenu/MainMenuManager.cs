@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using PixelVanguard.UI.CharacterSelect;
+using PixelVanguard.UI.Animations;
 
 namespace PixelVanguard.UI
 {
@@ -26,10 +27,15 @@ namespace PixelVanguard.UI
         [Header("Gold Display")]
         [SerializeField] private TextMeshProUGUI goldText;
 
+        [Header("Navigation")]
+        [SerializeField] private MenuNavigationController navigationController;
+
+        private bool navigationInitialized = false;
+
         private void Start()
         {
-            // Show main menu by default
-            ShowPanel(mainMenuPanel);
+            // Initialize navigation controller
+            InitializeNavigation();
 
             // Setup button listeners
             playButton.onClick.AddListener(OnPlayClicked);
@@ -42,6 +48,35 @@ namespace PixelVanguard.UI
 
             // Apply saved audio settings
             ApplySavedAudioSettings();
+        }
+
+        private void InitializeNavigation()
+        {
+            // Find or create navigation controller
+            if (navigationController == null)
+            {
+                navigationController = GetComponent<MenuNavigationController>();
+                if (navigationController == null)
+                {
+                    navigationController = gameObject.AddComponent<MenuNavigationController>();
+                }
+            }
+
+            // Initialize with main menu as root
+            if (mainMenuPanel != null)
+            {
+                // Hide all panels first
+                if (settingsPanel != null) settingsPanel.SetActive(false);
+                if (shopPanel != null) shopPanel.SetActive(false);
+                if (characterPanel != null) characterPanel.SetActive(false);
+
+                navigationController.Initialize(mainMenuPanel);
+                navigationInitialized = true;
+            }
+            else
+            {
+                Debug.LogError("[MainMenuManager] Main menu panel is not assigned!");
+            }
         }
 
         private void OnEnable()
@@ -79,9 +114,26 @@ namespace PixelVanguard.UI
         }
 
         /// <summary>
-        /// Show a specific panel and hide all others.
+        /// Navigate to a specific panel using the navigation controller.
         /// </summary>
-        private void ShowPanel(GameObject panelToShow)
+        private void NavigateToPanel(GameObject panelToShow)
+        {
+            if (!navigationInitialized || navigationController == null)
+            {
+                Debug.LogWarning("[MainMenuManager] Navigation not initialized, falling back to direct show.");
+                ShowPanelDirect(panelToShow);
+                return;
+            }
+
+            if (panelToShow == null) return;
+
+            navigationController.NavigateToPanel(panelToShow);
+        }
+
+        /// <summary>
+        /// Fallback: Show panel directly without animation (for compatibility).
+        /// </summary>
+        private void ShowPanelDirect(GameObject panelToShow)
         {
             if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
             if (settingsPanel != null) settingsPanel.SetActive(false);
@@ -95,14 +147,24 @@ namespace PixelVanguard.UI
         }
 
         /// <summary>
-        /// Called from Settings "Back" button to return to main menu.
+        /// Called from Settings/Shop/Character "Back" button to return to main menu.
         /// </summary>
         public void ReturnToMainMenu()
         {
-            ShowPanel(mainMenuPanel);
-
-            // CRITICAL: Refresh gold when returning from shop/settings/character select
-            RefreshGoldDisplay();
+            if (navigationController != null && navigationInitialized)
+            {
+                navigationController.NavigateBack(() =>
+                {
+                    // Refresh gold after navigation
+                    RefreshGoldDisplay();
+                });
+            }
+            else
+            {
+                // Fallback
+                ShowPanelDirect(mainMenuPanel);
+                RefreshGoldDisplay();
+            }
         }
 
         // ============================================
@@ -111,7 +173,7 @@ namespace PixelVanguard.UI
 
         private void OnPlayClicked()
         {
-            ShowPanel(characterPanel);
+            NavigateToPanel(characterPanel);
 
             // Refresh gold in character select panel
             // Controller might be on Canvas or parent, so find it globally
@@ -128,12 +190,12 @@ namespace PixelVanguard.UI
 
         private void OnShopClicked()
         {
-            ShowPanel(shopPanel);
+            NavigateToPanel(shopPanel);
         }
 
         private void OnSettingsClicked()
         {
-            ShowPanel(settingsPanel);
+            NavigateToPanel(settingsPanel);
 
             // Refresh gold in settings panel
             // Controller might be on Canvas or parent, so find it globally

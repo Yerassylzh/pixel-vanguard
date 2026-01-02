@@ -255,6 +255,18 @@ namespace PixelVanguard.Core
         public void PlayMusic(AudioClip musicClip)
         {
             if (musicClip == null) return;
+            musicSource.loop = true; // Explicitly set looping
+            musicSource.clip = musicClip;
+            musicSource.Play();
+        }
+
+        /// <summary>
+        /// Play one-shot music (doesn't loop). Use for intros, stingers, etc.
+        /// </summary>
+        public void PlayOneShotMusic(AudioClip musicClip)
+        {
+            if (musicClip == null) return;
+            musicSource.loop = false; // Don't loop
             musicSource.clip = musicClip;
             musicSource.Play();
         }

@@ -4,6 +4,156 @@
 
 ---
 
+## January 2, 2026
+
+### UI Animation System ✅
+
+**Complete professional UI animation framework for main menu, shop, and gameplay:**
+
+#### Core Animation Infrastructure
+- **DOTween Integration** - Hardware-accelerated UI tweening throughout
+- **CoinRewardAnimator** - Configurable coin spawning for purchases
+  - Multiple coins with staggered spawn (0.08s interval)
+  - Two-stage animation: pop-up → bezier flight to target
+  - Professional non-stacking pulse on arrival
+  - Optional text count-up integration
+  - Overlay canvas creation (sortOrder 1000) for z-ordering
+  - Resolution-independent coin sizing (32px)
+- **MainMenuIntroAnimator** - Vampire Survivors-style intro
+  - Scale-out effect (zooms from 1.5x → 1x)
+  - Sequential UI element fade-in with configurable delays
+  - Play-once-per-session logic (skips on return to menu)
+  - Supports both UI Images and SpriteRenderer backgrounds
+  - Manual scale/position configuration for pivot compensation
+  - Integrated one-shot music playback
+
+**Files Created:**
+- `CoinRewardAnimator.cs` - Shop/Results coin reward animations
+- `MainMenuIntroAnimator.cs` - Main menu intro sequence
+
+**Modified Files:**
+- `ShopController.cs` - Integrated coin animations for IAP + ad rewards
+- `MenuNavigationController.cs` - Fixed panel overlap (instant hide before slide)
+- `AnimatedButton.cs` - Fixed pause menu buttons (unscaled time)
+- `AudioManager.cs` - Added `PlayOneShotMusic()` for non-looping audio
+
+---
+
+#### Bug Fixes & Polish
+
+**1. Panel Navigation Overlap** 🐛
+- **Problem:** Both panels visible during transitions creating visual overlap
+- **Solution:** Instant hide old panel, smoothly show new panel (no simultaneous animation)
+- **File:** `MenuNavigationController.cs`
+
+**2. Pause Menu Button Animation** 🐛
+- **Problem:** Buttons didn't animate when `Time.timeScale = 0`
+- **Solution:** All tweens now use `.SetUpdate(true)` for unscaled time
+- **File:** `AnimatedButton.cs`
+
+**3. Coin Rendering Z-Order** 🐛
+- **Problem:** Coins rendered behind shop popup panels
+- **Solution:** Created dedicated overlay Canvas (sortOrder 1000)
+- **File:** `CoinRewardAnimator.cs`
+
+**4. Target Icon Scale Stacking** 🐛
+- **Problem:** Multiple coins caused gold icon scale amplification
+- **Solution:** Kill previous pulse tween before starting new one
+- **Result:** Fast, clean pulses without visual artifacts
+- **File:** `CoinRewardAnimator.cs`
+
+**5. Intro Music Looping** 🐛
+- **Problem:** 7-second intro music looped forever
+- **Solution:** Created `PlayOneShotMusic()` in AudioManager
+- **Files:** `AudioManager.cs`, `MainMenuIntroAnimator.cs`
+
+**6. Coin Size Screen-Dependent** 🐛
+- **Problem:** Coin size varied across different resolutions
+- **Solution:** Changed from `Vector2` to `float coinSizePixels` (resolution-independent)
+- **File:** `CoinRewardAnimator.cs`
+
+---
+
+#### AudioManager Enhancements
+
+**New Methods:**
+```csharp
+// One-shot music (intros, stingers)
+public void PlayOneShotMusic(AudioClip musicClip)
+
+// Looping music (backgrounds)
+public void PlayMusic(AudioClip musicClip) // Now explicitly sets loop = true
+```
+
+**Usage:**
+- Intro music: `AudioManager.Instance.PlayOneShotMusic(introClip)`
+- Background music: `AudioManager.Instance.PlayMusic(bgMusicClip)`
+
+---
+
+#### Technical Highlights
+
+**Non-Stacking Pulse Pattern:**
+```csharp
+Tween activePulseTween = null;  // Single tracked tween
+activePulseTween?.Kill();        // Stop previous animation
+activePulseTween = transform.DOScale(...); // Start new pulse
+```
+
+**Play-Once-Per-Session Pattern:**
+```csharp
+private static bool hasShownIntro = false;  // Static flag persists
+if (hasShownIntro)
+    SkipIntro();  // Return to menu
+else
+    PlayIntro();  // First launch
+```
+
+**Overlay Canvas Architecture:**
+- Dedicated `CoinOverlayCanvas` with sortOrder 1000
+- Ensures coins always render on top of all UI
+- Auto-created and reused across animations
+
+---
+
+#### Integration Points
+
+**Shop:**
+- IAP purchase (29,900 gold) → 10 coins fly to gold icon
+- Ad pack 1 completion (1,990 gold) → 5 coins
+- Ad pack 2 completion (4,990 gold) → 5 coins
+- Gold text counts up as coins arrive
+
+**Main Menu:**
+- First app launch → Full intro animation plays
+- Return from game → Instant skip to menu
+- Background scales out (1.5x → 1x) over 5-7 seconds
+- UI elements fade in sequentially (0.15s stagger)
+
+---
+
+#### Unity Editor Setup Required
+
+**Shop Coin Animations (3 min):**
+1. Add `CoinRewardAnimator` component to Canvas
+2. Assign to ShopController
+3. Assign gold icon transform reference
+
+**Main Menu Intro (10 min):**
+1. Add `MainMenuIntroAnimator` to Canvas
+2. Add `CanvasGroup` to UI elements (title, buttons)
+3. Assign background transform
+4. Assign UI elements array in order
+5. Generate 5-7s intro music using AI (prompt provided in docs)
+6. Import and assign intro music clip
+
+**Documentation:**
+- [intro_animation_guide.md](file:///C:/Users/Honor/.gemini/antigravity/brain/9ec9c9e6-88a1-4484-89fb-b334dbf7be1d/intro_animation_guide.md)
+- [setup_instructions.md](file:///C:/Users/Honor/.gemini/antigravity/brain/9ec9c9e6-88a1-4484-89fb-b334dbf7be1d/setup_instructions.md)
+- [walkthrough.md](file:///C:/Users/Honor/.gemini/antigravity/brain/9ec9c9e6-88a1-4484-89fb-b334dbf7be1d/walkthrough.md)
+
+---
+
 ## January 1, 2026 (Evening)
 
 ### Yandex Ads Integration - Production Ready ✅

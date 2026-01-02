@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using PixelVanguard.Gameplay;
+using PixelVanguard.UI.Animations;
+using DG.Tweening;
 
 namespace PixelVanguard.UI
 {
@@ -33,10 +35,17 @@ namespace PixelVanguard.UI
         [Header("Upgrade Settings")]
         [SerializeField] private UpgradeManager upgradeManager;
 
+        [Header("Animation Settings")]
+        [SerializeField] private float popupDuration = 0.5f;
+        [SerializeField] private float cardStaggerDelay = 0.1f;
+
         // Currently displayed upgrades
         private Data.UpgradeData option1Upgrade;
         private Data.UpgradeData option2Upgrade;
         private Data.UpgradeData option3Upgrade;
+
+        // Animation references
+        private Transform[] upgradeCards;
 
         private void Awake()
         {
@@ -56,6 +65,14 @@ namespace PixelVanguard.UI
             if (option1Button != null) option1Button.onClick.AddListener(OnOption1Selected);
             if (option2Button != null) option2Button.onClick.AddListener(OnOption2Selected);
             if (option3Button != null) option3Button.onClick.AddListener(OnOption3Selected);
+
+            // Cache upgrade card transforms for animations
+            upgradeCards = new Transform[]
+            {
+                option1Button?.transform,
+                option2Button?.transform,
+                option3Button?.transform
+            };
         }
 
         private void OnEnable()
@@ -162,10 +179,38 @@ namespace PixelVanguard.UI
                 if (option3TitleText != null) option3TitleText.text = "No upgrades";
             }
 
-            // Show panel
+            // Show panel with animation
             if (panelRoot != null)
             {
                 panelRoot.SetActive(true);
+                AnimatePopupShow();
+            }
+        }
+
+        private void AnimatePopupShow()
+        {
+            // Popup animation for panel root
+            if (panelRoot != null)
+            {
+                UIAnimator.ShowPopup(panelRoot.transform, popupDuration, useUnscaledTime: true);
+            }
+
+            // Stagger animate upgrade cards
+            for (int i = 0; i < upgradeCards.Length; i++)
+            {
+                if (upgradeCards[i] == null) continue;
+
+                Transform card = upgradeCards[i];
+                float delay = i * cardStaggerDelay;
+
+                // Start from scale zero
+                card.localScale = Vector3.zero;
+
+                // Animate with delay
+                card.DOScale(Vector3.one, 0.3f)
+                    .SetDelay(popupDuration + delay)
+                    .SetEase(Ease.OutBack)
+                    .SetUpdate(true); // Unscaled time for pause
             }
         }
 
@@ -187,10 +232,13 @@ namespace PixelVanguard.UI
 
         private void ClosePanel()
         {
-            // Hide panel
+            // Hide panel with animation
             if (panelRoot != null)
             {
-                panelRoot.SetActive(false);
+                UIAnimator.HidePopup(panelRoot.transform, 0.3f, useUnscaledTime: true, () =>
+                {
+                    panelRoot.SetActive(false);
+                });
             }
 
             // Resume game via GameManager (sets state back to Playing)

@@ -28,7 +28,7 @@ Spawn → Fight → Collect XP → Level Up → Choose Upgrade → Repeat → Di
 
 ---
 
-## 📊 10 Core Systems
+## 📊 11 Core Systems
 
 > Each system has its own detailed documentation page. Click to read more.
 
@@ -39,9 +39,64 @@ Spawn → Fight → Collect XP → Level Up → Choose Upgrade → Repeat → Di
 5. **[Progression System](Systems/Progression-System.md)** - XP/Gold collection, leveling
 6. **[Upgrade System](Systems/Upgrade-System.md)** - 18 types with rarity weighting
 7. **[UI System](Systems/UI-System.md)** - HUD, menus, platform-aware joystick
-8. **[Service Architecture](Systems/Service-Architecture.md)** - Save/load, ads, IAP, platform detection
-9. **[Camera System](Systems/Camera-System.md)** - Cinemachine player follow
-10. **[Localization System](Systems/Localization-System.md)** - Multi-language (EN/RU), platform-aware
+8. **[Animation System](#animation-system)** - DOTween-based UI animations, coin rewards, intro sequences
+9. **[Service Architecture](Systems/Service-Architecture.md)** - Save/load, ads, IAP, platform detection
+10. **[Camera System](Systems/Camera-System.md)** - Cinemachine player follow
+11. **[Localization System](Systems/Localization-System.md)** - Multi-language (EN/RU), platform-aware
+
+---
+
+## 🎬 Animation System
+
+**Purpose:** Professional UI animations for menus, rewards, and feedback  
+**Status:** Production-ready (Jan 2026)  
+**Framework:** DOTween
+
+### Key Components
+
+#### CoinRewardAnimator
+- Configurable coin spawning for purchase feedback
+- Resolution-independent sizing (32px)
+- Overlay canvas for proper z-ordering
+- Non-stacking pulse animations
+- Text count-up integration
+
+**Usage:**
+```csharp
+coinRewardAnimator.PlayCoinReward(
+    sourcePos, goldIconTransform, goldAmount, goldText
+);
+```
+
+#### MainMenuIntroAnimator
+- Vampire Survivors-style intro sequence
+- Scale-out effect with sequential UI reveal
+- Play-once-per-session logic
+- One-shot music playback
+- Supports UI and world-space backgrounds
+
+**Configuration:**
+- Start scale: 1.5x (zoomed in)
+- Duration: 5-7 seconds
+- UI element stagger: 0.15s
+- Auto-skip on return to menu
+
+#### AudioManager Extensions
+- `PlayOneShotMusic()` - Non-looping audio (intros)
+- `PlayMusic()` - Looping background music
+
+### Files
+- `UI/Animations/Effects/CoinRewardAnimator.cs`
+- `UI/Animations/MainMenuIntroAnimator.cs`
+- `Core/AudioManager.cs` (enhanced)
+
+### Related Fixes
+- Panel overlap prevention
+- Pause menu button animations
+- Coin rendering z-order
+- Target scale stacking
+
+**Documentation:** See [CHANGELOG.md](CHANGELOG.md) for detailed implementation
 
 ---
 
@@ -91,6 +146,7 @@ Spawn → Fight → Collect XP → Level Up → Choose Upgrade → Repeat → Di
 
 **UI:** [`UI/`](file:///C:/Users/Honor/Unity%20Games/Pixel%20Vanguard/Assets/Scripts/UI)
 - HUD, LevelUpPanel, GameOverScreen, VirtualJoystick, Shop/
+- **Animations/** - CoinRewardAnimator, MainMenuIntroAnimator, AnimatedButton, MenuNavigationController
 
 **Services:** [`Services/`](file:///C:/Users/Honor/Unity%20Games/Pixel%20Vanguard/Assets/Scripts/Services)
 - Interfaces/, Yandex/, Placeholder/, PlatformServiceFactory

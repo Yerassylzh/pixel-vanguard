@@ -36,7 +36,7 @@ namespace PixelVanguard.UI
         [SerializeField] private TextMeshProUGUI[] watchAdButtonTexts; // Array for primary + shadow
         [SerializeField] private Button mainMenuButton;
 
-        [Header("UI References - New Record Badge (Optional)")]
+        [Header("UI References - New Record Badge (Optional")]
         [SerializeField] private GameObject newRecordBadge;
 
         [Header("Colors")]

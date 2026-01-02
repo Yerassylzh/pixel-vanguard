@@ -35,23 +35,23 @@ namespace PixelVanguard.Core
         private void InitializeServiceLocator()
         {
             // === Save Service ===
-            if (ServiceLocator.Get<ISaveService>() == null)
+            if (!ServiceLocator.Has<ISaveService>())
             {
                 var saveService = PlatformServiceFactory.CreateSaveService();
                 saveService.Initialize();
                 ServiceLocator.Register<ISaveService>(saveService);
             }
-            
+
             // === Ad Service ===
-            if (ServiceLocator.Get<IAdService>() == null)
+            if (!ServiceLocator.Has<IAdService>())
             {
                 var adService = PlatformServiceFactory.CreateAdService();
                 _ = adService.Initialize(); // Fire and forget
                 ServiceLocator.Register<IAdService>(adService);
             }
-            
+
             // === IAP Service ===
-            if (ServiceLocator.Get<IIAPService>() == null)
+            if (!ServiceLocator.Has<IIAPService>())
             {
                 var iapService = PlatformServiceFactory.CreateIAPService();
                 _ = iapService.Initialize(); // Fire and forget
@@ -70,7 +70,7 @@ namespace PixelVanguard.Core
 
             // Load translation data from Resources
             var translationData = Resources.Load<TranslationData>("Translations");
-            
+
             if (translationData == null)
             {
                 Debug.LogError("[GameBootstrap] ❌ Translations.asset not found in Resources folder!");

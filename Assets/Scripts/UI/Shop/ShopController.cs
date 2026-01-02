@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using PixelVanguard.Core;
 using PixelVanguard.Services;
+using PixelVanguard.UI.Animations;
 using System.Threading.Tasks;
 using System.Collections;
 using System;
@@ -48,6 +49,10 @@ namespace PixelVanguard.UI
         [SerializeField] private Image iapIconImage;
         [SerializeField] private Sprite iapIcon; // Large gold pile
         [SerializeField] private Button iapCardButton; // Button for whole IAP card (to show details)
+
+        [Header("Animation References")]
+        [SerializeField] private Transform goldIconTransform; // Gold icon in top bar for animations
+        [SerializeField] private CoinRewardAnimator coinRewardAnimator; // Handles coin animations
 
         private SaveData saveData;
         private ISaveService saveService;
@@ -251,6 +256,10 @@ namespace PixelVanguard.UI
             if (success)
             {
                 // Update ad watch count based on pack
+                int goldEarned = 0;
+                int previousGold = saveData.totalGold;
+                Transform sourceTransform = null;
+
                 if (packNumber == 1)
                 {
                     saveData.adsWatchedForPack1++;
@@ -258,8 +267,10 @@ namespace PixelVanguard.UI
                     // Check if pack is complete
                     if (saveData.adsWatchedForPack1 >= 5)
                     {
-                        saveData.totalGold += 1990;
+                        goldEarned = 1990;
+                        saveData.totalGold += goldEarned;
                         saveData.adsWatchedForPack1 = 0; // Reset progress
+                        sourceTransform = adPack1Card.transform;
                     }
                 }
                 else if (packNumber == 2)
@@ -269,8 +280,10 @@ namespace PixelVanguard.UI
                     // Check if pack is complete
                     if (saveData.adsWatchedForPack2 >= 10)
                     {
-                        saveData.totalGold += 4990;
+                        goldEarned = 4990;
+                        saveData.totalGold += goldEarned;
                         saveData.adsWatchedForPack2 = 0; // Reset progress
+                        sourceTransform = adPack2Card.transform;
                     }
                 }
 
@@ -280,8 +293,23 @@ namespace PixelVanguard.UI
                 // Save to disk
                 saveService.SaveData(saveData);
 
-                // Refresh UI
-                RefreshUI();
+                // Visual feedback if pack completed
+                if (goldEarned > 0 && goldIconTransform != null && sourceTransform != null && coinRewardAnimator != null)
+                {
+                    // Use new coin reward system
+                    coinRewardAnimator.PlayCoinReward(
+                        sourceTransform.position,
+                        goldIconTransform,
+                        goldEarned,
+                        goldText,  // Text will count up as coins arrive
+                        onComplete: null
+                    );
+                }
+                else
+                {
+                    // Just refresh UI (ad watched but pack not complete yet)
+                    RefreshUI();
+                }
             }
             else
             {
@@ -301,12 +329,30 @@ namespace PixelVanguard.UI
 
             if (success)
             {
+                int goldEarned = 29900;
+                int previousGold = saveData.totalGold;
+
                 // Award gold
-                saveData.totalGold += 29900;
+                saveData.totalGold += goldEarned;
                 saveService.SaveData(saveData);
                 
-                // Refresh UI
-                RefreshUI();
+                // Visual feedback: coin animation
+                if (goldIconTransform != null && iapBuyButton != null && coinRewardAnimator != null)
+                {
+                    // Use new coin reward system
+                    coinRewardAnimator.PlayCoinReward(
+                        iapBuyButton.transform.position,
+                        goldIconTransform,
+                        goldEarned,
+                        goldText,  // Text will count up as coins arrive
+                        onComplete: null
+                    );
+                }
+                else
+                {
+                    // Fallback: just refresh UI
+                    RefreshUI();
+                }
             }
             else
             {

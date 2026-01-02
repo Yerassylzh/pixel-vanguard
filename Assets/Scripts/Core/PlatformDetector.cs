@@ -63,7 +63,7 @@ namespace PixelVanguard.Core
             try
             {
                 string deviceType = YG2.envir.deviceType;
-                if (YG2.envir.isDesktop)
+                if (YG2.envir.isMobile)
                 {
                     return PlatformType.Desktop;
                 }
