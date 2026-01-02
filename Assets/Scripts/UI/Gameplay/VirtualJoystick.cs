@@ -113,20 +113,19 @@ namespace PixelVanguard.UI
             {
                 joystickContainer.gameObject.SetActive(true);
 
-                // Convert touch position to local coordinates relative to joystickContainer's parent
-                RectTransform parentRect = joystickContainer.parent as RectTransform;
-                if (parentRect != null)
-                {
-                    Vector2 localPoint;
-                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                        parentRect,  // Use parent, not canvas!
-                        eventData.position,
-                        canvas.worldCamera,
-                        out localPoint
-                    );
-                    
-                    joystickContainer.anchoredPosition = localPoint;
-                }
+                // COORDINATE CONVERSION FIX: Parent has stretched anchors (Min: 0,0 / Max: 1,0)
+                // Direct conversion to parent's local space gives wrong coordinates due to stretching.
+                // Solution: Convert via canvas (reliable), then set world position (bypasses anchors).
+                Vector2 canvasPos;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect,
+                    eventData.position,
+                    canvas.worldCamera,
+                    out canvasPos
+                );
+                
+                // Set world position instead of anchoredPosition to bypass anchor stretching
+                joystickContainer.position = canvasRect.TransformPoint(canvasPos);
             }
             
             // Reset handle to center when joystick first appears

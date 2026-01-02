@@ -115,13 +115,10 @@ namespace PixelVanguard.Gameplay
 
         public void ResumeGame()
         {
-            if (currentState == GameState.Paused || currentState == GameState.LevelUp)
-            {
-                SetState(GameState.Playing);
-                Time.timeScale = 1f;
-                Core.GameEvents.TriggerGameResume();
-                Log("Game Resumed");
-            }
+            SetState(GameState.Playing);
+            Time.timeScale = 1f;
+            Core.GameEvents.TriggerGameResume();
+            Log("Game Resumed");
         }
 
         public void EndGame(Core.GameOverReason reason)
@@ -178,10 +175,6 @@ namespace PixelVanguard.Gameplay
             SetState(GameState.Reviving);
             Time.timeScale = 0f; // Pause for revive decision
             Core.GameEvents.TriggerGameOver(Core.GameOverReason.PlayerDied);
-
-            // TODO: If player doesn't revive within X seconds, load Results Scene
-            // For now, GameOverScreen handles the "Quit" button which can load Results Scene
-            // StartCoroutine(LoadResultsSceneAfterTimeout(10f));
         }
 
         private void FinalizeSession()
@@ -217,18 +210,12 @@ namespace PixelVanguard.Gameplay
         {
             if (currentState != GameState.Reviving)
             {
-                Debug.LogWarning("[GameManager] Cannot revive - not in Reviving state");
+                Debug.LogWarning($"[GameManager] Cannot revive - not in Reviving state (current: {currentState})");
                 return;
             }
 
-            Log("Player revived!");
-
-            // Resume game
-            SetState(GameState.Playing);
-            Time.timeScale = 1f;
-
-            // Trigger revive event (PlayerHealth will restore to full)
             Core.GameEvents.TriggerPlayerRevived();
+            ResumeGame();
         }
 
         private void Log(string message)

@@ -65,7 +65,7 @@ namespace PixelVanguard.Core
             if (saveService == null || allCharacters == null || allCharacters.Length == 0)
                 return;
 
-            var saveData = saveService.LoadDataSync();
+            var saveData = saveService.LoadData();
             string selectedID = saveData.selectedCharacterID;
 
             // Find the character by ID from the Inspector-assigned list
@@ -99,7 +99,6 @@ namespace PixelVanguard.Core
                 SpawnedPlayer = GameObject.FindGameObjectWithTag("Player");
                 if (SpawnedPlayer != null)
                 {
-                    Debug.Log("[CharacterManager] Found existing Player in scene.");
                     SetupCameraFollow(SpawnedPlayer.transform);
                     return;
                 }
@@ -120,7 +119,6 @@ namespace PixelVanguard.Core
             // Set camera to follow the spawned player
             SetupCameraFollow(SpawnedPlayer.transform);
 
-            Debug.Log($"[CharacterManager] Spawned player: {SelectedCharacter.displayName} at {spawnPosition}");
         }
 
         private void SetupCameraFollow(Transform playerTransform)
@@ -148,7 +146,6 @@ namespace PixelVanguard.Core
                 }
             }
 
-            Debug.Log("[CharacterManager] No Cinemachine camera found");
         }
 
         private bool SetCameraTarget(MonoBehaviour camera, Transform target)
@@ -164,7 +161,6 @@ namespace PixelVanguard.Core
                 if (prop != null && prop.CanWrite)
                 {
                     prop.SetValue(camera, target);
-                    Debug.Log($"[CharacterManager] Set {type.Name} to follow player");
                     return true;
                 }
                 
@@ -172,7 +168,6 @@ namespace PixelVanguard.Core
                 if (field != null)
                 {
                     field.SetValue(camera, target);
-                    Debug.Log($"[CharacterManager] Set {type.Name} to follow player");
                     return true;
                 }
             }

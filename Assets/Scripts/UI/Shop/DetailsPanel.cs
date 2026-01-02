@@ -20,7 +20,7 @@ namespace PixelVanguard.UI
 
         private void Start()
         {
-            // Show default state on start
+            // Show default state on start (with localized text)
             ShowDefault();
         }
 
@@ -37,7 +37,7 @@ namespace PixelVanguard.UI
 
             if (descriptionText != null)
             {
-                descriptionText.text = defaultText;
+                descriptionText.text = Core.LocalizationManager.Get("ui.shop.select_upgrade");
             }
         }
 

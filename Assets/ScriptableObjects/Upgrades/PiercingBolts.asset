@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: PiercingBolts
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.piercing_bolts
   upgradeName: Piercing Bolts
-  description: Arrows pierce +1 enemy
+  description: Piercing Bolts
   icon: {fileID: 21300000, guid: 849409702ce6d6445acf40b109d6024d, type: 3}
   type: 10
   value: 1

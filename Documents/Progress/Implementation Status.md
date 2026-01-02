@@ -1,6 +1,6 @@
 # Implementation Status
 
-**Last Updated:** Dec 31, 2024
+**Last Updated:** Jan 1, 2026
 
 ## ✅ CORE GAMEPLAY (100%)
 
@@ -132,17 +132,40 @@
 - [x] Backward compatible (bounds are optional)
 - [x] Prevents enemies from spawning outside island/playable area
 
-### Shop System ✅ COMPLETE (CODE)
+### Shop System ✅ COMPLETE
 - [x] ShopController with 4 stat upgrades + 2 ad packs + IAP
 - [x] UpgradeCard (level display, cost scaling, effect text)
 - [x] AdPackCard (progress tracking, cooldown timer)
 - [x] DetailsPanel (info display for selected items)
-- [x] IAdService + PlaceholderAdService (60s cooldown)
-- [x] IIAPService + PlaceholderIAPService (price localization)
-- [x] SaveData extensions (ad progress, timestamp)
-- [x] Service registration in GameBootstrap
+- [x] Gold persistence bug fixed (always loads fresh from disk)
+- [x] `OnEnable()` refresh for all UI panels
 - [ ] Unity UI setup (USER task)
-- [ ] Real SDK integration (production)
+
+### Monetization (Jan 2026) ✅ PRODUCTION READY
+
+**Ad Integration:**
+- [x] `IAdService` interface with rewarded + interstitial ads
+- [x] `YandexAdService` - WebGL builds use Yandex Ads
+- [x] `PlaceholderAdService` - Android/Editor testing
+- [x] 3 integration points:
+  - Shop: Watch ads for gold packs (5 ads → 1,990g, 10 ads → 4,990g)
+  - Game Over: Watch ad to revive mid-game
+  - Results: Watch ad to double session gold
+- [x] Automatic cooldown management via PluginYG
+
+**IAP Integration:**
+- [x] `IIAPService` interface
+- [x] `YandexIAPService` - Yandex Payments for WebGL
+- [x] `PlaceholderIAPService` - Android/Editor testing (ready for Google Play)
+- [x] Product: `"gold_pack"` (29,900 gold, ~$0.99 USD)
+- [x] Event-driven purchase flow
+- [x] Shop UI integration complete
+
+**Save Service Fixes:**
+- [x] Removed stale cache bug in `PlayerPrefsSaveService`
+- [x] All panels refresh gold on open (`OnEnable` + explicit calls)
+- [x] `FindFirstObjectByType` for robust controller lookup
+- [x] Synchronous save operations (removed incorrect `async/await`)
 
 ## 📋 NOT IMPLEMENTED
 

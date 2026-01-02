@@ -84,7 +84,6 @@ namespace PixelVanguard.Gameplay
         public void SetMultiShot(int count)
         {
             arrowCount = count;
-            Debug.Log($"[AutoCrossbow] Multi-shot set to {count} arrows");
         }
 
         /// <summary>
@@ -93,7 +92,6 @@ namespace PixelVanguard.Gameplay
         public void IncrementPierce()
         {
             pierceCount++;
-            Debug.Log($"[AutoCrossbow] Pierce count: {pierceCount}");
         }
     }
 }

@@ -47,7 +47,7 @@ namespace PixelVanguard.UI
         private bool goldDoubled = false;
         private bool dataSaved = false;
 
-        private async void Start()
+        private void Start()
         {
             // Ensure ServiceLocator is initialized (fallback for testing scene directly)
             if (ServiceLocator.Get<ISaveService>() == null)
@@ -61,13 +61,46 @@ namespace PixelVanguard.UI
             Time.timeScale = 1f;
 
             // Display session stats
-            await DisplayStats();
+            DisplayStats();
+
+            // Show interstitial ad at end of game
+            ShowInterstitialAd();
 
             // Setup button listeners
             SetupButtons();
         }
 
-        private async Task DisplayStats()
+        /// <summary>
+        /// Show interstitial ad when results screen opens (end of game).
+        /// Skip if ads have been removed via IAP.
+        /// </summary>
+        private void ShowInterstitialAd()
+        {
+            // Check if ads have been removed
+            var saveService = ServiceLocator.Get<ISaveService>();
+            if (saveService != null)
+            {
+                var saveData = saveService.LoadData();
+                if (saveData.adsRemoved)
+                {
+                    Debug.Log("[ResultsController] Ads removed - skipping interstitial");
+                    return;
+                }
+            }
+
+            var adService = ServiceLocator.Get<IAdService>();
+            if (adService != null)
+            {
+                Debug.Log("[ResultsController] Showing interstitial ad");
+                adService.ShowInterstitialAd();
+            }
+            else
+            {
+                Debug.LogWarning("[ResultsController] AdService not found - skipping interstitial ad");
+            }
+        }
+
+        private void DisplayStats()
         {
             // Ensure SessionData exists
             if (SessionData.Instance == null)
@@ -82,7 +115,9 @@ namespace PixelVanguard.UI
             // Set title and icon based on game over reason
             bool isVictory = session.gameOverReason == GameOverReason.Victory;
 
-            SetTextArray(titleTexts, isVictory ? "VICTORY!" : "DEFEATED");
+            SetTextArray(titleTexts, isVictory ? 
+                Core.LocalizationManager.Get("ui.results.victory") : 
+                Core.LocalizationManager.Get("ui.results.defeated"));
             SetColorArray(titleTexts, isVictory ? victoryColor : defeatColor);
 
             // Display session stats
@@ -95,13 +130,14 @@ namespace PixelVanguard.UI
 
             // Update ad button text
             int doubledAmount = baseGold * 2;
-            SetTextArray(watchAdButtonTexts, $"WATCH AD TO GET {doubledAmount:N0}");
+            string adButtonText = Core.LocalizationManager.GetFormatted("ui.results.watch_ad_bonus", doubledAmount.ToString("N0"));
+            SetTextArray(watchAdButtonTexts, adButtonText);
 
             // Check for new records
-            await CheckNewRecords();
+            CheckNewRecords();
         }
 
-        private async Task CheckNewRecords()
+        private void CheckNewRecords()
         {
             // Load save data to check high scores
             var saveService = ServiceLocator.Get<ISaveService>();
@@ -111,7 +147,7 @@ namespace PixelVanguard.UI
                 return;
             }
 
-            var saveData = await saveService.LoadData();
+            var saveData = saveService.LoadData();
 
             int survivalTime = Mathf.FloorToInt(SessionData.Instance.survivalTime);
             bool isNewRecord = saveData.UpdateHighScores(
@@ -153,20 +189,32 @@ namespace PixelVanguard.UI
             }
         }
 
-        private void OnWatchAdClicked()
+        private async void OnWatchAdClicked()
         {
             Debug.Log("[ResultsController] Watch Ad button clicked");
 
-            // TODO: Integrate ad service when ready
-            // Example:
-            // var adService = ServiceLocator.Get<IAdService>();
-            // adService.ShowRewardedAd(() => { DoubleGold(); });
+            var adService = ServiceLocator.Get<IAdService>();
+            if (adService == null)
+            {
+                Debug.LogError("[ResultsController] AdService not found!");
+                return;
+            }
 
-            // For now, double gold immediately (placeholder)
-            DoubleGold();
+            // Show rewarded ad
+            bool success = await adService.ShowRewardedAd();
+
+            if (success)
+            {
+                // Grant doubled gold
+                DoubleGold();
+            }
+            else
+            {
+                Debug.LogWarning("[ResultsController] Ad failed or was cancelled");
+            }
         }
 
-        private async void DoubleGold()
+        private void DoubleGold()
         {
             if (goldDoubled)
             {
@@ -186,14 +234,14 @@ namespace PixelVanguard.UI
             if (watchAdButton != null)
             {
                 watchAdButton.interactable = false;
-                SetTextArray(watchAdButtonTexts, "Gold Doubled!");
+                SetTextArray(watchAdButtonTexts, Core.LocalizationManager.Get("ui.notification.gold_doubled"));
             }
 
             // Auto-save with doubled gold
-            await SaveProgress(finalGold);
+            SaveProgress(finalGold);
         }
 
-        private async Task SaveProgress(int goldAmount)
+        private void SaveProgress(int goldAmount)
         {
             if (dataSaved)
             {
@@ -209,7 +257,7 @@ namespace PixelVanguard.UI
             }
 
             // Load current save data
-            var saveData = await saveService.LoadData();
+            var saveData = saveService.LoadData();
 
             // Add gold
             int oldGold = saveData.totalGold;
@@ -225,7 +273,7 @@ namespace PixelVanguard.UI
             );
 
             // Save to disk
-            await saveService.SaveData(saveData);
+            saveService.SaveData(saveData);
 
             dataSaved = true;
 
@@ -239,7 +287,7 @@ namespace PixelVanguard.UI
             // Ensure data is saved before leaving
             if (!dataSaved)
             {
-                _ = SaveProgress(goldDoubled ? baseGold * 2 : baseGold);
+                SaveProgress(goldDoubled ? baseGold * 2 : baseGold);
             }
 
             ContinueToMenu();

@@ -34,7 +34,6 @@ namespace PixelVanguard.Gameplay
             if (selectedCharacter != null && selectedCharacter.starterWeapon != null)
             {
                 EquipWeapon(selectedCharacter.starterWeapon);
-                Debug.Log($"[WeaponManager] Equipped starter weapon: {selectedCharacter.starterWeapon.displayName}");
             }
             else if (availableWeapons != null && availableWeapons.Length > 0)
             {
@@ -102,7 +101,6 @@ namespace PixelVanguard.Gameplay
             // Fire weapon equipped event (for audio system)
             Core.GameEvents.TriggerWeaponEquipped(weaponData.weaponID);
 
-            Debug.Log($"[WeaponManager] ✅ Equipped: {weaponData.displayName} (ID: {weaponData.weaponID})");
             return true;
         }
 

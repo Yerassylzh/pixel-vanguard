@@ -43,16 +43,25 @@ namespace PixelVanguard.UI.CharacterSelect
             // Build combined info text (weapon + stats)
             if (infoText != null)
             {
-                string weaponName = character.starterWeapon.displayName;
+                // Localize weapon name based on weapon ID
+                string weaponKey = $"ui.weapon.{character.starterWeapon.weaponID}";
+                string weaponName = Core.LocalizationManager.Get(weaponKey);
 
                 if (isLocked)
                 {
                     // Show base stats only for locked characters
-                    infoText.text = $"<color=#888888>LOCKED - Purchase to unlock</color>\n\n" +
-                                    $"Weapon: {weaponName}\n" +
-                                    $"Base Health: {character.maxHealth}\n" +
-                                    $"Base Speed: {character.moveSpeed:F1}\n" +
-                                    $"Damage: {character.baseDamageMultiplier:F1}x";
+                    string lockedText = Core.LocalizationManager.Get("ui.common.locked");
+                    string purchaseText = Core.LocalizationManager.Get("ui.common.purchase_to_unlock");
+                    string weaponLabel = Core.LocalizationManager.Get("ui.character.stats.weapon");
+                    string healthLabel = Core.LocalizationManager.Get("ui.character.stats.base_health");
+                    string speedLabel = Core.LocalizationManager.Get("ui.character.stats.base_speed");
+                    string damageLabel = Core.LocalizationManager.Get("ui.character.stats.damage");
+                    
+                    infoText.text = $"<color=#888888>{lockedText} - {purchaseText}</color>\n\n" +
+                                    $"{weaponLabel}: {weaponName}\n" +
+                                    $"{healthLabel}: {character.maxHealth}\n" +
+                                    $"{speedLabel}: {character.moveSpeed:F1}\n" +
+                                    $"{damageLabel}: {character.baseDamageMultiplier:F1}x";
                 }
                 else
                 {
@@ -69,22 +78,27 @@ namespace PixelVanguard.UI.CharacterSelect
                     int mightLevel = saveData.GetStatLevel("might");
                     float finalDamage = baseDamage * (1f + mightLevel * 0.10f);
 
-                    // Build text
-                    infoText.text = $"Weapon: {weaponName}\n\n";
+                    // Build text with localized labels
+                    string weaponLabel = Core.LocalizationManager.Get("ui.character.stats.weapon");
+                    string healthLabel = Core.LocalizationManager.Get("ui.character.stats.health");
+                    string speedLabel = Core.LocalizationManager.Get("ui.character.stats.speed");
+                    string damageLabel = Core.LocalizationManager.Get("ui.character.stats.damage");
                     
-                    infoText.text += $"Health: <color=#00FF00>{finalHP}</color>";
+                    infoText.text = $"{weaponLabel}: {weaponName}\n\n";
+                    
+                    infoText.text += $"{healthLabel}: <color=#00FF00>{finalHP}</color>";
                     if (vitalityLevel > 0)
                     {
                         infoText.text += $" <size=80%>({baseHP} +{vitalityLevel * 10})</size>";
                     }
 
-                    infoText.text += $"\nSpeed: <color=#00BFFF>{finalSpeed:F1}</color>";
+                    infoText.text += $"\n{speedLabel}: <color=#00BFFF>{finalSpeed:F1}</color>";
                     if (greavesLevel > 0)
                     {
                         infoText.text += $" <size=80%>({baseSpeed:F1} +{greavesLevel * 5}%)</size>";
                     }
 
-                    infoText.text += $"\nDamage: <color=#FF4500>{finalDamage:F2}x</color>";
+                    infoText.text += $"\n{damageLabel}: <color=#FF4500>{finalDamage:F2}x</color>";
                     if (mightLevel > 0)
                     {
                         infoText.text += $" <size=80%>({baseDamage:F1}x +{mightLevel * 10}%)</size>";

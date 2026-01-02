@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: MagnetField
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.magnet_field
   upgradeName: Magnet Field
   description: Pickup radius +50%
   icon: {fileID: 21300000, guid: 64ccbd5d1ed4b3b4d8ed593e1d4c0c7f, type: 3}

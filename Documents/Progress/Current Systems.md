@@ -245,9 +245,53 @@ Skeleton, Crawler, Goblin, Ghost, ArmoredOrc, Slime
 ## ✅ Service Architecture
 
 **ServiceLocator Pattern:**
-- `ISaveService` - PlayerPrefs save/load
-- `IAdService` - Ad integration (NoAdService default)
-- `IPlatformService` - Platform-specific features
+Centralized dependency injection for cross-cutting concerns.
+
+**Platform-Adaptive Services (Jan 2026):**
+- `PlatformServiceFactory` - Automatically selects platform-specific implementations
+- Conditional compilation (`#if UNITY_WEBGL`) prevents unused code in builds
+- Zero runtime overhead - all resolved at compile time
+
+**ISaveService:**
+- **Interface:** `LoadData()`, `SaveData(data)`, `IsCloudSaveAvailable()`
+- **WebGL:** `YandexSaveService` - Yandex cloud saves via `YG2.saves`
+  - Syncs `SaveData` ↔ `SavesYG` (PluginYG format)
+  - Automatic cloud sync on save
+- **Android/Editor:** `PlayerPrefsSaveService` - Local device storage
+  - Always loads fresh from disk (no caching)
+  - JSON serialization via `JsonUtility`
+
+**IAdService:**
+- **Interface:** `ShowRewardedAd()`, `ShowInterstitialAd()`, `IsRewardedAdReady()`
+- **WebGL:** `YandexAdService`
+  - Rewarded: `YG2.RewardedAdvShow()` with async/await pattern
+  - Interstitial: `YG2.InterstitialAdvShow()` at game end
+  - PluginYG handles cooldowns and frequency automatically
+- **Android/Editor:** `PlaceholderAdService`
+  - Instant success for testing
+  - Ready for Unity Ads/AdMob integration
+- **Integration Points:**
+  1. Shop: Watch ad for gold packs (5 ads → 1,990 gold, 10 ads → 4,990 gold)
+  2. Game Over: Watch ad to revive mid-game
+  3. Results: Watch ad to double session gold
+
+**IIAPService:**
+- **Interface:** `PurchaseProduct(productId)`, `GetProductPrice(productId)`
+- **WebGL:** `YandexIAPService`
+  - Uses `YG2.BuyPayments(productId)` for purchases
+  - Event callbacks: `onPurchaseSuccess`, `onPurchaseFailed`
+  - Product: `"gold_pack"` (29,900 gold)
+- **Android/Editor:** `PlaceholderIAPService`
+  - Instant success for testing
+  - Ready for Google Play Billing integration
+
+**Service Registration (GameBootstrap):**
+```csharp
+PlatformServiceFactory factory = new PlatformServiceFactory();
+ServiceLocator.Register<ISaveService>(factory.CreateSaveService());
+ServiceLocator.Register<IAdService>(factory.CreateAdService());
+ServiceLocator.Register<IIAPService>(factory.CreateIAPService());
+```
 
 ## ⚠️ Partial Integration
 

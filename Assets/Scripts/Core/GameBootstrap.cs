@@ -1,5 +1,6 @@
 using UnityEngine;
 using PixelVanguard.Services;
+using PixelVanguard.Data;
 
 namespace PixelVanguard.Core
 {
@@ -7,6 +8,7 @@ namespace PixelVanguard.Core
     /// Persistent singleton that initializes core services on Awake.
     /// Place this in your Main Menu scene - it will persist across all scenes.
     /// </summary>
+    [DefaultExecutionOrder(-100)] // Ensure this runs before other scripts
     public class GameBootstrap : MonoBehaviour
     {
         public static GameBootstrap Instance { get; private set; }
@@ -23,8 +25,6 @@ namespace PixelVanguard.Core
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            Debug.Log("[GameBootstrap] Initializing core services...");
-
             // Initialize ServiceLocator
             InitializeServiceLocator();
 
@@ -34,30 +34,54 @@ namespace PixelVanguard.Core
             Debug.Log("[GameBootstrap] ✅ Initialization complete!");
         }
 
-        private async void InitializeServiceLocator()
+        private void InitializeServiceLocator()
         {
+            // === Save Service ===
             if (ServiceLocator.Get<ISaveService>() == null)
             {
-                var saveService = new PlayerPrefsSaveService();
+                var saveService = PlatformServiceFactory.CreateSaveService();
+                saveService.Initialize();
                 ServiceLocator.Register<ISaveService>(saveService);
-                Debug.Log("[GameBootstrap] ✅ SaveService registered");
             }
             
+            // === Ad Service ===
             if (ServiceLocator.Get<IAdService>() == null)
             {
-                var adService = new PlaceholderAdService();
-                await adService.Initialize(); // Initialize before registering!
+                var adService = PlatformServiceFactory.CreateAdService();
+                _ = adService.Initialize(); // Fire and forget
                 ServiceLocator.Register<IAdService>(adService);
-                Debug.Log("[GameBootstrap] ✅ PlaceholderAdService registered & initialized");
             }
             
+            // === IAP Service ===
             if (ServiceLocator.Get<IIAPService>() == null)
             {
-                var iapService = new PlaceholderIAPService();
-                await iapService.Initialize(); // Initialize before registering!
+                var iapService = PlatformServiceFactory.CreateIAPService();
+                _ = iapService.Initialize(); // Fire and forget
                 ServiceLocator.Register<IIAPService>(iapService);
-                Debug.Log("[GameBootstrap] ✅ PlaceholderIAPService registered & initialized");
             }
+
+            // === Localization System ===
+            InitializeLocalization();
+        }
+
+        private void InitializeLocalization()
+        {
+            // Create and initialize language provider
+            var languageProvider = PlatformServiceFactory.CreateLanguageProvider();
+            languageProvider.Initialize();
+
+            // Load translation data from Resources
+            var translationData = Resources.Load<TranslationData>("Translations");
+            
+            if (translationData == null)
+            {
+                Debug.LogError("[GameBootstrap] ❌ Translations.asset not found in Resources folder!");
+                Debug.LogError("[GameBootstrap] Please create it via: Assets → Create → Localization → Translation Data");
+                return;
+            }
+
+            // Initialize LocalizationManager
+            LocalizationManager.Initialize(languageProvider, translationData);
         }
 
         private void InitializeAudioSettings()
@@ -66,7 +90,6 @@ namespace PixelVanguard.Core
             float savedSFXVolume = GameSettings.SFXVolume;
             float savedMusicVolume = GameSettings.MusicVolume;
 
-            Debug.Log($"[GameBootstrap] Audio settings - SFX: {savedSFXVolume:F2}, Music: {savedMusicVolume:F2}");
 
             // Apply when AudioManager becomes available
             StartCoroutine(ApplyAudioSettingsWhenReady(savedSFXVolume, savedMusicVolume));
@@ -83,8 +106,6 @@ namespace PixelVanguard.Core
             // Apply volumes
             AudioManager.Instance.SetSFXVolume(sfxVolume);
             AudioManager.Instance.SetMusicVolume(musicVolume);
-
-            Debug.Log("[GameBootstrap] ✅ Applied audio settings to AudioManager");
         }
     }
 }

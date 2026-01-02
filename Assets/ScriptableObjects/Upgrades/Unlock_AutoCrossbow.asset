@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: Unlock_AutoCrossbow
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.unlock_autocrossbow
   upgradeName: Auto Crossbow
   description: Fires arrows at the nearest enemy
   icon: {fileID: 21300000, guid: 3c7176a425a627741af7e048b4a16bf6, type: 3}

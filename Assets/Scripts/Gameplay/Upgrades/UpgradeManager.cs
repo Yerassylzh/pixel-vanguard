@@ -63,7 +63,6 @@ namespace PixelVanguard.Gameplay
                 if (weaponInstance?.weaponData != null)
                 {
                     tracker.TrackWeapon(weaponInstance.weaponData.weaponID);
-                    Debug.Log($"[UpgradeManager] Initialized with equipped weapon: {weaponInstance.weaponData.weaponID}");
                 }
             }
         }
@@ -73,9 +72,6 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         public UpgradeData[] GetRandomUpgrades(int count = 3)
         {
-            Debug.Log($"\n========== LEVEL UP: Requesting {count} upgrades ==========");
-            Debug.Log($"[UpgradeManager] {tracker.GetDebugInfo()}");
-            Debug.Log($"[UpgradeManager] Total available upgrades: {allUpgrades?.Length ?? 0}");
             
             if (allUpgrades == null || allUpgrades.Length == 0)
             {
@@ -98,15 +94,12 @@ namespace PixelVanguard.Gameplay
                 if (validator.IsUpgradeValid(upgrade))
                 {
                     validUpgrades.Add(upgrade);
-                    Debug.Log($"[UpgradeManager] ✓ VALID: {upgrade.upgradeName} (type: {upgrade.type})");
                 }
                 else
                 {
                     filteredCount++;
                 }
             }
-
-            Debug.Log($"[UpgradeManager] Filtered: {filteredCount}, Valid: {validUpgrades.Count}");
             
             if (validUpgrades.Count == 0)
             {
@@ -125,11 +118,9 @@ namespace PixelVanguard.Gameplay
                 {
                     selectedUpgrades.Add(selected);
                     validUpgrades.Remove(selected); // Prevent duplicates in same selection
-                    Debug.Log($"[UpgradeManager] Selected #{i+1}: {selected.upgradeName}");
                 }
             }
             
-            Debug.Log($"========== Offering {selectedUpgrades.Count} upgrades ==========\n");
             return selectedUpgrades.ToArray();
         }
 
@@ -159,8 +150,6 @@ namespace PixelVanguard.Gameplay
             {
                 tracker.TrackUpgrade(upgrade.type);
             }
-            
-            Debug.Log($"[UpgradeManager] ✅ Upgrade complete: {upgrade.upgradeName}");
         }
 
         /// <summary>

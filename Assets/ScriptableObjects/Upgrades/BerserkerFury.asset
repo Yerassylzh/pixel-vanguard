@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: BerserkerFury
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.berserker_fury
   upgradeName: Berserker Fury
   description: '"Greatsword attacks 30% faster'
   icon: {fileID: 21300000, guid: 20b56f39ff12bcc4c95f3f024dacd771, type: 3}

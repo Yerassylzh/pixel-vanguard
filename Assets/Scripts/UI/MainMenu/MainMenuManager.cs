@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using PixelVanguard.UI.CharacterSelect;
 
 namespace PixelVanguard.UI
 {
@@ -66,12 +67,12 @@ namespace PixelVanguard.UI
             }
         }
 
-        private async void RefreshGoldDisplay()
+        private void RefreshGoldDisplay()
         {
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = await saveService.LoadData();
+                var saveData = saveService.LoadData();
                 if (goldText != null)
                 {
                     goldText.text = saveData.totalGold.ToString();
@@ -101,6 +102,9 @@ namespace PixelVanguard.UI
         public void ReturnToMainMenu()
         {
             ShowPanel(mainMenuPanel);
+
+            // CRITICAL: Refresh gold when returning from shop/settings/character select
+            RefreshGoldDisplay();
         }
 
         // ============================================
@@ -111,6 +115,19 @@ namespace PixelVanguard.UI
         {
             Debug.Log("[MainMenu] Play clicked - Showing Character Selection");
             ShowPanel(characterPanel);
+
+            // Refresh gold in character select panel
+            // Controller might be on Canvas or parent, so find it globally
+            var characterController = FindFirstObjectByType<CharacterSelectController>();
+            if (characterController != null)
+            {
+                Debug.Log("[MainMenu] Found CharacterSelectController - calling RefreshGoldAndUI()");
+                characterController.RefreshGoldAndUI();
+            }
+            else
+            {
+                Debug.LogError("[MainMenu] CRITICAL: CharacterSelectController NOT FOUND in scene!");
+            }
         }
 
         private void OnShopClicked()
@@ -123,17 +140,30 @@ namespace PixelVanguard.UI
         {
             Debug.Log("[MainMenu] Settings clicked");
             ShowPanel(settingsPanel);
+
+            // Refresh gold in settings panel
+            // Controller might be on Canvas or parent, so find it globally
+            var settingsController = FindFirstObjectByType<SettingsController>();
+            if (settingsController != null)
+            {
+                Debug.Log("[MainMenu] Found SettingsController - calling RefreshGold()");
+                settingsController.RefreshGold();
+            }
+            else
+            {
+                Debug.LogError("[MainMenu] CRITICAL: SettingsController NOT FOUND in scene!");
+            }
         }
 
         private void OnQuitClicked()
         {
             Debug.Log("[MainMenu] Quit clicked");
-            
-            #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-            #else
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
                 Application.Quit();
-            #endif
+#endif
         }
 
         private void OnDestroy()

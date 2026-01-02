@@ -56,8 +56,8 @@ namespace PixelVanguard.UI
                     // Update text
                     if (fpsText != null)
                     {
-                        fpsText.text = $"FPS: {_currentFPS:F1}";
-                        
+                        fpsText.text = $"{Core.LocalizationManager.Get("ui.hud.fps")}: {_currentFPS:F1}";
+
                         // Color-code based on performance
                         if (_currentFPS >= 55f)
                             fpsText.color = Color.green;

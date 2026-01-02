@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Collections;
 using PixelVanguard.Core;
 using PixelVanguard.Gameplay;
+using PixelVanguard.Services;
 
 namespace PixelVanguard.UI
 {
@@ -57,32 +59,52 @@ namespace PixelVanguard.UI
             Debug.Log("[GameOverScreen] Game Over - Revive or Quit?");
         }
 
-        private void OnReviveClicked()
+        private async void OnReviveClicked()
         {
-            Debug.Log("[GameOverScreen] Revive clicked");
+            Debug.Log("[GameOverScreen] Revive clicked - showing rewarded ad");
 
-            // TODO: Watch ad (placeholder for now)
-            // AdManager.ShowRewardedAd(() => { RevivePlayer(); });
+            var adService = ServiceLocator.Get<Services.IAdService>();
+            if (adService == null)
+            {
+                Debug.LogError("[GameOverScreen] AdService not found! Cannot show revive ad.");
+                return;
+            }
 
-            // For now, revive immediately
+            // Show rewarded ad
+            bool success = await adService.ShowRewardedAd();
+
+            if (success)
+            {
+                Debug.Log("[GameOverScreen] Ad watched successfully - reviving player");
+                
+                // CRITICAL: Delay revive to next frame to allow PluginYG Focus Pause to fully restore
+                StartCoroutine(RevivePlayerNextFrame());
+            }
+            else
+            {
+                Debug.LogWarning("[GameOverScreen] Ad failed or was cancelled - player not revived");
+            }
+        }
+        
+        private IEnumerator RevivePlayerNextFrame()
+        {
+            // CRITICAL WORKAROUND: PluginYG Focus Pause Issue
+            // PluginYG pauses Unity's entire game loop when showing ads (not just Time.timeScale).
+            // Even after ad callback fires, Unity remains paused until next frame.
+            // This delay ensures Unity's game loop is fully restored before RevivePlayer() executes.
+            // See: https://max-games.ru/plugin-yg/doc/reward-ad/?en (Focus Pause section)
+            yield return new WaitForEndOfFrame();
+            
             RevivePlayer();
         }
 
         private void RevivePlayer()
         {
-            Debug.Log("[GameOverScreen] Player revived!");
-
-            // Hide panel
-            if (gameOverPanel != null)
-            {
-                gameOverPanel.SetActive(false);
-            }
-
-            // Tell GameManager to revive player
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.RevivePlayer();
-            }
+            // Hide panel AFTER game state is restored
+            gameOverPanel.SetActive(false);
+            
+            // Tell GameManager to revive player FIRST (it restores timeScale and state)
+            GameManager.Instance.RevivePlayer();   
         }
 
         private void OnQuitClicked()

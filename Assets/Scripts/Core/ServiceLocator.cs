@@ -33,16 +33,34 @@ namespace PixelVanguard.Core
 
         /// <summary>
         /// Get a registered service. Throws if not found.
+        /// Use TryGet() if you want to handle missing services gracefully.
         /// </summary>
         public static T Get<T>() where T : class
         {
-            var type = typeof(T);
-            if (services.TryGetValue(type, out var service))
+            if (!TryGet<T>(out var service))
             {
-                return service as T;
+                throw new InvalidOperationException(
+                    $"[ServiceLocator] Service {typeof(T).Name} not registered! Did Bootstrap complete?");
             }
-            Debug.Log($"[ServiceLocator] Service {type.Name} not registered! Did Bootstrap complete?");
-            return null;
+            return service;
+        }
+
+        /// <summary>
+        /// Try to get a registered service without throwing.
+        /// Returns true if found, false otherwise.
+        /// </summary>
+        public static bool TryGet<T>(out T service) where T : class
+        {
+            Type type = typeof(T);
+            service = null;
+
+            if (services.TryGetValue(type, out var found))
+            {
+                service = found as T;
+                return service != null;
+            }
+
+            return false;
         }
 
         /// <summary>

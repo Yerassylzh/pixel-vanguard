@@ -141,8 +141,6 @@ namespace PixelVanguard.Gameplay
             cooldown = source.cooldown;
             knockback = source.knockback;
             cooldownTimer = source.cooldownTimer;
-            
-            Debug.Log($"[{GetType().Name}] Copied stats from {source.GetType().Name}: damage={damage:F1}, cooldown={cooldown:F2}s");
         }
 
         // === PUBLIC UPGRADE API ===

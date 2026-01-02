@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: Unlock_GreatSword
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.unlock_greatsword
   upgradeName: Greatsword
   description: "Powerful melee weapon that swings in a 360\xB0 arc every few seconds."
   icon: {fileID: 21300000, guid: d498b655f2882f347a3f70428868df17, type: 3}

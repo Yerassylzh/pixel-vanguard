@@ -56,13 +56,33 @@ namespace PixelVanguard.UI.CharacterSelect
 
         private void OnEnable()
         {
-            // Refresh UI whenever panel is enabled (returning from game, etc.)
-            if (saveService != null && saveData != null)
+            // Automatically refresh when panel is enabled (SetActive(true))
+            RefreshGoldAndUI();
+        }
+
+        /// <summary>
+        /// Public method to refresh gold and UI when panel is shown.
+        /// Called by MainMenuManager when opening character select.
+        /// </summary>
+        public void RefreshGoldAndUI()
+        {
+            if (saveService != null)
             {
-                saveData = saveService.LoadDataSync();
-                
+                Debug.Log("[CharacterSelect] Loading fresh data for UI refresh...");
+                saveData = saveService.LoadData();
+
                 if (goldText != null)
+                {
+                    Debug.Log($"[CharacterSelect] Updating gold text to: {saveData.totalGold}");
                     goldText.text = saveData.totalGold.ToString();
+                }
+                else
+                {
+                    Debug.LogError("[CharacterSelect] Gold Text component is MISSING!");
+                }
+
+                // Refresh all character cards to show correct affordability
+                RefreshUI();
             }
         }
 
@@ -81,7 +101,7 @@ namespace PixelVanguard.UI.CharacterSelect
         {
             if (saveService != null)
             {
-                saveData = saveService.LoadDataSync();
+                saveData = saveService.LoadData();
                 selectedCharacter = FindCharacterById(saveData.selectedCharacterID);
 
                 if (selectedCharacter == null && availableCharacters.Length > 0)
@@ -202,7 +222,7 @@ namespace PixelVanguard.UI.CharacterSelect
 
             saveData.totalGold -= cost;
             saveData.UnlockCharacter(character.characterID);
-            saveService.SaveDataSync(saveData);
+            saveService.SaveData(saveData);
 
             if (goldText != null)
                 goldText.text = saveData.totalGold.ToString();
@@ -224,7 +244,7 @@ namespace PixelVanguard.UI.CharacterSelect
         {
             selectedCharacter = currentlyViewedCharacter;
             saveData.selectedCharacterID = selectedCharacter.characterID;
-            saveService.SaveDataSync(saveData);
+            saveService.SaveData(saveData);
 
             Core.CharacterManager.SelectedCharacter = selectedCharacter;
 

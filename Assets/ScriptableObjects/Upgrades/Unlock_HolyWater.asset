@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: Unlock_HolyWater
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.unlock_holywater
   upgradeName: Holy Water
   description: Throws flasks that create damaging puddles on impact.
   icon: {fileID: 21300000, guid: 7dd92eeedd4505748aaefb4144b009e0, type: 3}

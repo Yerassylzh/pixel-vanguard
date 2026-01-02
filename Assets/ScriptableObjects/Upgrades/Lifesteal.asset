@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: Lifesteal
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.lifesteal
   upgradeName: Lifesteal
   description: Heal 3% of damage dealt
   icon: {fileID: 21300000, guid: 75a846dc9f33fc845a2f8c045c8288c7, type: 3}

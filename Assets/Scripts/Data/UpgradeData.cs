@@ -10,11 +10,14 @@ namespace PixelVanguard.Data
     public class UpgradeData : ScriptableObject
     {
         [Header("Identity")]
-        [Tooltip("Display name shown on upgrade card")]
+        [Tooltip("Localization key for this upgrade (e.g., 'upgrade.greatsword_speed')")]
+        public string localizationKey;
+        
+        [Tooltip("Display name shown on upgrade card (fallback if localization fails)")]
         public string upgradeName;
 
         [Header("Display")]
-        [Tooltip("Description explaining what this upgrade does")]
+        [Tooltip("Description explaining what this upgrade does (fallback if localization fails)")]
         [TextArea(2, 4)]
         public string description;
         public Sprite icon; // Icon displayed in Level Up panel

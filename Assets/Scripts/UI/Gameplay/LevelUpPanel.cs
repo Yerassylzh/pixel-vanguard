@@ -92,11 +92,20 @@ namespace PixelVanguard.UI
                 option2Upgrade = upgrades.Length > 1 ? upgrades[1] : null;
                 option3Upgrade = upgrades.Length > 2 ? upgrades[2] : null;
 
-                // Set button labels and icons
+                // Set button labels and icons with localized text
                 if (option1TitleText != null && option1DescText != null && option1Upgrade != null)
                 {
-                    option1TitleText.text = option1Upgrade.upgradeName;
-                    option1DescText.text = option1Upgrade.description;
+                    // Use localization key if available, otherwise fallback to English
+                    if (!string.IsNullOrEmpty(option1Upgrade.localizationKey))
+                    {
+                        option1TitleText.text = Core.LocalizationManager.Get($"{option1Upgrade.localizationKey}.name");
+                        option1DescText.text = Core.LocalizationManager.Get($"{option1Upgrade.localizationKey}.desc");
+                    }
+                    else
+                    {
+                        option1TitleText.text = option1Upgrade.upgradeName;
+                        option1DescText.text = option1Upgrade.description;
+                    }
                     if (option1Icon != null)
                     {
                         option1Icon.sprite = option1Upgrade.icon;
@@ -106,8 +115,17 @@ namespace PixelVanguard.UI
 
                 if (option2TitleText != null && option2DescText != null && option2Upgrade != null)
                 {
-                    option2TitleText.text = option2Upgrade.upgradeName;
-                    option2DescText.text = option2Upgrade.description;
+                    // Use localization key if available, otherwise fallback to English
+                    if (!string.IsNullOrEmpty(option2Upgrade.localizationKey))
+                    {
+                        option2TitleText.text = Core.LocalizationManager.Get($"{option2Upgrade.localizationKey}.name");
+                        option2DescText.text = Core.LocalizationManager.Get($"{option2Upgrade.localizationKey}.desc");
+                    }
+                    else
+                    {
+                        option2TitleText.text = option2Upgrade.upgradeName;
+                        option2DescText.text = option2Upgrade.description;
+                    }
                     if (option2Icon != null)
                     {
                         option2Icon.sprite = option2Upgrade.icon;
@@ -117,8 +135,17 @@ namespace PixelVanguard.UI
 
                 if (option3TitleText != null && option3DescText != null && option3Upgrade != null)
                 {
-                    option3TitleText.text = option3Upgrade.upgradeName;
-                    option3DescText.text = option3Upgrade.description;
+                    // Use localization key if available, otherwise fallback to English
+                    if (!string.IsNullOrEmpty(option3Upgrade.localizationKey))
+                    {
+                        option3TitleText.text = Core.LocalizationManager.Get($"{option3Upgrade.localizationKey}.name");
+                        option3DescText.text = Core.LocalizationManager.Get($"{option3Upgrade.localizationKey}.desc");
+                    }
+                    else
+                    {
+                        option3TitleText.text = option3Upgrade.upgradeName;
+                        option3DescText.text = option3Upgrade.description;
+                    }
                     if (option3Icon != null)
                     {
                         option3Icon.sprite = option3Upgrade.icon;

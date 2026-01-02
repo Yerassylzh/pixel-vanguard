@@ -19,9 +19,9 @@ namespace PixelVanguard.Gameplay
             rb.gravityScale = 0f;
         }
 
-        private async void Start()
+        private void Start()
         {
-            await LoadCharacterStats();
+            LoadCharacterStats();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace PixelVanguard.Gameplay
         /// <summary>
         /// Load movement speed from selected character and apply Greaves upgrade.
         /// </summary>
-        private async System.Threading.Tasks.Task LoadCharacterStats()
+        private void LoadCharacterStats()
         {
             var selectedCharacter = Core.CharacterManager.SelectedCharacter;
             if (selectedCharacter == null)
@@ -73,7 +73,7 @@ namespace PixelVanguard.Gameplay
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = await saveService.LoadData();
+                var saveData = saveService.LoadData();
 
                 // Apply Greaves upgrade (+5% speed per level)
                 int greavesLevel = saveData.GetStatLevel("greaves");

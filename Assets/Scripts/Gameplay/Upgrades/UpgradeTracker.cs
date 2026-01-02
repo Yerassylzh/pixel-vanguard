@@ -69,7 +69,6 @@ namespace PixelVanguard.Gameplay
         public void TrackUpgrade(Data.UpgradeType type)
         {
             appliedUpgrades.Add(type);
-            Debug.Log($"[UpgradeTracker] Tracked upgrade: {type}");
         }
 
         /// <summary>
@@ -78,7 +77,6 @@ namespace PixelVanguard.Gameplay
         public void TrackWeapon(string weaponID)
         {
             equippedWeaponIDs.Add(weaponID);
-            Debug.Log($"[UpgradeTracker] Tracked weapon: {weaponID}");
         }
 
         /// <summary>

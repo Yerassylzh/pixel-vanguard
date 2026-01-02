@@ -71,19 +71,16 @@ namespace PixelVanguard.Gameplay
         public void UpgradeDuration(float percent)
         {
             puddleDuration *= (1f + percent);
-            Debug.Log($"[HolyWater] Duration upgraded: {puddleDuration:F1}s");
         }
 
         public void MultiplyPuddleRadius(float multiplier)
         {
             puddleRadiusMultiplier *= multiplier;
-            Debug.Log($"[HolyWater] Radius multiplier: {puddleRadiusMultiplier:F2}x");
         }
 
         public void SetHPScaling(float percentPercentage)
         {
             hpScalingPercent = percentPercentage;
-            Debug.Log($"[HolyWater] HP Scaling: {hpScalingPercent * 100:F1}% of max HP");
         }
     }
 }

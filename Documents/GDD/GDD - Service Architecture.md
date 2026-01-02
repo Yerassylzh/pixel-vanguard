@@ -42,16 +42,15 @@ graph TD
 
 ### 1. IAdService
 
-**Purpose:** Display ads and handle rewards
+**Purpose:** Display ads and handle rewards (Rewarded + Interstitial)
 
 **Methods:**
 
 ```csharp
 interface IAdService {
+    Task<bool> ShowRewardedAd();
+    void ShowInterstitialAd();
     bool IsRewardedAdReady();
-    void ShowRewardedAd(Action<bool> onComplete);
-    bool IsInterstitialAdReady();
-    void ShowInterstitialAd(Action onComplete);
 }
 ```
 
@@ -59,21 +58,32 @@ interface IAdService {
 
 | Platform | Class | SDK |
 |----------|-------|-----|
-| Android | `AdMobService` | Google AdMob |
-| Yandex Web | `YandexAdService` | Yandex Ads SDK |
-| Desktop/Itch | `NoAdService` | Returns false, never shows ads |
+| WebGL (Yandex) | `YandexAdService` | PluginYG (`YG2.RewardedAdvShow`, `YG2.InterstitialAdvShow`) |
+| Android/Editor | `PlaceholderAdService` | Returns instant success for testing |
+
+**Integration Points (Jan 2026):**
+1. **Shop:** Watch ads for gold packs (5 ads → 1,990g, 10 ads → 4,990g)
+2. **Game Over:** Watch ad to revive mid-game
+3. **Results:** Watch ad to double session gold
+4. **Interstitial:** Automatic display at end of each game session
 
 **Usage Example:**
 ```csharp
-// In ResultsController.cs
-void OnDoubleGoldButtonClicked() {
+// Rewarded Ad (async/await pattern)
+private async void OnWatchAdClicked() {
     var adService = ServiceLocator.Get<IAdService>();
-    if (adService.IsRewardedAdReady()) {
-        adService.ShowRewardedAd(success => {
-            if (success) goldAmount *= 2;
-            SaveGoldAndReturn();
-        });
+    bool success = await adService.ShowRewardedAd();
+    
+    if (success) {
+        // Grant reward (gold, revive, etc.)
+        DoubleGold();
     }
+}
+
+// Interstitial Ad (fire-and-forget)
+private void ShowInterstitialAd() {
+    var adService = ServiceLocator.Get<IAdService>();
+    adService.ShowInterstitialAd(); // Yandex handles cooldown
 }
 ```
 
@@ -85,8 +95,9 @@ void OnDoubleGoldButtonClicked() {
 
 ```csharp
 interface ISaveService {
-    Task<SaveData> LoadData();
-    Task SaveData(SaveData data);
+    void Initialize();
+    SaveData LoadData();      // Synchronous (not async)
+    void SaveData(SaveData data);
     bool IsCloudSaveAvailable();
 }
 ```
@@ -96,9 +107,21 @@ interface ISaveService {
 [Serializable]
 class SaveData {
     public int totalGold;
-    public List<string> unlockedCharacters;
-    public Dictionary<string, int> statLevels; // "Might" → 5
-    public string selectedCharacter;
+    public List<string> unlockedCharacterIDs;
+    public string selectedCharacterID;
+    public List<string> statLevelKeys;   // "might", "vitality", etc.
+    public List<int> statLevelValues;    // 5, 3, etc.
+    
+    // Ad/IAP tracking
+    public int adsWatchedForPack1;
+    public int adsWatchedForPack2;
+    public string lastAdWatchedTime;
+    
+    // High scores
+    public int longestSurvivalTime;
+    public int highestKillCount;
+    public int highestLevelReached;
+    public int mostGoldInRun;
 }
 ```
 
@@ -106,24 +129,92 @@ class SaveData {
 
 | Platform | Class | Storage |
 |----------|-------|---------|
-| Android | `PlayerPrefsSaveService` | Local (PlayerPrefs) |
-| Yandex Web | `YandexCloudSaveService` | Yandex Cloud |
-| Desktop/Itch | `PlayerPrefsSaveService` | Local (PlayerPrefs) |
+| Android/Editor | `PlayerPrefsSaveService` | Local (PlayerPrefs, JSON) |
+| WebGL (Yandex) | `YandexSaveService` | Yandex Cloud (`YG2.saves`) |
+
+**Critical Fix (Jan 2026):**
+```csharp
+// PlayerPrefsSaveService - Always load fresh from disk
+public SaveData LoadData() {
+    // OLD (BUGGY): if (cachedData != null) return cachedData;
+    // NEW (FIXED): Always read from PlayerPrefs
+    string json = PlayerPrefs.GetString(SAVE_KEY);
+    cachedData = JsonUtility.FromJson<SaveData>(json);
+    return cachedData;
+}
+```
 
 **Cloud Save Flow (Yandex):**
 ```
 Load Data:
-1. Check if user is logged in to Yandex
-2. If yes: Fetch from cloud
-3. If no or failed: Fallback to PlayerPrefs local save
-4. Return merged data
+1. Always returns fresh YG2.saves (no caching)
+2. Converts SavesYG → SaveData format
+3. Ensures default characters unlocked
 
 Save Data:
-1. Save to PlayerPrefs (immediate)
-2. If cloud available: Upload to cloud (async)
+1. Convert SaveData → SavesYG format
+2. Call YG2.SaveProgress() (uploads to cloud)
 ```
 
-### 3. IPlatformService
+### 3. IIAPService (Jan 2026)
+
+**Purpose:** Handle in-app purchases
+
+**Methods:**
+
+```csharp
+interface IIAPService {
+    Task<bool> PurchaseProduct(string productId);
+    Task<string> GetProductPrice(string productId);
+}
+```
+
+**Product Constants:**
+```csharp
+public static class ProductIDs {
+    public const string GOLD_PACK_LARGE = "gold_pack";  // 29,900 gold
+}
+```
+
+**Implementations:**
+
+| Platform | Class | SDK |
+|----------|-------|-----|
+| WebGL (Yandex) | `YandexIAPService` | PluginYG (`YG2.BuyPayments`) |
+| Android/Editor | `PlaceholderIAPService` | Instant success (testing) |
+
+**Yandex IAP Flow:**
+```csharp
+// Purchase
+public async Task<bool> PurchaseProduct(string productId) {
+    var tcs = new TaskCompletionSource<bool>();
+    
+    YG2.onPurchaseSuccess += (id) => tcs.SetResult(true);
+    YG2.onPurchaseFailed += (id) => tcs.SetResult(false);
+    
+    YG2.BuyPayments(productId);
+    return await tcs.Task;
+}
+```
+
+**Usage Example:**
+```csharp
+// In ShopController.cs
+private async void OnIAPBuyClicked() {
+    var iapService = ServiceLocator.Get<IIAPService>();
+    bool success = await iapService.PurchaseProduct(ProductIDs.GOLD_PACK_LARGE);
+    
+    if (success) {
+        // Award 29,900 gold
+        saveData.totalGold += 29900;
+        saveService.SaveData(saveData);
+    }
+}
+```
+
+---
+
+### 4. IPlatformService
 
 **Purpose:** Handle platform-specific input and screen settings
 

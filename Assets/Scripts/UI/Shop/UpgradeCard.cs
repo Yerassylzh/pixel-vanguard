@@ -71,7 +71,8 @@ namespace PixelVanguard.UI
         public void UpdateCard(int currentLevel, int nextCost, bool canAfford)
         {
             // Update level text: "Level: 3 / 10"
-            levelText.text = $"Level: {currentLevel} / 10";
+            string levelLabel = Core.LocalizationManager.Get("ui.hud.level_full");
+            levelText.text = $"{levelLabel}: {currentLevel} / 10";
 
             // Update effect text
             UpdateEffectText(currentLevel);
@@ -124,19 +125,19 @@ namespace PixelVanguard.UI
             {
                 case "might":
                     effectValue = nextLevel * 10; // +10% damage per level
-                    effectText.text = $"Damage +{effectValue}%";
+                    effectText.text = Core.LocalizationManager.Get("ui.shop.might.short");
                     break;
                 case "vitality":
                     effectValue = nextLevel * 10; // +10 HP per level
-                    effectText.text = $"Max HP +{effectValue}";
+                    effectText.text = Core.LocalizationManager.Get("ui.shop.vitality.short");
                     break;
                 case "greaves":
                     effectValue = nextLevel * 5; // +5% speed per level
-                    effectText.text = $"Speed +{effectValue}%";
+                    effectText.text = Core.LocalizationManager.Get("ui.shop.greaves.short");
                     break;
                 case "magnet":
                     effectValue = nextLevel * 10; // +10% range per level
-                    effectText.text = $"Range +{effectValue}%";
+                    effectText.text = Core.LocalizationManager.Get("ui.shop.magnet.short");
                     break;
             }
         }

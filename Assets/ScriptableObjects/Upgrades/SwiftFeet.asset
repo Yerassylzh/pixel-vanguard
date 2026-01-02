@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: SwiftFeet
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.swift_feet
   upgradeName: Swift Feet
   description: Increase move speed by 20%
   icon: {fileID: 21300000, guid: 2393a1a050a5b5e4584809126219390a, type: 3}

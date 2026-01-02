@@ -37,7 +37,6 @@ namespace PixelVanguard.Gameplay
             // Check if upgrade already applied (non-repeatable)
             if (tracker.HasUpgrade(upgrade.type))
             {
-                Debug.Log($"[UpgradeValidator] ✗ FILTERED: {upgrade.upgradeName} - Already applied");
                 return false;
             }
             
@@ -96,13 +95,11 @@ namespace PixelVanguard.Gameplay
         {
             if (upgrade.weaponToEquip == null)
             {
-                Debug.Log($"[UpgradeValidator] ✗ FILTERED: {upgrade.upgradeName} - weaponToEquip is null");
                 return false;
             }
             
             if (tracker.HasWeapon(upgrade.weaponToEquip.weaponID))
             {
-                Debug.Log($"[UpgradeValidator] ✗ FILTERED: {upgrade.upgradeName} - Weapon already equipped");
                 return false;
             }
             
@@ -113,7 +110,6 @@ namespace PixelVanguard.Gameplay
         {
             if (!IsWeaponEquipped(weaponType))
             {
-                Debug.Log($"[UpgradeValidator] ✗ FILTERED: {upgradeName} - {weaponType} not equipped");
                 return false;
             }
             return true;
@@ -123,14 +119,12 @@ namespace PixelVanguard.Gameplay
         {
             if (!IsWeaponEquipped(Data.WeaponType.Crossbow))
             {
-                Debug.Log($"[UpgradeValidator] ✗ FILTERED: {upgrade.upgradeName} - Crossbow not equipped");
                 return false;
             }
             
             // PREREQUISITE: Must have Dual Crossbows first
             if (!tracker.HasUpgrade(Data.UpgradeType.CrossbowDualShot))
             {
-                Debug.Log($"[UpgradeValidator] ✗ FILTERED: {upgrade.upgradeName} - Requires Dual Crossbows first");
                 return false;
             }
             
@@ -141,7 +135,6 @@ namespace PixelVanguard.Gameplay
         {
             if (tracker.GetPassiveSkillCount() >= 3)
             {
-                Debug.Log($"[UpgradeValidator] ✗ FILTERED: {upgradeName} - Max passives reached (3/3)");
                 return false;
             }
             return true;

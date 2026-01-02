@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: ExpandedOrbit
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.expanded_orbit
   upgradeName: Expanded Orbit
   description: Orbit radius +40%
   icon: {fileID: 21300000, guid: 7fc0850aa60e6ef40b19bb7f6af16d29, type: 3}

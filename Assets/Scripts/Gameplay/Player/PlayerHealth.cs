@@ -45,10 +45,10 @@ namespace PixelVanguard.Gameplay
             currentHealth = maxHealth; 
         }
 
-        private async void Start()
+        private void Start()
         {
             // Load max health from selected character + shop upgrades
-            await LoadCharacterStats();
+            LoadCharacterStats();
 
             currentHealth = maxHealth;
             Core.GameEvents.TriggerPlayerHealthChanged(currentHealth, maxHealth);
@@ -211,7 +211,7 @@ namespace PixelVanguard.Gameplay
         /// Load stats from selected character and apply shop upgrades (Vitality, Might).
         /// Called in Start() to initialize character-specific values + shop bonuses.
         /// </summary>
-        private async System.Threading.Tasks.Task LoadCharacterStats()
+        private void LoadCharacterStats()
         {
             var selectedCharacter = Core.CharacterManager.SelectedCharacter;
             if (selectedCharacter == null)
@@ -230,7 +230,7 @@ namespace PixelVanguard.Gameplay
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = await saveService.LoadData();
+                var saveData = saveService.LoadData();
 
                 // Apply Vitality upgrade (+10 HP per level)
                 int vitalityLevel = saveData.GetStatLevel("vitality");

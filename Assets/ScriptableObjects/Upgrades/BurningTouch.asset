@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: BurningTouch
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.executioner_edge
   upgradeName: Burning Touch
   description: Damage scales +6% of enemy max HP
   icon: {fileID: 21300000, guid: 363a997f9335d6044ba3526e11aa2785, type: 3}

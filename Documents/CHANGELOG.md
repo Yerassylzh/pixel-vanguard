@@ -4,6 +4,179 @@
 
 ---
 
+## January 1, 2026 (Evening)
+
+### Yandex Ads Integration - Production Ready ✅
+
+**Interstitial Ads:**
+- Implemented `IAdService.ShowInterstitialAd()` interface method
+- `YandexAdService.cs`: Uses `YG2.InterstitialAdvShow()` with automatic cooldown
+- `PlaceholderAdService.cs`: Logs placeholder for non-WebGL builds
+- `ResultsController.cs`: Shows interstitial ad at end of each game session
+
+**Rewarded Ads - Multiple Touchpoints:**
+1. **Shop System** (Existing): Watch ad for gold packs
+2. **Game Over Revive** (NEW): Watch ad to revive and continue playing
+   - `GameOverScreen.cs`: Integrated `IAdService.ShowRewardedAd()`
+   - Players must watch ad successfully to revive (no free revives)
+3. **Results Screen** (Existing): Watch ad to double session gold earnings
+
+**Implementation Details:**
+- Async/await pattern for ad completion
+- Success callbacks trigger rewards (gold, revive, etc.)
+- Platform-adaptive: Real ads on WebGL, instant success in Editor/Android
+- No simulation - leverages PluginYG's automatic environment detection
+
+---
+
+### IAP System Finalization ✅
+
+**Product ID Update:**
+- Changed from `"gold_pack_29900"` to `"gold_pack"` per Yandex requirements
+- Updated `ProductIDs.GOLD_PACK_LARGE` constant
+- `ShopController.cs`: Uses new product ID in purchase flow
+- `YandexIAPService.cs`: Already configured for Yandex Payments API
+
+**Purchase Flow:**
+- Shop → IAP "Special Offer" card → `YG2.BuyPayments("gold_pack")`
+- Awards 29,900 gold on successful purchase
+- Event-driven callbacks: `onPurchaseSuccess`, `onPurchaseFailed`
+
+---
+
+### Critical Bug Fix: Gold Display Persistence 🐛
+
+**Problem:**
+Gold display showed as 0 when navigating between Main Menu, Character Selection, and Settings after making shop purchases.
+
+**Root Cause:**
+`PlayerPrefsSaveService.LoadData()` was returning cached data instead of reading fresh from disk:
+```csharp
+// OLD (BUGGY):
+if (cachedData != null)
+    return cachedData;  // Stale data!
+
+// NEW (FIXED):
+// Always load from PlayerPrefs
+PlayerPrefs.GetString(SAVE_KEY)
+```
+
+**Solution:**
+1. **PlayerPrefsSaveService.cs**: Removed cache check - always loads from disk
+2. **ShopController.cs**: Added `OnEnable()` to reload data when panel shown
+3. **CharacterSelectController.cs**: Added `OnEnable()` + public `RefreshGoldAndUI()`
+4. **SettingsController.cs**: Added public `RefreshGold()` method
+5. **MainMenuManager.cs**: 
+   - Calls `RefreshGoldDisplay()` when returning to main menu
+   - Uses `FindFirstObjectByType<T>()` to find controllers (robust against hierarchy changes)
+   - Explicitly refreshes gold when opening Character/Settings panels
+
+**Modified Files:**
+- `PlayerPrefsSaveService.cs` - Always load from disk
+- `YandexSaveService.cs` - Already correct (no caching)
+- `MainMenuManager.cs` - Added refresh calls + FindFirstObjectByType
+- `ShopController.cs` - Added OnEnable
+- `CharacterSelectController.cs` - Added OnEnable + public refresh method
+- `SettingsController.cs` - Added public refresh method
+
+**Debug Logging:**
+Added comprehensive logs for troubleshooting:
+- `[SaveService] Loaded from disk - Gold: X`
+- `[SaveService] Saved to disk - Gold: X`
+- `[CharacterSelect] Updating gold text to: X`
+- `[Settings] Refreshing Gold Display: X`
+
+---
+
+### Save Service Synchronization Fixes ✅
+
+**Removed Async Methods:**
+All `await LoadData()` and `await SaveData()` calls were incorrect (methods are synchronous).
+
+**Files Updated:**
+- `CharacterManager.cs`
+- `CharacterSelectController.cs`
+- `ShopController.cs`
+- `ResultsController.cs`
+- `MainMenuManager.cs`
+- `SettingsController.cs`
+- `GoldCoin.cs`
+- `PlayerMovement.cs`
+- `PlayerHealth.cs`
+
+**Changes:**
+- Removed `await` keywords from all save operations
+- Changed `async void` to `void` where appropriate
+- Maintained synchronous call pattern: `saveService.LoadData()`, `saveService.SaveData(data)`
+
+---
+
+### Documentation Updates 📚
+
+**Created:**
+- `yandex_integration_guide.md` - Complete Yandex Games setup guide
+  - Yandex Console configuration (Cloud Saves, Ads, Payments)
+  - PluginYG module setup
+  - Testing procedures (Editor, Sandbox, Production)
+  - Troubleshooting guide
+
+**Architecture Benefits:**
+- Platform-adaptive services work seamlessly
+- WebGL builds use Yandex services automatically
+- Android/Editor builds use local services
+- Zero code changes needed when switching platforms
+
+---
+
+## January 1, 2026 (Morning)
+
+### Platform-Adaptive Services ✅
+**New Features:**
+- Automatic platform detection for WebGL vs Android builds
+- Yandex Games integration for WebGL (cloud saves, rewarded ads, IAP)
+- Conditional compilation using `#if UNITY_WEBGL` macros
+- Zero code changes for Android builds (existing services preserved)
+
+**Architecture:**
+- `PlatformServiceFactory` - Central factory for service creation
+- Conditional compilation prevents unused code in final builds
+- No runtime platform checks - all resolved at compile time
+
+**WebGL (Yandex Games):**
+- `SavesYG.Partial.cs` - Cloud save structure for PluginYG
+- `YandexSaveService` - Syncs SaveData ↔ Yandex cloud
+- `YandexAdService` - Rewarded ads via YG2.RewardedAdvShow()
+- `YandexIAPService` - ✅ **Yandex Payments fully integrated**
+  - Uses `YG2.BuyPayments(productId)` for purchases
+  - Event-based callbacks: `onPurchaseSuccess`, `onPurchaseFailed`
+  - Retrieves prices from Yandex catalog via `YG2.PurchaseByID()`
+  - Logs all available products on initialization
+
+**Android / Editor:**
+- `PlayerPrefsSaveService` - Local saves (unchanged)
+- `PlaceholderAdService` - Ready for Unity Ads/AdMob
+- `PlaceholderIAPService` - Ready for Google Play Billing
+
+**Files Created:**
+- `PlatformServiceFactory.cs` - Platform detection and service creation
+- `SavesYG.Partial.cs` - Yandex cloud save data structure
+- `YandexSaveService.cs` - Yandex cloud save implementation
+- `YandexAdService.cs` - Yandex rewarded ads implementation
+- `YandexIAPService.cs` - Yandex IAP placeholder
+
+**Modified Files:**
+- `GameBootstrap.cs` - Uses factory pattern for service registration
+
+**Requirements:**
+- PluginYG must be installed for WebGL builds
+- Yandex Games console configuration (cloud saves, ads, payments)
+
+**Documentation:**
+- [walkthrough.md](file:///C:/Users/Honor/.gemini/antigravity/brain/1262dfee-5e5a-46c7-8875-7b0077e9411a/walkthrough.md) - Complete implementation walkthrough
+- [implementation_plan.md](file:///C:/Users/Honor/.gemini/antigravity/brain/1262dfee-5e5a-46c7-8875-7b0077e9411a/implementation_plan.md) - Technical design
+
+---
+
 ## December 31, 2024
 
 ### Character Selection System ✅

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: TripleBarrage
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.triple_barrage
   upgradeName: Triple Barrage
   description: Fire 3 arrows simultaneously
   icon: {fileID: 21300000, guid: 3f85a5ebe697e4d439bb0b386199d9cc, type: 3}

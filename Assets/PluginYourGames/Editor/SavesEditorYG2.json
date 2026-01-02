@@ -1,0 +1,28 @@
+{
+    "intExample": 5,
+    "strExample": "Hello!",
+    "boolExample": [
+        false,
+        false,
+        false,
+        false
+    ],
+    "idSave": 33,
+    "totalGold": 176404,
+    "unlockedCharacterIDs": [
+        "knight",
+        "pyromancer",
+        "ranger",
+        "zombie",
+        "santa"
+    ],
+    "selectedCharacterID": "santa",
+    "adsWatchedForPack1": 0,
+    "adsWatchedForPack2": 0,
+    "lastAdWatchedTime": "",
+    "longestTime": 179.0,
+    "highestKills": 172,
+    "highestLevel": 6,
+    "mostGold": 44,
+    "adsRemoved": true
+}

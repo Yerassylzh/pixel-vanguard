@@ -62,10 +62,11 @@ namespace PixelVanguard.UI.CharacterSelect
                 weaponIconImage.sprite = data.starterWeapon.icon;
             }
 
-            // Set name
+            // Set name (use localization based on character ID)
             if (nameText != null)
             {
-                nameText.text = data.displayName;
+                string translationKey = $"ui.character.{data.characterID}.name";
+                nameText.text = Core.LocalizationManager.Get(translationKey);
             }
 
             // Apply locked/unlocked visual state

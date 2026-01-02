@@ -26,7 +26,7 @@ namespace PixelVanguard.Gameplay
             gemCollider.isTrigger = true; // Must be trigger for pickup
         }
 
-        private async void Start()
+        private void Start()
         {
             // Find player
             var playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -40,19 +40,19 @@ namespace PixelVanguard.Gameplay
             }
             
             // Apply Magnet upgrade
-            await ApplyMagnetUpgrade();
+            ApplyMagnetUpgrade();
         }
         
         /// <summary>
         /// Load Magnet upgrade and increase collection range.
         /// </summary>
-        private async System.Threading.Tasks.Task ApplyMagnetUpgrade()
+        private void ApplyMagnetUpgrade()
         {
             float baseRange = 3f; // Default
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = await saveService.LoadData();
+                var saveData = saveService.LoadData();
                 int magnetLevel = saveData.GetStatLevel("magnet");
                 float radiusBonus = magnetLevel * 0.10f;
                 magnetRange = baseRange * (1f + radiusBonus);

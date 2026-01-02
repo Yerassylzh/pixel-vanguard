@@ -1,4 +1,6 @@
 using UnityEngine;
+using YG;
+
 
 namespace PixelVanguard.Core
 {
@@ -38,32 +40,50 @@ namespace PixelVanguard.Core
             {
                 case PlatformMode.AutoDetect:
                     CurrentPlatform = AutoDetectPlatform();
-                    Debug.Log($"[PlatformDetector] Auto-detected: {CurrentPlatform}");
                     break;
 
                 case PlatformMode.AlwaysMobile:
                     CurrentPlatform = PlatformType.NativeMobile;
-                    Debug.Log($"[PlatformDetector] Forced: Mobile (default for testing)");
                     break;
 
                 case PlatformMode.AlwaysDesktop:
                     CurrentPlatform = PlatformType.Desktop;
-                    Debug.Log($"[PlatformDetector] Forced: Desktop");
                     break;
 
                 case PlatformMode.ForceSpecific:
                     CurrentPlatform = forcedPlatform;
-                    Debug.Log($"[PlatformDetector] Forced: {forcedPlatform}");
                     break;
             }
         }
 
         private PlatformType AutoDetectPlatform()
         {
+#if UNITY_WEBGL
+            // For WebGL builds, use PluginYG to detect platform
+            try
+            {
+                string deviceType = YG2.envir.deviceType;
+                if (YG2.envir.isDesktop)
+                {
+                    return PlatformType.Desktop;
+                }
+                else
+                {
+                    return PlatformType.WebMobile;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[PlatformDetector] Failed to access PluginYG platform detection: {e.Message}. Falling back to Unity detection.");
+                // Fallback to Unity's built-in detection
+                return Application.isMobilePlatform ? PlatformType.WebMobile : PlatformType.Desktop;
+            }
+#else
+            // For non-WebGL builds (Editor, Native Mobile, etc.)
             // Check if running on mobile device
             if (Application.isMobilePlatform)
             {
-                // Check if WebGL on mobile browser
+                // Check if WebGL on mobile browser (shouldn't happen in non-WebGL builds, but safety check)
                 if (Application.platform == RuntimePlatform.WebGLPlayer)
                 {
                     return PlatformType.WebMobile;
@@ -74,6 +94,7 @@ namespace PixelVanguard.Core
 
             // Desktop (Windows, Mac, Linux, WebGL on desktop)
             return PlatformType.Desktop;
+#endif
         }
 
         public bool IsMobile()
@@ -92,8 +113,7 @@ namespace PixelVanguard.Core
         public void ForcePlatform(PlatformType platform)
         {
             CurrentPlatform = platform;
-            Debug.Log($"[PlatformDetector] Runtime force: {platform}");
-            
+
             // Notify listeners to refresh UI/input
             GameEvents.TriggerPlatformChanged(platform);
         }

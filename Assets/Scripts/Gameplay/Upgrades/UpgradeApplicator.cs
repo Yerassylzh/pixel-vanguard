@@ -119,7 +119,6 @@ namespace PixelVanguard.Gameplay
                     {
                         tracker.AddLifesteal(0.03f); // 3% lifesteal
                         tracker.IncrementPassiveCount();
-                        Debug.Log($"[UpgradeApplicator] ❤️ Lifesteal: {tracker.GetLifestealPercent() * 100}%");
                     }
                     break;
                     
@@ -136,7 +135,6 @@ namespace PixelVanguard.Gameplay
                     {
                         tracker.AddGoldBonus(0.4f); // +40% gold
                         tracker.IncrementPassiveCount();
-                        Debug.Log($"[UpgradeApplicator] 💰 Gold Bonus: {tracker.GetGoldBonusPercent() * 100}%");
                     }
                     break;
 
@@ -145,7 +143,6 @@ namespace PixelVanguard.Gameplay
                     break;
             }
             
-            Debug.Log($"[UpgradeApplicator] Applied upgrade: {upgrade.upgradeName}");
         }
 
         #region Universal Upgrades
@@ -157,7 +154,6 @@ namespace PixelVanguard.Gameplay
                 float currentSpeed = playerController.GetMoveSpeed();
                 float newSpeed = currentSpeed * (1f + multiplier);
                 playerController.SetMoveSpeed(newSpeed);
-                Debug.Log($"[UpgradeApplicator] 🏃 Speed: {currentSpeed:F1} → {newSpeed:F1}");
             }
         }
 
@@ -166,8 +162,6 @@ namespace PixelVanguard.Gameplay
             if (playerHealth != null)
             {
                 playerHealth.IncreaseMaxHealth(amount);
-                Debug.Log($"[UpgradeApplicator] ❤️ Max HP: {playerHealth.MaxHealth}");
-                Debug.Log($"[UpgradeApplicator] ❤️ Current HP: {playerHealth.CurrentHealth}");
             }
         }
 
@@ -179,7 +173,6 @@ namespace PixelVanguard.Gameplay
             {
                 weapon?.weaponScript?.IncreaseDamage(1f + multiplier);
             }
-            Debug.Log($"[UpgradeApplicator] ⚔️ All weapons damage increased by{multiplier * 100}%");
         }
 
         private void ApplyGlobalCooldownUpgrade(float multiplier)
@@ -190,7 +183,6 @@ namespace PixelVanguard.Gameplay
             {
                 weapon?.weaponScript?.IncreaseAttackSpeed(1f - multiplier);
             }
-            Debug.Log($"[UpgradeApplicator] ⚡ All weapons cooldown reduced by {multiplier * 100}%");
         }
 
         private void ApplyNewWeaponUpgrade(Data.WeaponData weaponData)
@@ -208,7 +200,6 @@ namespace PixelVanguard.Gameplay
             }
             
             weaponManager.EquipWeapon(weaponData);
-            Debug.Log($"[UpgradeApplicator] 🗡️ Equipped: {weaponData.displayName}");
         }
 
         #endregion
@@ -376,8 +367,6 @@ namespace PixelVanguard.Gameplay
             {
                 coin.magnetRange *= multiplier;
             }
-            
-            Debug.Log($"[UpgradeApplicator] 🧲 Magnet range increased by {(multiplier - 1f) * 100}%");
         }
 
         #endregion

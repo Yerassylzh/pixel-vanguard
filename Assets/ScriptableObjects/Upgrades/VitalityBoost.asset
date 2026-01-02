@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6e34480a3421408920277671fa5e7, type: 3}
   m_Name: VitalityBoost
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
+  localizationKey: upgrade.health_boost
   upgradeName: Health Boost
   description: Increase max HP by 10
   icon: {fileID: 21300000, guid: 88f26bc982f704a4e821775e61520140, type: 3}

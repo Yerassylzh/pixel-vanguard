@@ -32,6 +32,9 @@ namespace PixelVanguard.UI
         {
             // Calculate initial XP requirement
             xpNeededForNextLevel = xpPerLevel;
+            
+            // Initialize level text with localized label
+            UpdateLevelText();
         }
 
         private void OnEnable()
@@ -94,7 +97,7 @@ namespace PixelVanguard.UI
         {
             if (levelText != null)
             {
-                levelText.text = $"LV {currentLevel}";
+                levelText.text = $"{Core.LocalizationManager.Get("ui.hud.level_short")} {currentLevel}";
             }
         }
 

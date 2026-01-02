@@ -43,7 +43,6 @@ namespace PixelVanguard.Gameplay
         {
             orbitRadiusMultiplier *= multiplier;
             targetRadius *= multiplier;
-            Debug.Log($"[MagicOrbitals] Orbit radius: {targetRadius:F2} (x{orbitRadiusMultiplier:F2})");
         }
 
         // Runtime state

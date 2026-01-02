@@ -56,28 +56,20 @@ namespace PixelVanguard.UI
         private Coroutine cooldownCoroutine;
 
         private void Awake()
-        {
-            Debug.Log("[ShopController] Awake() - Setting up cards BEFORE their Start() methods...");
-            
+        {            
             // Setup upgrade cards FIRST
             SetupUpgradeCards();
 
             // Setup gold pack cards
             SetupGoldPackCards();
-            
-            Debug.Log("[ShopController] ✅ Awake() complete - cards initialized");
         }
 
         private void Start()
-        {
-            Debug.Log("[ShopController] Start() called - initializing shop...");
-            
+        {            
             // Get services
             saveService = ServiceLocator.Get<ISaveService>();
             adService = ServiceLocator.Get<IAdService>();
             iapService = ServiceLocator.Get<IIAPService>();
-            
-            Debug.Log($"[ShopController] Services retrieved - SaveService: {saveService != null}, AdService: {adService != null}, IAPService: {iapService != null}");
 
             // Load save data
             LoadSaveData();
@@ -88,43 +80,43 @@ namespace PixelVanguard.UI
 
             // Start cooldown timer coroutine
             cooldownCoroutine = StartCoroutine(UpdateAdCooldownTimer());
-            
-            Debug.Log("[ShopController] ✅ Start() complete");
         }
 
-        private async void LoadSaveData()
+        private void OnEnable()
         {
-            Debug.Log("[ShopController] LoadSaveData() - Starting async load...");
-            saveData = await saveService.LoadData();
-            Debug.Log($"[ShopController] LoadSaveData() - Complete! Gold={saveData.totalGold}");
+            // Reload data when panel is re-enabled (if services are already initialized)
+            if (saveService != null)
+            {
+                LoadSaveData();
+            }
+        }
+
+        private void LoadSaveData()
+        {
+            saveData = saveService.LoadData();
             RefreshUI();
         }
 
         private void SetupUpgradeCards()
         {
-            Debug.Log($"[ShopController] SetupUpgradeCards() - Checking references...");
-            Debug.Log($"[ShopController] mightCard={mightCard != null}, vitalityCard={vitalityCard != null}, greavesCard={greavesCard != null}, magnetCard={magnetCard != null}");
+            mightCard.Initialize("might", 
+                LocalizationManager.Get("ui.shop.might.name"), 
+                mightIcon, 100, 
+                LocalizationManager.Get("ui.shop.might.desc"));
+            vitalityCard.Initialize("vitality", 
+                LocalizationManager.Get("ui.shop.vitality.name"), 
+                vitalityIcon, 80, 
+                LocalizationManager.Get("ui.shop.vitality.desc"));
             
-            // Initialize each card with static data and descriptions
-            Debug.Log("[ShopController] Initializing MIGHT card with baseCost=100");
-            mightCard.Initialize("might", "MIGHT", mightIcon, 100, 
-                "Increases base damage by 10% per level. Stacks multiplicatively with weapon upgrades.");
-            Debug.Log($"[ShopController] MIGHT card initialized - BaseCost property = {mightCard.BaseCost}");
+            greavesCard.Initialize("greaves", 
+                LocalizationManager.Get("ui.shop.greaves.name"), 
+                greavesIcon, 120, 
+                LocalizationManager.Get("ui.shop.greaves.desc"));
             
-            Debug.Log("[ShopController] Initializing VITALITY card with baseCost=80");
-            vitalityCard.Initialize("vitality", "VITALITY", vitalityIcon, 80, 
-                "Increases maximum health by 10 HP per level. Take more hits before dying.");
-            Debug.Log($"[ShopController] VITALITY card initialized - BaseCost property = {vitalityCard.BaseCost}");
-            
-            Debug.Log("[ShopController] Initializing GREAVES card with baseCost=120");
-            greavesCard.Initialize("greaves", "GREAVES", greavesIcon, 120, 
-                "Increases movement speed by 5% per level. Dodge enemies and reposition faster.");
-            Debug.Log($"[ShopController] GREAVES card initialized - BaseCost property = {greavesCard.BaseCost}");
-            
-            Debug.Log("[ShopController] Initializing MAGNET card with baseCost=60");
-            magnetCard.Initialize("magnet", "MAGNET", magnetIcon, 60, 
-                "Increases XP/item collection radius by 10% per level. Collect from farther away.");
-            Debug.Log($"[ShopController] MAGNET card initialized - BaseCost property = {magnetCard.BaseCost}");
+            magnetCard.Initialize("magnet", 
+                LocalizationManager.Get("ui.shop.magnet.name"), 
+                magnetIcon, 60, 
+                LocalizationManager.Get("ui.shop.magnet.desc"));
 
             // Subscribe to purchase events
             mightCard.OnPurchaseClicked += () => OnUpgradePurchased("might");
@@ -137,17 +129,15 @@ namespace PixelVanguard.UI
             vitalityCard.OnCardClicked += () => OnUpgradeCardClicked(vitalityCard);
             greavesCard.OnCardClicked += () => OnUpgradeCardClicked(greavesCard);
             magnetCard.OnCardClicked += () => OnUpgradeCardClicked(magnetCard);
-            
-            Debug.Log("[ShopController] ✅ All upgrade cards setup complete");
         }
 
         private void SetupGoldPackCards()
         {
-            // Initialize ad packs with their respective icons and descriptions
+            // Initialize ad packs with their respective icons and localized descriptions
             adPack1Card.Initialize(5, 1990, adPack1Icon, () => OnWatchAdClicked(1),
-                "Watch 5 ads to earn 1,990 coins. Progress persists across sessions.");
+                LocalizationManager.Get("ui.shop.ad_pack.desc_5"));
             adPack2Card.Initialize(10, 4990, adPack2Icon, () => OnWatchAdClicked(2),
-                "Watch 10 ads to earn 4,990 coins. Best value for your time!");
+                LocalizationManager.Get("ui.shop.ad_pack.desc_10"));
 
             // Subscribe to card click events
             adPack1Card.OnCardClicked += () => OnGoldPackCardClicked(adPack1Card);
@@ -167,7 +157,6 @@ namespace PixelVanguard.UI
             if (iapCardButton != null)
             {
                 iapCardButton.onClick.AddListener(OnIAPCardClicked);
-                Debug.Log("[ShopController] IAP card button wired to OnIAPCardClicked");
             }
             else
             {
@@ -206,8 +195,6 @@ namespace PixelVanguard.UI
             int cost = CalculateCost(card.BaseCost, currentLevel);
             bool canAfford = saveData.totalGold >= cost;
             
-            Debug.Log($"[ShopController] RefreshUpgradeCard({statKey}) - Level={currentLevel}, BaseCost={card.BaseCost}, CalculatedCost={cost}, Gold={saveData.totalGold}, CanAfford={canAfford}");
-
             card.UpdateCard(currentLevel, cost, canAfford);
         }
 
@@ -217,7 +204,7 @@ namespace PixelVanguard.UI
             return Mathf.RoundToInt(baseCost * Mathf.Pow(1.5f, currentLevel));
         }
 
-        private async void OnUpgradePurchased(string statKey)
+        private void OnUpgradePurchased(string statKey)
         {
             int currentLevel = saveData.GetStatLevel(statKey);
             
@@ -241,17 +228,14 @@ namespace PixelVanguard.UI
             saveData.SetStatLevel(statKey, currentLevel + 1);
 
             // Save to disk
-            await saveService.SaveData(saveData);
+            saveService.SaveData(saveData);
 
             // Refresh UI
             RefreshUI();
-
-            Debug.Log($"[Shop] Purchased {statKey} level {currentLevel + 1} for {cost}G");
         }
 
         private async void OnWatchAdClicked(int packNumber)
         {
-            Debug.Log($"[Shop] OnWatchAdClicked(Pack {packNumber}) - Starting...");
             
             // Check cooldown
             if (!adService.CanWatchAd(saveData.lastAdWatchedTime))
@@ -260,41 +244,33 @@ namespace PixelVanguard.UI
                 Debug.LogWarning($"[Shop] Ad cooldown active: {remaining}s remaining");
                 return;
             }
-
-            Debug.Log($"[Shop] Showing ad for Pack {packNumber}...");
             
             // Show ad
             bool success = await adService.ShowRewardedAd();
             
-            Debug.Log($"[Shop] Ad result: {(success ? "SUCCESS" : "FAILED")}");
-
             if (success)
             {
                 // Update ad watch count based on pack
                 if (packNumber == 1)
                 {
                     saveData.adsWatchedForPack1++;
-                    Debug.Log($"[Shop] Pack 1 progress: {saveData.adsWatchedForPack1}/5 ads watched");
 
                     // Check if pack is complete
                     if (saveData.adsWatchedForPack1 >= 5)
                     {
                         saveData.totalGold += 1990;
                         saveData.adsWatchedForPack1 = 0; // Reset progress
-                        Debug.Log($"[Shop] 🎉 Ad Pack 1 COMPLETE! Awarded 1,990 gold. New total: {saveData.totalGold}");
                     }
                 }
                 else if (packNumber == 2)
                 {
                     saveData.adsWatchedForPack2++;
-                    Debug.Log($"[Shop] Pack 2 progress: {saveData.adsWatchedForPack2}/10 ads watched");
 
                     // Check if pack is complete
                     if (saveData.adsWatchedForPack2 >= 10)
                     {
                         saveData.totalGold += 4990;
                         saveData.adsWatchedForPack2 = 0; // Reset progress
-                        Debug.Log($"[Shop] 🎉 Ad Pack 2 COMPLETE! Awarded 4,990 gold. New total: {saveData.totalGold}");
                     }
                 }
 
@@ -302,14 +278,10 @@ namespace PixelVanguard.UI
                 saveData.lastAdWatchedTime = DateTime.Now.ToString("o"); // ISO 8601
 
                 // Save to disk
-                await saveService.SaveData(saveData);
-                Debug.Log("[Shop] SaveData written to disk");
+                saveService.SaveData(saveData);
 
                 // Refresh UI
                 RefreshUI();
-                Debug.Log("[Shop] UI refreshed");
-
-                Debug.Log($"[Shop] ✅ Ad watched successfully (Pack {packNumber})");
             }
             else
             {
@@ -331,12 +303,10 @@ namespace PixelVanguard.UI
             {
                 // Award gold
                 saveData.totalGold += 29900;
-                await saveService.SaveData(saveData);
+                saveService.SaveData(saveData);
                 
                 // Refresh UI
                 RefreshUI();
-                
-                Debug.Log("[Shop] IAP purchase successful! +29,900 gold");
             }
             else
             {
@@ -361,7 +331,6 @@ namespace PixelVanguard.UI
             }
             
             string price = iapService.GetLocalizedPrice(ProductIDs.GOLD_PACK_LARGE);
-            Debug.Log($"[ShopController] IAP price retrieved: {price}");
             iapButtonText.text = price;
         }
 
@@ -443,8 +412,8 @@ namespace PixelVanguard.UI
             {
                 detailsPanel.ShowGoldPackDetails(
                     iapIcon,
-                    "SPECIAL OFFER",
-                    "Premium gold pack with the best value. Purchase directly to support development!"
+                    LocalizationManager.Get("ui.shop.gold_pack.title"),
+                    LocalizationManager.Get("ui.shop.gold_pack.desc")
                 );
             }
         }

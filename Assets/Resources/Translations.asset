@@ -1,0 +1,487 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15c6532b55be5d840a2f6ac236aca203, type: 3}
+  m_Name: Translations
+  m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.TranslationData
+  strings:
+  - key: ui.mainmenu.title
+    english: PIXEL VANGUARD
+    russian: "\u041F\u0418\u041A\u0421\u0415\u041B\u042C \u0412\u0410\u041D\u0413\u0410\u0420\u0414"
+  - key: ui.mainmenu.play
+    english: Play
+    russian: "\u0418\u0433\u0440\u0430\u0442\u044C"
+  - key: ui.mainmenu.shop
+    english: Shop
+    russian: "\u041C\u0430\u0433\u0430\u0437\u0438\u043D"
+  - key: ui.mainmenu.settings
+    english: Settings
+    russian: "\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438"
+  - key: ui.mainmenu.quit
+    english: Quit
+    russian: "\u0412\u044B\u0445\u043E\u0434"
+  - key: ui.settings.title
+    english: Settings
+    russian: "\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438"
+  - key: ui.settings.music
+    english: Music
+    russian: "\u041C\u0443\u0437\u044B\u043A\u0430"
+  - key: ui.settings.sounds
+    english: Sounds
+    russian: "\u0417\u0432\u0443\u043A\u0438"
+  - key: ui.settings.show_damage
+    english: Show Damage
+    russian: "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0443\u0440\u043E\u043D"
+  - key: ui.settings.show_fps
+    english: Show FPS
+    russian: "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0424\u041F\u0421"
+  - key: ui.settings.language
+    english: Language
+    russian: "\u042F\u0437\u044B\u043A"
+  - key: ui.settings.apply
+    english: Apply
+    russian: "\u041F\u0440\u0438\u043C\u0435\u043D\u0438\u0442\u044C"
+  - key: ui.settings.back
+    english: Back
+    russian: "\u041D\u0430\u0437\u0430\u0434"
+  - key: ui.settings.contact_us
+    english: Contact Us
+    russian: "\u0421\u0432\u044F\u0437\u0430\u0442\u044C\u0441\u044F \u0441 \u043D\u0430\u043C\u0438"
+  - key: ui.settings.privacy_policy
+    english: Privacy Policy
+    russian: "\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u043A\u043E\u043D\u0444\u0438\u0434\u0435\u043D\u0446\u0438\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u0438"
+  - key: ui.settings.version
+    english: Pixel Vanguard v.0.1
+    russian: "Pixel Vanguard \u0432.0.1"
+  - key: ui.settings.remove_ads
+    english: Remove Ads - {0}
+    russian: "\u0423\u0431\u0440\u0430\u0442\u044C \u0440\u0435\u043A\u043B\u0430\u043C\u0443
+      - {0}"
+  - key: ui.settings.ads_removed
+    english: "Ads Removed \u2713"
+    russian: "\u0420\u0435\u043A\u043B\u0430\u043C\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0430
+      \u2713"
+  - key: ui.shop.title
+    english: Shop
+    russian: "\u041C\u0430\u0433\u0430\u0437\u0438\u043D"
+  - key: ui.shop.select_upgrade
+    english: Select upgrade to see details
+    russian: "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0443\u043B\u0443\u0447\u0448\u0435\u043D\u0438\u0435
+      \u0434\u043B\u044F \u043F\u043E\u0434\u0440\u043E\u0431\u043D\u043E\u0441\u0442\u0435\u0439"
+  - key: ui.shop.might.name
+    english: MIGHT
+    russian: "\u041C\u041E\u0429\u042C"
+  - key: ui.shop.might.short
+    english: Damage +10%
+    russian: "\u0423\u0440\u043E\u043D +10%"
+  - key: ui.shop.might.desc
+    english: Increases base damage by 10% per level. Stacks multiplicatively with
+      weapon upgrades.
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+      \u0431\u0430\u0437\u043E\u0432\u044B\u0439 \u0443\u0440\u043E\u043D \u043D\u0430
+      10% \u0437\u0430 \u0443\u0440\u043E\u0432\u0435\u043D\u044C. \u0421\u043A\u043B\u0430\u0434\u044B\u0432\u0430\u0435\u0442\u0441\u044F
+      \u043C\u0443\u043B\u044C\u0442\u0438\u043F\u043B\u0438\u043A\u0430\u0442\u0438\u0432\u043D\u043E
+      \u0441 \u0443\u043B\u0443\u0447\u0448\u0435\u043D\u0438\u044F\u043C\u0438 \u043E\u0440\u0443\u0436\u0438\u044F."
+  - key: ui.shop.vitality.name
+    english: VITALITY
+    russian: "\u0416\u0418\u0412\u0423\u0427\u0415\u0421\u0422\u042C"
+  - key: ui.shop.vitality.short
+    english: Max HP +10
+    russian: "\u041C\u0430\u043A\u0441. HP +10"
+  - key: ui.shop.vitality.desc
+    english: Increases maximum health by 10 HP per level. Take more hits before dying.
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+      \u043C\u0430\u043A\u0441\u0438\u043C\u0430\u043B\u044C\u043D\u043E\u0435 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u0435
+      \u043D\u0430 10 HP \u0437\u0430 \u0443\u0440\u043E\u0432\u0435\u043D\u044C.
+      \u0412\u044B\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u0431\u043E\u043B\u044C\u0448\u0435
+      \u0443\u0434\u0430\u0440\u043E\u0432."
+  - key: ui.shop.greaves.name
+    english: GREAVES
+    russian: "\u041F\u041E\u041D\u041E\u0416\u0418"
+  - key: ui.shop.greaves.short
+    english: Speed +5%
+    russian: "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C +5%"
+  - key: ui.shop.greaves.desc
+    english: Increases movement speed by 5% per level. Dodge enemies and reposition
+      faster.
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+      \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C \u043F\u0435\u0440\u0435\u0434\u0432\u0438\u0436\u0435\u043D\u0438\u044F
+      \u043D\u0430 5% \u0437\u0430 \u0443\u0440\u043E\u0432\u0435\u043D\u044C. \u0423\u0432\u043E\u0440\u0430\u0447\u0438\u0432\u0430\u0439\u0442\u0435\u0441\u044C
+      \u043E\u0442 \u0432\u0440\u0430\u0433\u043E\u0432 \u0431\u044B\u0441\u0442\u0440\u0435\u0435."
+  - key: ui.shop.magnet.name
+    english: MAGNET
+    russian: "\u041C\u0410\u0413\u041D\u0418\u0422"
+  - key: ui.shop.magnet.short
+    english: Range +10%
+    russian: "\u0420\u0430\u0434\u0438\u0443\u0441 +10%"
+  - key: ui.shop.magnet.desc
+    english: Increases XP/item collection radius by 10% per level. Collect from farther
+      away.
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+      \u0440\u0430\u0434\u0438\u0443\u0441 \u0441\u0431\u043E\u0440\u0430 XP/\u043F\u0440\u0435\u0434\u043C\u0435\u0442\u043E\u0432
+      \u043D\u0430 10% \u0437\u0430 \u0443\u0440\u043E\u0432\u0435\u043D\u044C. \u0421\u043E\u0431\u0438\u0440\u0430\u0439\u0442\u0435
+      \u0438\u0437\u0434\u0430\u043B\u0435\u043A\u0430."
+  - key: ui.shop.ad_pack.watch_5
+    english: WATCH 5 ADS
+    russian: "5 \u0420\u0415\u041A\u041B\u0410\u041C"
+  - key: ui.shop.ad_pack.coins_5
+    english: 1990 Coins
+    russian: "1990 \u043C\u043E\u043D\u0435\u0442"
+  - key: ui.shop.ad_pack.progress_5
+    english: ({0}/5)
+    russian: ({0}/5)
+  - key: ui.shop.ad_pack.desc_5
+    english: Watch 5 ads to earn 1,990 coins. Progress persists across sessions.
+    russian: "\u041F\u043E\u0441\u043C\u043E\u0442\u0440\u0438\u0442\u0435 5 \u0440\u0435\u043A\u043B\u0430\u043C,
+      \u0447\u0442\u043E\u0431\u044B \u0437\u0430\u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C
+      1,990 \u043C\u043E\u043D\u0435\u0442. \u041F\u0440\u043E\u0433\u0440\u0435\u0441\u0441
+      \u0441\u043E\u0445\u0440\u0430\u043D\u044F\u0435\u0442\u0441\u044F."
+  - key: ui.shop.ad_pack.watch_10
+    english: WATCH 10 ADS
+    russian: "10 \u0420\u0415\u041A\u041B\u0410\u041C"
+  - key: ui.shop.ad_pack.coins_10
+    english: 4990 Coins
+    russian: "4990 \u043C\u043E\u043D\u0435\u0442"
+  - key: ui.shop.ad_pack.progress_10
+    english: ({0}/10)
+    russian: ({0}/10)
+  - key: ui.shop.ad_pack.desc_10
+    english: Watch 10 ads to earn 4,990 coins. Best value for your time!
+    russian: "\u041F\u043E\u0441\u043C\u043E\u0442\u0440\u0438\u0442\u0435 10 \u0440\u0435\u043A\u043B\u0430\u043C,
+      \u0447\u0442\u043E\u0431\u044B \u0437\u0430\u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C
+      4,990 \u043C\u043E\u043D\u0435\u0442. \u041B\u0443\u0447\u0448\u0435\u0435
+      \u0441\u043E\u043E\u0442\u043D\u043E\u0448\u0435\u043D\u0438\u0435!"
+  - key: ui.shop.gold_pack.title
+    english: SPECIAL OFFER
+    russian: "\u0421\u041F\u0415\u0426\u0418\u0410\u041B\u042C\u041D\u041E\u0415"
+  - key: ui.shop.gold_pack.amount
+    english: 29900 Coins
+    russian: "29900 \u043C\u043E\u043D\u0435\u0442"
+  - key: ui.shop.gold_pack.price
+    english: 79 YAN
+    russian: "79 \u042F\u041D"
+  - key: ui.shop.gold_pack.desc
+    english: Premium gold pack with the best value. Purchase directly to support
+      development!
+    russian: "\u041F\u0440\u0435\u043C\u0438\u0443\u043C \u043F\u0430\u043A \u0437\u043E\u043B\u043E\u0442\u0430
+      \u0441 \u043B\u0443\u0447\u0448\u0438\u043C \u0441\u043E\u043E\u0442\u043D\u043E\u0448\u0435\u043D\u0438\u0435\u043C.
+      \u041A\u0443\u043F\u0438\u0442\u0435, \u0447\u0442\u043E\u0431\u044B \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0430\u0442\u044C
+      \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0443!"
+  - key: ui.common.coins
+    english: Coins
+    russian: "\u041C\u043E\u043D\u0435\u0442"
+  - key: ui.common.watch_ad
+    english: Watch Ad
+    russian: "\u041F\u043E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C \u0440\u0435\u043A\u043B\u0430\u043C\u0443"
+  - key: ui.common.locked
+    english: LOCKED
+    russian: "\u0417\u0410\u0411\u041B\u041E\u041A\u0418\u0420\u041E\u0412\u0410\u041D\u041E"
+  - key: ui.common.purchase_to_unlock
+    english: Purchase to unlock
+    russian: "\u041A\u0443\u043F\u0438\u0442\u0435, \u0447\u0442\u043E\u0431\u044B
+      \u0440\u0430\u0437\u0431\u043B\u043E\u043A\u0438\u0440\u043E\u0432\u0430\u0442\u044C"
+  - key: ui.character.title
+    english: Character Selection
+    russian: "\u0412\u044B\u0431\u043E\u0440 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u0436\u0430"
+  - key: ui.character.select
+    english: Select
+    russian: "\u0412\u044B\u0431\u0440\u0430\u0442\u044C"
+  - key: ui.character.selected
+    english: Selected
+    russian: "\u0412\u044B\u0431\u0440\u0430\u043D\u043E"
+  - key: ui.character.purchase
+    english: Purchase for {0}
+    russian: "\u041A\u0443\u043F\u0438\u0442\u044C \u0437\u0430 {0}"
+  - key: ui.character.continue
+    english: Continue
+    russian: "\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C"
+  - key: ui.character.confirm
+    english: Confirm
+    russian: "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044C"
+  - key: ui.character.knight.name
+    english: Knight
+    russian: "\u0420\u044B\u0446\u0430\u0440\u044C"
+  - key: ui.character.pyromancer.name
+    english: Pyromancer
+    russian: "\u041F\u0438\u0440\u043E\u043C\u0430\u043D"
+  - key: ui.character.ranger.name
+    english: Ranger
+    russian: "\u0421\u043B\u0435\u0434\u043E\u043F\u044B\u0442"
+  - key: ui.character.santa.name
+    english: Santa
+    russian: "\u0421\u0430\u043D\u0442\u0430"
+  - key: ui.character.zombie.name
+    english: Zombie
+    russian: "\u0417\u043E\u043C\u0431\u0438"
+  - key: ui.character.stats.weapon
+    english: Weapon
+    russian: "\u041E\u0440\u0443\u0436\u0438\u0435"
+  - key: ui.character.stats.health
+    english: Health
+    russian: "\u0417\u0434\u043E\u0440\u043E\u0432\u044C\u0435"
+  - key: ui.character.stats.speed
+    english: Speed
+    russian: "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C"
+  - key: ui.character.stats.damage
+    english: Damage
+    russian: "\u0423\u0440\u043E\u043D"
+  - key: ui.character.stats.base_health
+    english: Base Health
+    russian: "\u0411\u0430\u0437\u043E\u0432\u043E\u0435 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u0435"
+  - key: ui.character.stats.base_speed
+    english: Base Speed
+    russian: "\u0411\u0430\u0437\u043E\u0432\u0430\u044F \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C"
+  - key: ui.weapon.greatsword
+    english: Greatsword
+    russian: "\u0411\u043E\u043B\u044C\u0448\u043E\u0439 \u043C\u0435\u0447"
+  - key: ui.weapon.holywater
+    english: HolyWater
+    russian: "\u0421\u0432\u044F\u0442\u0430\u044F \u0432\u043E\u0434\u0430"
+  - key: ui.weapon.magicorbitals
+    english: MagicOrbitals
+    russian: "\u041C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u043E\u0440\u0431\u0438\u0442\u044B"
+  - key: ui.weapon.autocrossbow
+    english: AutoCrossbow
+    russian: "\u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439
+      \u0430\u0440\u0431\u0430\u043B\u0435\u0442"
+  - key: ui.hud.fps
+    english: FPS
+    russian: "\u0424\u041F\u0421"
+  - key: ui.hud.level_short
+    english: LV
+    russian: "\u0423\u0420"
+  - key: ui.hud.level_full
+    english: Level
+    russian: "\u0423\u0440\u043E\u0432\u0435\u043D\u044C"
+  - key: ui.hud.gold
+    english: Gold
+    russian: "\u0417\u043E\u043B\u043E\u0442\u043E"
+  - key: ui.hud.time
+    english: Time
+    russian: "\u0412\u0440\u0435\u043C\u044F"
+  - key: ui.gameover.title
+    english: Game Over
+    russian: "\u041A\u043E\u043D\u0435\u0446 \u0438\u0433\u0440\u044B"
+  - key: ui.gameover.revive
+    english: Revive
+    russian: "\u0412\u043E\u0437\u0440\u043E\u0434\u0438\u0442\u044C\u0441\u044F"
+  - key: ui.gameover.quit
+    english: Quit
+    russian: "\u0412\u044B\u0445\u043E\u0434"
+  - key: ui.results.title
+    english: Results
+    russian: "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B"
+  - key: ui.results.victory
+    english: VICTORY
+    russian: "\u041F\u041E\u0411\u0415\u0414\u0410"
+  - key: ui.results.defeated
+    english: DEFEATED
+    russian: "\u041F\u041E\u0420\u0410\u0416\u0415\u041D\u0418\u0415"
+  - key: ui.results.session_summary
+    english: SESSION SUMMARY
+    russian: "\u0418\u0422\u041E\u0413\u0418 \u0421\u0415\u0421\u0421\u0418\u0418"
+  - key: ui.results.time_survived
+    english: Time Survived
+    russian: "\u0412\u0440\u0435\u043C\u044F \u0432\u044B\u0436\u0438\u0432\u0430\u043D\u0438\u044F"
+  - key: ui.results.enemies_killed
+    english: Enemies Killed
+    russian: "\u0423\u0431\u0438\u0442\u043E \u0432\u0440\u0430\u0433\u043E\u0432"
+  - key: ui.results.level_reached
+    english: Level Reached
+    russian: "\u0414\u043E\u0441\u0442\u0438\u0433\u043D\u0443\u0442 \u0443\u0440\u043E\u0432\u0435\u043D\u044C"
+  - key: ui.results.gold_earned
+    english: Gold Earned
+    russian: "\u0417\u0430\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043E \u0437\u043E\u043B\u043E\u0442\u0430"
+  - key: ui.results.watch_ad_bonus
+    english: WATCH AD TO GET {0}
+    russian: "\u041F\u041E\u0421\u041C\u041E\u0422\u0420\u0415\u0422\u042C \u0420\u0415\u041A\u041B\u0410\u041C\u0423
+      \u0417\u0410 {0}"
+  - key: ui.results.main_menu
+    english: Main Menu
+    russian: "\u0413\u043B\u0430\u0432\u043D\u043E\u0435 \u043C\u0435\u043D\u044E"
+  - key: ui.results.continue
+    english: Continue
+    russian: "\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C"
+  - key: ui.results.resume
+    english: Resume
+    russian: "\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C"
+  - key: ui.notification.gold_doubled
+    english: Gold Doubled!
+    russian: "\u0417\u043E\u043B\u043E\u0442\u043E \u0443\u0434\u0432\u043E\u0435\u043D\u043E!"
+  - key: ui.notification.purchase_success
+    english: Purchase successful!
+    russian: "\u041F\u043E\u043A\u0443\u043F\u043A\u0430 \u0443\u0441\u043F\u0435\u0448\u043D\u0430!"
+  - key: ui.notification.ad_watched
+    english: Ad watched successfully!
+    russian: "\u0420\u0435\u043A\u043B\u0430\u043C\u0430 \u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440\u0435\u043D\u0430!"
+  - key: ui.notification.insufficient_gold
+    english: Not enough gold!
+    russian: "\u041D\u0435\u0434\u043E\u0441\u0442\u0430\u0442\u043E\u0447\u043D\u043E
+      \u0437\u043E\u043B\u043E\u0442\u0430!"
+  - key: ui.time.format
+    english: '{0:00}:{1:00}'
+    russian: '{0:00}:{1:00}'
+  - key: ui.time.minutes
+    english: min
+    russian: "\u043C\u0438\u043D"
+  - key: ui.time.seconds
+    english: sec
+    russian: "\u0441\u0435\u043A"
+  - key: upgrade.berserker_fury.name
+    english: Berserker Fury
+    russian: "\u042F\u0440\u043E\u0441\u0442\u044C \u0431\u0435\u0440\u0441\u0435\u0440\u043A\u0430"
+  - key: upgrade.berserker_fury.desc
+    english: Greatsword attacks 30% faster
+    russian: "\u041C\u0435\u0447 \u0430\u0442\u0430\u043A\u0443\u0435\u0442 \u043D\u0430
+      30% \u0431\u044B\u0441\u0442\u0440\u0435\u0435"
+  - key: upgrade.executioner_edge.name
+    english: Executioner's Edge
+    russian: "\u041A\u043B\u0438\u043D\u043E\u043A \u043F\u0430\u043B\u0430\u0447\u0430"
+  - key: upgrade.executioner_edge.desc
+    english: 'Greatsword: +50% damage, +100% knockback'
+    russian: "\u041C\u0435\u0447: +50% \u0443\u0440\u043E\u043D, +100% \u043E\u0442\u0431\uFFFD\uFFFD\u043E\u0441\u044B\u0432"
+  - key: upgrade.mirror_slash.name
+    english: Mirror Slash
+    russian: "\u0417\u0435\u0440\u043A\u0430\u043B\u044C\u043D\u044B\u0439 \u0443\u0434\u0430\u0440"
+  - key: upgrade.mirror_slash.desc
+    english: Spawn 2nd greatsword on opposite side
+    russian: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C 2-\u0439 \u043C\u0435\u0447
+      \u0441 \u043F\u0440\u043E\u0442\u0438\u0432\u043E\u043F\u043E\u043B\u043E\u0436\u043D\u043E\u0439
+      \u0441\u0442\u043E\u0440\u043E\u043D\u044B"
+  - key: upgrade.dual_crossbows.name
+    english: Dual Crossbows
+    russian: "\u0414\u0432\u043E\u0439\u043D\u044B\u0435 \u0430\u0440\u0431\u0430\u043B\u0435\u0442\u044B"
+  - key: upgrade.dual_crossbows.desc
+    english: Fire 2 arrows simultaneously
+    russian: "\u0412\u044B\u0441\u0442\u0440\u0435\u043B 2 \u0441\u0442\u0440\u0435\u043B\u0430\u043C\u0438
+      \u043E\u0434\u043D\u043E\u0432\u0440\u0435\u043C\u0435\u043D\u043D\u043E"
+  - key: upgrade.triple_barrage.name
+    english: Triple Barrage
+    russian: "\u0422\u0440\u043E\u0439\u043D\u043E\u0439 \u0437\u0430\u043B\u043F"
+  - key: upgrade.triple_barrage.desc
+    english: Fire 3 arrows simultaneously
+    russian: "\u0412\u044B\u0441\u0442\u0440\u0435\u043B 3 \u0441\u0442\u0440\u0435\u043B\u0430\u043C\u0438
+      \u043E\u0434\u043D\u043E\u0432\u0440\u0435\u043C\u0435\u043D\u043D\u043E"
+  - key: upgrade.piercing_bolts.name
+    english: Piercing Bolts
+    russian: "\u041F\u0440\u043E\u0431\u0438\u0432\u043D\u044B\u0435 \u0431\u043E\u043B\u0442\u044B"
+  - key: upgrade.piercing_bolts.desc
+    english: Arrows pierce through enemies
+    russian: "\u0421\u0442\u0440\u0435\u043B\u044B \u043F\u0440\u043E\u0431\u0438\u0432\u0430\u044E\u0442
+      \u0432\u0440\u0430\u0433\u043E\u0432"
+  - key: upgrade.burning_touch.name
+    english: Burning Touch
+    russian: "\u0416\u0433\u0443\u0447\u0435\u0435 \u043F\u0440\u0438\u043A\u043E\u0441\u043D\u043E\u0432\u0435\u043D\u0438\u0435"
+  - key: upgrade.burning_touch.desc
+    english: Damage scales +6% of enemy max HP
+    russian: "\u0423\u0440\u043E\u043D \u043C\u0430\u0441\u0448\u0442\u0430\u0431\u0438\u0440\u0443\u0435\u0442\u0441\u044F
+      \u043D\u0430 +6% \u043E\u0442 \u043C\u0430\u043A\u0441. HP \u0432\u0440\u0430\u0433\u0430"
+  - key: upgrade.eternal_flame.name
+    english: Eternal Flame
+    russian: "\u0412\u0435\u0447\u043D\u043E\u0435 \u043F\u043B\u0430\u043C\u044F"
+  - key: upgrade.eternal_flame.desc
+    english: Puddle lasts 2x longer duration
+    russian: "\u041B\u0443\u0436\u0430 \u0434\u0435\u0440\u0436\u0438\u0442\u0441\u044F
+      \u0432 2 \u0440\u0430\u0437\u0430 \u0434\u043E\u043B\u044C\u0448\u0435"
+  - key: upgrade.sanctified_expansion.name
+    english: Sanctified Expansion
+    russian: "\u041E\u0441\u0432\u044F\u0449\u0435\u043D\u043D\u043E\u0435 \u0440\u0430\u0441\u0448\u0438\u0440\u0435\u043D\u0438\u0435"
+  - key: upgrade.sanctified_expansion.desc
+    english: Puddle radius +40%
+    russian: "\u0420\u0430\u0434\u0438\u0443\u0441 \u043B\u0443\u0436\u0438 +40%"
+  - key: upgrade.expanded_orbit.name
+    english: Expanded Orbit
+    russian: "\u0420\u0430\u0441\u0448\u0438\u0440\u0435\u043D\u043D\u0430\u044F
+      \u043E\u0440\u0431\u0438\u0442\u0430"
+  - key: upgrade.expanded_orbit.desc
+    english: Orbit radius +40%
+    russian: "\u0420\u0430\u0434\u0438\u0443\u0441 \u043E\u0440\u0431\u0438\u0442\u044B
+      +40%"
+  - key: upgrade.lifesteal.name
+    english: Lifesteal
+    russian: "\u0412\u0430\u043C\u043F\u0438\u0440\u0438\u0437\u043C"
+  - key: upgrade.lifesteal.desc
+    english: Heal 3% of damage dealt
+    russian: "\u0418\u0441\u0446\u0435\u043B\u0435\u043D\u0438\u0435 3% \u043E\u0442
+      \u043D\u0430\u043D\u0435\u0441\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u0440\u043E\u043D\u0430"
+  - key: upgrade.lucky_coins.name
+    english: Lucky Coins
+    russian: "\u0423\u0434\u0430\u0447\u043D\u044B\u0435 \u043C\u043E\u043D\u0435\u0442\u044B"
+  - key: upgrade.lucky_coins.desc
+    english: Gold drops give +40% more gold
+    russian: "\u0412\u044B\u043F\u0430\u0434\u0430\u0435\u0442 \u043D\u0430 +40%
+      \u0431\u043E\u043B\u044C\u0448\u0435 \u0437\u043E\u043B\u043E\u0442\u0430"
+  - key: upgrade.magnet_field.name
+    english: Magnet Field
+    russian: "\u041C\u0430\u0433\u043D\u0438\u0442\u043D\u043E\u0435 \u043F\u043E\u043B\u0435"
+  - key: upgrade.magnet_field.desc
+    english: Pickup radius +50%
+    russian: "\u0420\u0430\u0434\u0438\u0443\u0441 \u0441\u0431\u043E\u0440\u0430
+      +50%"
+  - key: upgrade.increase_damage.name
+    english: Increase Damage
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0442\u044C \u0443\u0440\u043E\u043D"
+  - key: upgrade.increase_damage.desc
+    english: Increase weapon damage by 5
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0442\u044C \u0443\u0440\u043E\u043D
+      \u043E\u0440\u0443\u0436\u0438\u044F \u043D\u0430 5"
+  - key: upgrade.rapid_attack.name
+    english: Rapid Attack
+    russian: "\u0411\u044B\u0441\u0442\u0440\u0430\u044F \u0430\u0442\u0430\u043A\u0430"
+  - key: upgrade.rapid_attack.desc
+    english: All Weapons Attack 30% faster
+    russian: "\u0412\u0441\u0451 \u043E\u0440\u0443\u0436\u0438\u0435 \u0430\u0442\u0430\u043A\u0443\u0435\u0442
+      \u043D\u0430 30% \u0431\u044B\u0441\u0442\u0440\u0435\u0435"
+  - key: upgrade.swift_feet.name
+    english: Swift Feet
+    russian: "\u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u043D\u043E\u0433\u0438"
+  - key: upgrade.swift_feet.desc
+    english: Increase move speed by 20%
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0442\u044C \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C
+      \u043D\u0430 20%"
+  - key: upgrade.health_boost.name
+    english: Health Boost
+    russian: "\u0423\u0441\u0438\u043B\u0435\u043D\u0438\u0435 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u044F"
+  - key: upgrade.health_boost.desc
+    english: Increase max HP by 10
+    russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0442\u044C \u043C\u0430\u043A\u0441.
+      HP \u043D\u0430 10"
+  - key: upgrade.unlock_autocrossbow.name
+    english: Auto Crossbow
+    russian: "\u0410\u0432\u0442\u043E\u0430\u0440\u0431\u0430\u043B\u0435\u0442"
+  - key: upgrade.unlock_autocrossbow.desc
+    english: Fires arrows at the nearest enemy
+    russian: "\u0421\u0442\u0440\u0435\u043B\u044F\u0435\u0442 \u0441\u0442\u0440\u0435\u043B\u0430\u043C\u0438
+      \u0432 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0433\u043E \u0432\u0440\u0430\u0433\u0430"
+  - key: upgrade.unlock_greatsword.name
+    english: Greatsword
+    russian: "\u0414\u0432\u0443\u0440\u0443\u0447\u043D\u044B\u0439 \u043C\u0435\u0447"
+  - key: upgrade.unlock_greatsword.desc
+    english: "Powerful melee weapon that swings in a 360\xB0 arc every few seconds"
+    russian: "\u041C\u043E\u0449\u043D\u043E\u0435 \u043E\u0440\u0443\u0436\u0438\u0435
+      \u0431\u043B\u0438\u0436\u043D\u0435\u0433\u043E \u0431\u043E\u044F \u0441
+      \u0443\u0434\u0430\u0440\u043E\u043C \u043D\u0430 360\xB0"
+  - key: upgrade.unlock_holywater.name
+    english: Holy Water
+    russian: "\u0421\u0432\u044F\u0442\u0430\u044F \u0432\u043E\u0434\u0430"
+  - key: upgrade.unlock_holywater.desc
+    english: Throws flasks that create damaging puddles on impact
+    russian: "\u0411\u0440\u043E\u0441\u0430\u0435\u0442 \u043A\u043E\u043B\u0431\u044B,
+      \u0441\u043E\u0437\u0434\u0430\u044E\u0449\u0438\u0435 \u043B\u0443\u0436\u0438
+      \u0443\u0440\u043E\u043D\u0430"
+  - key: upgrade.unlock_orbitals.name
+    english: Magic Orbitals
+    russian: "\u041C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u043E\u0440\u0431\u0438\u0442\u044B"
+  - key: upgrade.unlock_orbitals.desc
+    english: Magical shields orbit continuously, damaging enemies
+    russian: "\u041C\u0430\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0449\u0438\u0442\u044B
+      \u0432\u0440\u0430\u0449\u0430\u044E\u0442\u0441\u044F, \u043D\u0430\u043D\u043E\u0441\u044F
+      \u0443\u0440\u043E\u043D \u0432\u0440\u0430\u0433\u0430\u043C"
