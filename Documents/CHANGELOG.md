@@ -4,6 +4,33 @@
 
 ---
 
+## January 3, 2026
+
+### Startup Scene Interaction Improvements ✅
+
+**Enhanced user experience for faster scene transitions:**
+
+#### Input Detection Upgrade
+- **New Input System Integration** - Replaced legacy `Input` class with New Input System
+  - Uses `Mouse.current.leftButton.wasPressedThisFrame` for mouse clicks
+  - Uses `Touchscreen.current.primaryTouch.press.wasPressedThisFrame` for touch input
+  - Fully compatible with existing mobile and desktop builds
+
+#### Click Anywhere Functionality
+- **Problem:** Players could only click on the "Press to Start" text to proceed
+- **Solution:** Added `Update()` method to detect clicks/taps anywhere on screen
+- **Benefit:** Improved UX - entire screen is now interactive
+
+#### Instant Scene Loading
+- **Problem:** Scene loaded only after fade-out animation completed (~1+ seconds)
+- **Solution:** Removed fade-out wait, loads main menu immediately on click
+- **Benefit:** Faster transition, more responsive feel
+
+**Modified Files:**
+- `StartupSceneController.cs` - New Input System integration, instant loading
+
+---
+
 ## January 2, 2026
 
 ### UI Animation System ✅

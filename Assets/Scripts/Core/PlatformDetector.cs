@@ -62,8 +62,7 @@ namespace PixelVanguard.Core
             // For WebGL builds, use PluginYG to detect platform
             try
             {
-                string deviceType = YG2.envir.deviceType;
-                if (YG2.envir.isMobile)
+                if (YG2.envir.isDesktop)
                 {
                     return PlatformType.Desktop;
                 }

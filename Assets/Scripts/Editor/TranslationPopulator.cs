@@ -62,6 +62,9 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - {0}", "Убрать рекламу - {0}");
             AddTranslation(strings, "ui.settings.ads_removed", "Ads Removed ✓", "Реклама удалена ✓");
 
+            // Startup Screen
+            AddTranslation(strings, "ui.startup.press_to_start", "Press to Start", "Нажмите для начала");
+
             // Shop
             AddTranslation(strings, "ui.shop.title", "Shop", "Магазин");
             AddTranslation(strings, "ui.shop.select_upgrade", "Select upgrade to see details", "Выберите улучшение для подробностей");
