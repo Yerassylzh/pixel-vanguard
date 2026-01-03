@@ -13,6 +13,7 @@ namespace PixelVanguard.UI
     public class SettingsController : MonoBehaviour
     {
         private MainMenuManager mainMenuManager;
+        private GameSettings gameSettings;
 
         [Header("UI References")]
         [SerializeField] private GameObject settingsPanel;
@@ -65,6 +66,8 @@ namespace PixelVanguard.UI
 
         private void Start()
         {
+            // Get GameSettings service
+            gameSettings = Core.ServiceLocator.Get<GameSettings>();
             mainMenuManager = FindFirstObjectByType<MainMenuManager>();
             // Add listeners
             languageButton.onClick.AddListener(OnLanguageToggle);
@@ -112,11 +115,13 @@ namespace PixelVanguard.UI
         /// </summary>
         private void LoadCurrentSettings()
         {
-            pendingLanguage = GameSettings.Language;
-            pendingMusicVolume = GameSettings.MusicVolume;
-            pendingSFXVolume = GameSettings.SFXVolume;
-            pendingShowDamage = GameSettings.ShowDamageNumbers;
-            pendingShowFPS = GameSettings.ShowFPS;
+            if (gameSettings == null) return;
+            
+            pendingLanguage = gameSettings.Language;
+            pendingMusicVolume = gameSettings.MusicVolume;
+            pendingSFXVolume = gameSettings.SFXVolume;
+            pendingShowDamage = gameSettings.ShowDamageNumbers;
+            pendingShowFPS = gameSettings.ShowFPS;
         }
 
         /// <summary>
@@ -215,12 +220,14 @@ namespace PixelVanguard.UI
 
         private void OnApplyClicked()
         {
-            // Save all pending changes to GameSettings (PlayerPrefs)
-            GameSettings.Language = pendingLanguage;
-            GameSettings.MusicVolume = pendingMusicVolume;
-            GameSettings.SFXVolume = pendingSFXVolume;
-            GameSettings.ShowDamageNumbers = pendingShowDamage;
-            GameSettings.ShowFPS = pendingShowFPS;
+            if (gameSettings == null) return;
+            
+            // Save all pending changes to GameSettings service
+            gameSettings.Language = pendingLanguage;
+            gameSettings.MusicVolume = pendingMusicVolume;
+            gameSettings.SFXVolume = pendingSFXVolume;
+            gameSettings.ShowDamageNumbers = pendingShowDamage;
+            gameSettings.ShowFPS = pendingShowFPS;
 
             // Apply FPS counter visibility if in GameScene
             var fpsCounter = FindFirstObjectByType<FPSCounter>();
@@ -346,10 +353,10 @@ namespace PixelVanguard.UI
             LoadCurrentSettings();
 
             // Restore audio to saved values
-            if (AudioManager.Instance != null)
+            if (AudioManager.Instance != null && gameSettings != null)
             {
-                AudioManager.Instance.SetMusicVolume(GameSettings.MusicVolume);
-                AudioManager.Instance.SetSFXVolume(GameSettings.SFXVolume);
+                AudioManager.Instance.SetMusicVolume(gameSettings.MusicVolume);
+                AudioManager.Instance.SetSFXVolume(gameSettings.SFXVolume);
             }
 
             if (settingsPanel != null)

@@ -32,6 +32,13 @@ namespace PixelVanguard.Services
         public string lastAdWatchedTime = "";  // ISO 8601 timestamp
         public bool adsRemoved = false;  // IAP: Remove Ads purchase
 
+        // Game Settings (platform-adaptive)
+        public bool showDamageNumbers = true;
+        public bool showFPS = false;
+        public float sfxVolume = -1f;  // -1 = use AudioManager default
+        public float musicVolume = -1f; // -1 = use AudioManager default
+        public string language = "en";
+
         /// <summary>
         /// Create a default save for new players.
         /// </summary>

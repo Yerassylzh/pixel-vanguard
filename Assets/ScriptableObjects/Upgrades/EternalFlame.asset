@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   localizationKey: upgrade.eternal_flame
   upgradeName: Eternal Flame
-  description: Puddle lasts 2x longer duration
+  description: Puddle lasts 1.5x longer duration
   icon: {fileID: 21300000, guid: 8866b2d0cfbf92b42a6e21338440f7cf, type: 3}
   type: 13
-  value: 100
+  value: 50
   weaponToEquip: {fileID: 0}
   rarityWeight: 25

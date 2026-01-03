@@ -10,20 +10,19 @@ namespace PixelVanguard.UI.Startup
 {
     /// <summary>
     /// Startup scene controller for Yandex Games audio unlock.
-    /// Shows "Press to Start" text with fade animation.
+    /// Shows "Press to Start" text with scale-in animation and pulse effect.
     /// Waits for screen tap (not keyboard) before loading main menu.
-    /// Uses New Input System via IPointerClickHandler.
+    /// Uses New Input System for global input detection.
     /// </summary>
     public class StartupSceneController : MonoBehaviour, IPointerClickHandler
     {
         [Header("References")]
         [SerializeField] private TextMeshProUGUI pressToStartText;
-        [SerializeField] private CanvasGroup canvasGroup;
 
         [Header("Animation Settings")]
-        [SerializeField] private float fadeDuration = 1f;
-        [SerializeField] private float fadeInDelay = 0.5f;
-        [SerializeField] private Ease fadeEase = Ease.InOutSine;
+        [SerializeField] [Range(1.1f, 2f)] private float pulseScale = 1.12f; // Pulse: 1x ↔ this value
+        [SerializeField] private float pulseDuration = 1f;
+        [SerializeField] private float pulseDelay = 0.5f;
 
         [Header("Scene")]
         [SerializeField] private string mainMenuSceneName = "MainMenuScene";
@@ -33,20 +32,14 @@ namespace PixelVanguard.UI.Startup
 
         private void Start()
         {
-            // Set initial transparency
-            if (canvasGroup != null)
-            {
-                canvasGroup.alpha = 0f;
-            }
-
             // Localize text
             if (pressToStartText != null)
             {
                 pressToStartText.text = LocalizationManager.Get("ui.startup.press_to_start");
             }
 
-            // Start fade-in animation with pulse loop
-            StartFadeAnimation();
+            // Start pulsing immediately after delay
+            StartPulse();
         }
 
         private void Update()
@@ -70,28 +63,17 @@ namespace PixelVanguard.UI.Startup
             OnScreenTapped();
         }
 
-        private void StartFadeAnimation()
+        private void StartPulse()
         {
-            if (canvasGroup == null) return;
+            if (pressToStartText == null) return;
 
-            // Fade in
-            canvasGroup.DOFade(1f, fadeDuration)
-                .SetEase(fadeEase)
-                .SetDelay(fadeInDelay)
-                .OnComplete(() =>
-                {
-                    // Start pulsing loop
-                    StartPulseLoop();
-                });
-        }
+            // Set initial scale to normal
+            pressToStartText.transform.localScale = Vector3.one;
 
-        private void StartPulseLoop()
-        {
-            if (canvasGroup == null) return;
-
-            // Pulse between 0.6 and 1.0 alpha
-            pulseTween = canvasGroup.DOFade(0.3f, fadeDuration)
+            // Start pulsing: 1x ↔ pulseScale
+            pulseTween = pressToStartText.transform.DOScale(pulseScale, pulseDuration)
                 .SetEase(Ease.InOutSine)
+                .SetDelay(pulseDelay)
                 .SetLoops(-1, LoopType.Yoyo);
         }
 

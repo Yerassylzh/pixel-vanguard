@@ -1,0 +1,3 @@
+﻿Build path: C:/Users/Honor/Desktop/sandbox/game-builds/PV6
+Build number: 1
+PluginYG version: 2.007

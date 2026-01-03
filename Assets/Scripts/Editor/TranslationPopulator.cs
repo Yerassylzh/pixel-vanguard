@@ -59,7 +59,7 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.settings.contact_us", "Contact Us", "Связаться с нами");
             AddTranslation(strings, "ui.settings.privacy_policy", "Privacy Policy", "Политика конфиденциальности");
             AddTranslation(strings, "ui.settings.version", "Pixel Vanguard v.0.1", "Pixel Vanguard в.0.1");
-            AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - {0}", "Убрать рекламу - {0}");
+            AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - 29 YAN", "Убрать рекламу - 29 ЯН");
             AddTranslation(strings, "ui.settings.ads_removed", "Ads Removed ✓", "Реклама удалена ✓");
 
             // Startup Screen
@@ -147,6 +147,9 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.hud.level_full", "Level", "Уровень");
             AddTranslation(strings, "ui.hud.gold", "Gold", "Золото");
             AddTranslation(strings, "ui.hud.time", "Time", "Время");
+            
+            // Level Up
+            AddTranslation(strings, "ui.levelup.new_level", "New Level!", "Новый уровень!");
 
             // Game Over
             AddTranslation(strings, "ui.gameover.title", "Game Over", "Конец игры");
@@ -184,10 +187,10 @@ namespace PixelVanguard.Editor
             
             // Greatsword Upgrades
             AddTranslation(strings, "upgrade.berserker_fury.name", "Berserker Fury", "Ярость берсерка");
-            AddTranslation(strings, "upgrade.berserker_fury.desc", "Greatsword attacks 30% faster", "Меч атакует на 30% быстрее");
+            AddTranslation(strings, "upgrade.berserker_fury.desc", "Greatsword attacks 15% faster", "Меч атакует на 15% быстрее");
             
             AddTranslation(strings, "upgrade.executioner_edge.name", "Executioner's Edge", "Клинок палача");
-            AddTranslation(strings, "upgrade.executioner_edge.desc", "Greatsword: +50% damage, +100% knockback", "Меч: +50% урон, +100% отб��осыв");
+            AddTranslation(strings, "upgrade.executioner_edge.desc", "Greatsword: +20% damage, +100% knockback", "Меч: +20% урон, +100% отб��осыв");
             
             AddTranslation(strings, "upgrade.mirror_slash.name", "Mirror Slash", "Зеркальный удар");
             AddTranslation(strings, "upgrade.mirror_slash.desc", "Spawn 2nd greatsword on opposite side", "Создать 2-й меч с противоположной стороны");
@@ -207,7 +210,7 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "upgrade.burning_touch.desc", "Damage scales +6% of enemy max HP", "Урон масштабируется на +6% от макс. HP врага");
             
             AddTranslation(strings, "upgrade.eternal_flame.name", "Eternal Flame", "Вечное пламя");
-            AddTranslation(strings, "upgrade.eternal_flame.desc", "Puddle lasts 2x longer duration", "Лужа держится в 2 раза дольше");
+            AddTranslation(strings, "upgrade.eternal_flame.desc", "Puddle lasts 1.5x longer duration", "Лужа держится в 1.5 раза дольше");
             
             AddTranslation(strings, "upgrade.sanctified_expansion.name", "Sanctified Expansion", "Освященное расширение");
             AddTranslation(strings, "upgrade.sanctified_expansion.desc", "Puddle radius +40%", "Радиус лужи +40%");
@@ -231,10 +234,10 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "upgrade.increase_damage.desc", "Increase weapon damage by 5", "Увеличить урон оружия на 5");
             
             AddTranslation(strings, "upgrade.rapid_attack.name", "Rapid Attack", "Быстрая атака");
-            AddTranslation(strings, "upgrade.rapid_attack.desc", "All Weapons Attack 30% faster", "Всё оружие атакует на 30% быстрее");
+            AddTranslation(strings, "upgrade.rapid_attack.desc", "All Weapons Attack 15% faster", "Всё оружие атакует на 15% быстрее");
             
             AddTranslation(strings, "upgrade.swift_feet.name", "Swift Feet", "Быстрые ноги");
-            AddTranslation(strings, "upgrade.swift_feet.desc", "Increase move speed by 20%", "Увеличить скорость на 20%");
+            AddTranslation(strings, "upgrade.swift_feet.desc", "Increase move speed by 10%", "Увеличить скорость на 10%");
             
             AddTranslation(strings, "upgrade.health_boost.name", "Health Boost", "Усиление здоровья");
             AddTranslation(strings, "upgrade.health_boost.desc", "Increase max HP by 10", "Увеличить макс. HP на 10");

@@ -19,8 +19,8 @@ namespace PixelVanguard.Core
         [SerializeField] private AudioSource musicSource;
 
         [Header("Settings")]
-        [SerializeField] private float sfxVolume = 1f;
-        [SerializeField] private float musicVolume = 0.5f;
+        [SerializeField] private float sfxVolume = 0.67f;
+        [SerializeField] private float musicVolume = 0.67f;
         [SerializeField] private bool pitchRandomization = true;
         [SerializeField] private float pitchVariationRange = 0.1f; // ±10%
 
@@ -290,6 +290,22 @@ namespace PixelVanguard.Core
             musicVolume = Mathf.Clamp01(volume);
             musicSource.volume = musicVolume;
         }
+
+        #endregion
+
+        #region Default Values
+
+        /// <summary>
+        /// Default SFX volume as set in inspector.
+        /// Used by GameSettings as fallback value.
+        /// </summary>
+        public float DefaultSFXVolume => sfxVolume;
+
+        /// <summary>
+        /// Default music volume as set in inspector.
+        /// Used by GameSettings as fallback value.
+        /// </summary>
+        public float DefaultMusicVolume => musicVolume;
 
         #endregion
     }

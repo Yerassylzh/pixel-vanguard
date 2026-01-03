@@ -35,8 +35,6 @@ namespace PixelVanguard.UI.Animations
             // Root panel is the base
             currentPanel = rootPanel;
             currentPanel.SetActive(true);
-
-            Debug.Log($"[MenuNavigationController] Initialized with root: {rootPanel.name}");
         }
 
         /// <summary>
@@ -84,8 +82,6 @@ namespace PixelVanguard.UI.Animations
                     onComplete?.Invoke();
                 }
             );
-
-            Debug.Log($"[MenuNavigationController] Navigated to: {targetPanel.name} (Stack depth: {navigationStack.Count})");
         }
 
         /// <summary>
@@ -121,8 +117,6 @@ namespace PixelVanguard.UI.Animations
                     onComplete?.Invoke();
                 }
             );
-
-            Debug.Log($"[MenuNavigationController] Navigated back to: {currentPanel.name} (Stack depth: {navigationStack.Count})");
         }
 
         /// <summary>
@@ -165,8 +159,6 @@ namespace PixelVanguard.UI.Animations
                     onComplete?.Invoke();
                 }
             );
-
-            Debug.Log($"[MenuNavigationController] Navigated back to root: {currentPanel.name}");
         }
 
         /// <summary>

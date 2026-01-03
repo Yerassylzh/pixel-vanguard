@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using PixelVanguard.Core;
 
 namespace PixelVanguard.VFX
 {
@@ -88,6 +89,13 @@ namespace PixelVanguard.VFX
         public void SpawnDamageNumber(Vector3 worldPosition, float damage, DamageNumberType type)
         {
             if (canvas == null || damageNumberPrefab == null) return;
+            
+            // Check settings via ServiceLocator - skip if damage numbers disabled
+            var gameSettings = ServiceLocator.Get<GameSettings>();
+            if (gameSettings != null && !gameSettings.ShowDamageNumbers)
+            {
+                return;
+            }
             
             // Get from pool (already parented to poolParent, don't reparent!)
             GameObject numberObj = GetFromPool();

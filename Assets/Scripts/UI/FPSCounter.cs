@@ -1,12 +1,13 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using PixelVanguard.Core;
 
 namespace PixelVanguard.UI
 {
     /// <summary>
     /// Displays FPS (Frames Per Second) counter.
-    /// Toggleable via Settings. Persists via PlayerPrefs.
+    /// Visibility is controlled by GameSettings service.
     /// </summary>
     public class FPSCounter : MonoBehaviour
     {
@@ -21,13 +22,16 @@ namespace PixelVanguard.UI
         private int _frameCount;
         private float _currentFPS;
         private bool _isVisible;
-
-        private const string PREF_KEY = "ShowFPS";
+        
+        // Cache GameSettings reference
+        private GameSettings _gameSettings;
 
         private void Start()
         {
-            // Load visibility preference
-            _isVisible = PlayerPrefs.GetInt(PREF_KEY, 0) == 1;
+            // Get settings service
+            _gameSettings = ServiceLocator.Get<GameSettings>();
+            
+            // Initial sync
             UpdateVisibility();
 
             // Start FPS calculation coroutine
@@ -36,6 +40,17 @@ namespace PixelVanguard.UI
 
         private void Update()
         {
+            // Sync visibility with settings every frame (or could assume SettingsController updates it)
+            // Ideally we'd use an event, but polling settings is cheap enough here
+            if (_gameSettings != null)
+            {
+                bool shouldBeVisible = _gameSettings.ShowFPS;
+                if (_isVisible != shouldBeVisible)
+                {
+                    SetVisible(shouldBeVisible);
+                }
+            }
+
             if (!_isVisible) return;
 
             // Accumulate time and frames
@@ -75,22 +90,13 @@ namespace PixelVanguard.UI
         }
 
         /// <summary>
-        /// Toggle FPS counter visibility (called from Settings).
+        /// Update local visibility state.
+        /// Actual persistence is handled by GameSettings.
         /// </summary>
         public void SetVisible(bool visible)
         {
             _isVisible = visible;
-            PlayerPrefs.SetInt(PREF_KEY, visible ? 1 : 0);
-            PlayerPrefs.Save();
             UpdateVisibility();
-        }
-
-        /// <summary>
-        /// Get current visibility state.
-        /// </summary>
-        public bool IsVisible()
-        {
-            return _isVisible;
         }
 
         private void UpdateVisibility()
@@ -99,14 +105,6 @@ namespace PixelVanguard.UI
             {
                 fpsText.gameObject.SetActive(_isVisible);
             }
-        }
-
-        /// <summary>
-        /// Static helper to get current setting value (for Settings UI).
-        /// </summary>
-        public static bool GetSavedVisibility()
-        {
-            return PlayerPrefs.GetInt(PREF_KEY, 0) == 1;
         }
     }
 }

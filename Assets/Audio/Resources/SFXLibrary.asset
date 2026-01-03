@@ -15,7 +15,7 @@ MonoBehaviour:
   greatswordSwing: {fileID: 8300000, guid: 1d130cb89d58f794ab08294ffe55e214, type: 3}
   crossbowFire: {fileID: 8300000, guid: e7ad5ca0c653d3a45a7aec591d913ca9, type: 3}
   xpPickup: {fileID: 8300000, guid: 0ad52f88c9f1b9649af0c1cf0ed3191f, type: 3}
-  levelUp: {fileID: 8300000, guid: d408ceb3fc3e6a84b858a42cae6db82e, type: 3}
+  levelUp: {fileID: 8300000, guid: b67d4da74a3c7084786c20ad2d91e745, type: 3}
   upgradeSelect: {fileID: 8300000, guid: 68c92f57f6097d943b71a40b9bd4e8c5, type: 3}
   goldPickup: {fileID: 8300000, guid: 512568f2c3d3e934c91ccf7e1c65f322, type: 3}
   healthPotion: {fileID: 8300000, guid: 1e690bf29d2d2dd4096925eb8ce18501, type: 3}

@@ -92,11 +92,12 @@ namespace PixelVanguard.UI
         {
             if (Core.AudioManager.Instance != null)
             {
-                float sfxVolume = Core.GameSettings.SFXVolume;
-                float musicVolume = Core.GameSettings.MusicVolume;
-
-                Core.AudioManager.Instance.SetSFXVolume(sfxVolume);
-                Core.AudioManager.Instance.SetMusicVolume(musicVolume);
+                var gameSettings = Core.ServiceLocator.Get<Core.GameSettings>();
+                if (gameSettings != null)
+                {
+                    Core.AudioManager.Instance.SetSFXVolume(gameSettings.SFXVolume);
+                    Core.AudioManager.Instance.SetMusicVolume(gameSettings.MusicVolume);
+                }
             }
         }
 

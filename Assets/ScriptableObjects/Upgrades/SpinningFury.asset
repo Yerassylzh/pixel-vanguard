@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.UpgradeData
   localizationKey: upgrade.rapid_attack
   upgradeName: Rapid Attack
-  description: All Weapons Attack 30% faster
+  description: All Weapons Attack 15% faster
   icon: {fileID: 21300000, guid: 063eb13bbc5a26d4d9a9418f26c563f9, type: 3}
   type: 2
-  value: 30
+  value: 15
   weaponToEquip: {fileID: 0}
   rarityWeight: 100

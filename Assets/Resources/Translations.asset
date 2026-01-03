@@ -62,9 +62,9 @@ MonoBehaviour:
     english: Pixel Vanguard v.0.1
     russian: "Pixel Vanguard \u0432.0.1"
   - key: ui.settings.remove_ads
-    english: Remove Ads - {0}
+    english: Remove Ads - 29 YAN
     russian: "\u0423\u0431\u0440\u0430\u0442\u044C \u0440\u0435\u043A\u043B\u0430\u043C\u0443
-      - {0}"
+      - 29 \u042F\u041D"
   - key: ui.settings.ads_removed
     english: "Ads Removed \u2713"
     russian: "\u0420\u0435\u043A\u043B\u0430\u043C\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0430
@@ -270,6 +270,9 @@ MonoBehaviour:
   - key: ui.hud.time
     english: Time
     russian: "\u0412\u0440\u0435\u043C\u044F"
+  - key: ui.levelup.new_level
+    english: New Level!
+    russian: "\u041D\u043E\u0432\u044B\u0439 \u0443\u0440\u043E\u0432\u0435\u043D\u044C!"
   - key: ui.gameover.title
     english: Game Over
     russian: "\u041A\u043E\u043D\u0435\u0446 \u0438\u0433\u0440\u044B"
@@ -342,15 +345,15 @@ MonoBehaviour:
     english: Berserker Fury
     russian: "\u042F\u0440\u043E\u0441\u0442\u044C \u0431\u0435\u0440\u0441\u0435\u0440\u043A\u0430"
   - key: upgrade.berserker_fury.desc
-    english: Greatsword attacks 30% faster
+    english: Greatsword attacks 15% faster
     russian: "\u041C\u0435\u0447 \u0430\u0442\u0430\u043A\u0443\u0435\u0442 \u043D\u0430
-      30% \u0431\u044B\u0441\u0442\u0440\u0435\u0435"
+      15% \u0431\u044B\u0441\u0442\u0440\u0435\u0435"
   - key: upgrade.executioner_edge.name
     english: Executioner's Edge
     russian: "\u041A\u043B\u0438\u043D\u043E\u043A \u043F\u0430\u043B\u0430\u0447\u0430"
   - key: upgrade.executioner_edge.desc
-    english: 'Greatsword: +50% damage, +100% knockback'
-    russian: "\u041C\u0435\u0447: +50% \u0443\u0440\u043E\u043D, +100% \u043E\u0442\u0431\uFFFD\uFFFD\u043E\u0441\u044B\u0432"
+    english: 'Greatsword: +20% damage, +100% knockback'
+    russian: "\u041C\u0435\u0447: +20% \u0443\u0440\u043E\u043D, +100% \u043E\u0442\u0431\uFFFD\uFFFD\u043E\u0441\u044B\u0432"
   - key: upgrade.mirror_slash.name
     english: Mirror Slash
     russian: "\u0417\u0435\u0440\u043A\u0430\u043B\u044C\u043D\u044B\u0439 \u0443\u0434\u0430\u0440"
@@ -391,9 +394,9 @@ MonoBehaviour:
     english: Eternal Flame
     russian: "\u0412\u0435\u0447\u043D\u043E\u0435 \u043F\u043B\u0430\u043C\u044F"
   - key: upgrade.eternal_flame.desc
-    english: Puddle lasts 2x longer duration
+    english: Puddle lasts 1.5x longer duration
     russian: "\u041B\u0443\u0436\u0430 \u0434\u0435\u0440\u0436\u0438\u0442\u0441\u044F
-      \u0432 2 \u0440\u0430\u0437\u0430 \u0434\u043E\u043B\u044C\u0448\u0435"
+      \u0432 1.5 \u0440\u0430\u0437\u0430 \u0434\u043E\u043B\u044C\u0448\u0435"
   - key: upgrade.sanctified_expansion.name
     english: Sanctified Expansion
     russian: "\u041E\u0441\u0432\u044F\u0449\u0435\u043D\u043D\u043E\u0435 \u0440\u0430\u0441\u0448\u0438\u0440\u0435\u043D\u0438\u0435"
@@ -440,16 +443,16 @@ MonoBehaviour:
     english: Rapid Attack
     russian: "\u0411\u044B\u0441\u0442\u0440\u0430\u044F \u0430\u0442\u0430\u043A\u0430"
   - key: upgrade.rapid_attack.desc
-    english: All Weapons Attack 30% faster
+    english: All Weapons Attack 15% faster
     russian: "\u0412\u0441\u0451 \u043E\u0440\u0443\u0436\u0438\u0435 \u0430\u0442\u0430\u043A\u0443\u0435\u0442
-      \u043D\u0430 30% \u0431\u044B\u0441\u0442\u0440\u0435\u0435"
+      \u043D\u0430 15% \u0431\u044B\u0441\u0442\u0440\u0435\u0435"
   - key: upgrade.swift_feet.name
     english: Swift Feet
     russian: "\u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u043D\u043E\u0433\u0438"
   - key: upgrade.swift_feet.desc
-    english: Increase move speed by 20%
+    english: Increase move speed by 10%
     russian: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0442\u044C \u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C
-      \u043D\u0430 20%"
+      \u043D\u0430 10%"
   - key: upgrade.health_boost.name
     english: Health Boost
     russian: "\u0423\u0441\u0438\u043B\u0435\u043D\u0438\u0435 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u044F"

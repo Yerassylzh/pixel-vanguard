@@ -56,6 +56,13 @@ namespace PixelVanguard.Services
                 highestLevelReached = yandexData.highestLevel,
                 mostGoldInRun = yandexData.mostGold,
                 
+                // Game Settings
+                showDamageNumbers = yandexData.showDamageNumbers,
+                showFPS = yandexData.showFPS,
+                sfxVolume = yandexData.sfxVolume,
+                musicVolume = yandexData.musicVolume,
+                language = yandexData.language ?? "en",
+                
                 // Monetization
                 adsRemoved = yandexData.adsRemoved
             };
@@ -115,6 +122,14 @@ namespace PixelVanguard.Services
             YG2.saves.highestKills = data.highestKillCount;
             YG2.saves.highestLevel = data.highestLevelReached;
             YG2.saves.mostGold = data.mostGoldInRun;
+            
+            // Game Settings
+            YG2.saves.showDamageNumbers = data.showDamageNumbers;
+            YG2.saves.showFPS = data.showFPS;
+            YG2.saves.sfxVolume = data.sfxVolume;
+            YG2.saves.musicVolume = data.musicVolume;
+            YG2.saves.language = data.language ?? "en";
+            
             YG2.saves.adsRemoved = data.adsRemoved;
         }
     }

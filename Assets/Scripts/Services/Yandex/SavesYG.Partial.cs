@@ -39,6 +39,13 @@ namespace YG
 
         // === Monetization ===
         public bool adsRemoved = false;  // IAP Remove Ads
+
+        // Game Settings (platform-adaptive)
+        public bool showDamageNumbers = true;
+        public bool showFPS = false;
+        public float sfxVolume = -1f;  // -1 = use AudioManager default
+        public float musicVolume = -1f; // -1 = use AudioManager default
+        public string language = "en";
     }
 }
 #endif

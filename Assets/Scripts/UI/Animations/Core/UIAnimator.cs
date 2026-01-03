@@ -23,8 +23,6 @@ namespace PixelVanguard.UI.Animations
         {
             if (panel == null) return null;
 
-            Debug.Log($"[UIAnimator] ShowPanel called for: {panel.name}, direction: {direction}");
-
             RectTransform rect = panel.GetComponent<RectTransform>();
             CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
 
@@ -38,7 +36,6 @@ namespace PixelVanguard.UI.Animations
 
             // Ensure panel is active
             panel.SetActive(true);
-            Debug.Log($"[UIAnimator] {panel.name} activated. IsActive: {panel.activeSelf}");
 
             // Setup canvas group
             if (canvasGroup != null)
@@ -53,7 +50,6 @@ namespace PixelVanguard.UI.Animations
             Vector2 endPos = Vector2.zero; // Always animate to center (0,0)
 
             rect.anchoredPosition = startPos;
-            Debug.Log($"[UIAnimator] {panel.name} starting from: {startPos}, animating to: {endPos}");
 
             // Animate to center
             Sequence seq = DOTween.Sequence();
@@ -65,7 +61,6 @@ namespace PixelVanguard.UI.Animations
                 {
                     canvasGroup.interactable = true;
                 }
-                Debug.Log($"[UIAnimator] {panel.name} animation complete!");
                 onComplete?.Invoke();
             });
 

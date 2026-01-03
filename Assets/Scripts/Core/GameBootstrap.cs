@@ -80,20 +80,33 @@ namespace PixelVanguard.Core
 
             // Initialize LocalizationManager
             LocalizationManager.Initialize(languageProvider, translationData);
+            
+            // === Game Settings Service ===
+            // Must be initialized after ISaveService and before AudioManager is used
+            if (!ServiceLocator.Has<GameSettings>())
+            {
+                var saveService = ServiceLocator.Get<ISaveService>();
+                var gameSettings = new GameSettings(saveService);
+                ServiceLocator.Register<GameSettings>(gameSettings);
+            }
         }
 
         private void InitializeAudioSettings()
         {
-            // Load saved settings
-            float savedSFXVolume = GameSettings.SFXVolume;
-            float savedMusicVolume = GameSettings.MusicVolume;
-
+            // Get GameSettings service
+            var gameSettings = ServiceLocator.Get<GameSettings>();
+            
+            if (gameSettings == null)
+            {
+                Debug.LogWarning("[GameBootstrap] GameSettings not initialized yet!");
+                return;
+            }
 
             // Apply when AudioManager becomes available
-            StartCoroutine(ApplyAudioSettingsWhenReady(savedSFXVolume, savedMusicVolume));
+            StartCoroutine(ApplyAudioSettingsWhenReady(gameSettings));
         }
 
-        private System.Collections.IEnumerator ApplyAudioSettingsWhenReady(float sfxVolume, float musicVolume)
+        private System.Collections.IEnumerator ApplyAudioSettingsWhenReady(GameSettings gameSettings)
         {
             // Wait for AudioManager to exist
             while (AudioManager.Instance == null)
@@ -101,9 +114,9 @@ namespace PixelVanguard.Core
                 yield return null;
             }
 
-            // Apply volumes
-            AudioManager.Instance.SetSFXVolume(sfxVolume);
-            AudioManager.Instance.SetMusicVolume(musicVolume);
+            // Apply volumes from GameSettings
+            AudioManager.Instance.SetSFXVolume(gameSettings.SFXVolume);
+            AudioManager.Instance.SetMusicVolume(gameSettings.MusicVolume);
         }
     }
 }

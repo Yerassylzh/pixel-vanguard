@@ -173,8 +173,6 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         private void OnPlayerRevived()
         {
-            UnityEngine.Debug.Log("[PlayerHealth] Player revived with full HP");
-
             // Restore to full health
             currentHealth = maxHealth;
 
