@@ -7,7 +7,7 @@
         false,
         false
     ],
-    "idSave": 136,
+    "idSave": 140,
     "totalGold": 805819,
     "unlockedCharacterIDs": [
         "knight",
@@ -24,7 +24,7 @@
     "highestKills": 172,
     "highestLevel": 6,
     "mostGold": 44,
-    "adsRemoved": true,
+    "adsRemoved": false,
     "showDamageNumbers": true,
     "showFPS": false,
     "sfxVolume": 0.6700000166893005,

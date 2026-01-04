@@ -18,7 +18,7 @@ namespace PixelVanguard.UI
         [SerializeField] private GameObject pausePanel;
         [SerializeField] private Button pauseButton; // Mobile only
         [SerializeField] private Button resumeButton;
-        [SerializeField] private Button mainMenuButton;
+        [SerializeField] private Button quitButton;
 
         [Header("Input (Optional)")]
         [SerializeField] private InputActionAsset inputActions;
@@ -36,7 +36,7 @@ namespace PixelVanguard.UI
 
             // Setup button listeners
             if (resumeButton != null) resumeButton.onClick.AddListener(Resume);
-            if (mainMenuButton != null) mainMenuButton.onClick.AddListener(ReturnToMainMenu);
+            if (quitButton != null) quitButton.onClick.AddListener(QuitGame);
             if (pauseButton != null) pauseButton.onClick.AddListener(Pause);
 
             SetupInputActions();
@@ -182,12 +182,16 @@ namespace PixelVanguard.UI
             }
         }
 
-        private void ReturnToMainMenu()
+        /// <summary>
+        /// Quit game from pause menu. Triggers game over and shows results scene with stats.
+        /// </summary>
+        private void QuitGame()
         {
-            // TODO: Load main menu scene
+            // Restore time scale for scene transition
+            Time.timeScale = 1f;
 
-            // For now, just unpause
-            SceneManager.LoadScene("MainMenuScene");
+            // Load Results Scene
+            SceneManager.LoadScene("ResultsScene");
         }
     }
 }

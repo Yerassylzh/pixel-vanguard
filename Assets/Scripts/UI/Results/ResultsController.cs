@@ -49,34 +49,15 @@ namespace PixelVanguard.UI
 
         private void Start()
         {
-            // Ensure ServiceLocator is initialized (fallback for testing scene directly)
-            if (ServiceLocator.Get<ISaveService>() == null)
-            {
-                Debug.LogWarning("[ResultsController] ServiceLocator not initialized, initializing now...");
-                var saveService = new PlayerPrefsSaveService();
-                ServiceLocator.Register<ISaveService>(saveService);
-            }
-
-            // Restore time scale (in case game was paused)
             Time.timeScale = 1f;
-
-            // Display session stats
             DisplayStats();
-
-            // Show interstitial ad at end of game
             ShowInterstitialAd();
 
-            // Setup button listeners
             SetupButtons();
         }
 
-        /// <summary>
-        /// Show interstitial ad when results screen opens (end of game).
-        /// Skip if ads have been removed via IAP.
-        /// </summary>
         private void ShowInterstitialAd()
         {
-            // Check if ads have been removed
             var saveService = ServiceLocator.Get<ISaveService>();
             if (saveService != null)
             {

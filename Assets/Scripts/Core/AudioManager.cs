@@ -26,10 +26,6 @@ namespace PixelVanguard.Core
 
         // Track subscribed weapons to prevent memory leaks
         private Dictionary<Gameplay.WeaponBase, Data.WeaponType> subscribedWeapons = new Dictionary<Gameplay.WeaponBase, Data.WeaponType>();
-        
-        // Music looping control
-        private bool gameActive = false;
-        private UnityEngine.Coroutine musicLoopCoroutine = null;
 
         private void Awake()
         {
@@ -53,7 +49,7 @@ namespace PixelVanguard.Core
             if (musicSource == null)
             {
                 musicSource = gameObject.AddComponent<AudioSource>();
-                musicSource.loop = false; // Manual looping via coroutine
+                musicSource.loop = true;
                 musicSource.playOnAwake = false;
             }
 
@@ -115,12 +111,10 @@ namespace PixelVanguard.Core
         {
             if (scene.name == "GameScene" && sfxLibrary != null && sfxLibrary.backgroundMusic != null)
             {
-                gameActive = true;
                 PlayMusic(sfxLibrary.backgroundMusic);
             }
             else
             {
-                gameActive = false;
                 StopMusic();
             }
         }
@@ -135,7 +129,6 @@ namespace PixelVanguard.Core
         private void HandleWeaponSpawn() => PlaySFX(sfxLibrary?.magicOrbitalSpawn); // Generic weapon spawn
         private void HandleGameOver(GameOverReason reason)
         {
-            gameActive = false;
             PlaySFX(sfxLibrary?.gameOver);
         }
         private void HandleUpgradeSelected() => PlaySFX(sfxLibrary?.upgradeSelect);
@@ -266,27 +259,9 @@ namespace PixelVanguard.Core
         {
             if (musicClip == null) return;
             
-            // Stop any existing music loop
-            if (musicLoopCoroutine != null)
-            {
-                StopCoroutine(musicLoopCoroutine);
-                musicLoopCoroutine = null;
-            }
-            
-            // Start manual looping coroutine
-            musicLoopCoroutine = StartCoroutine(PlayMusicLoop(musicClip));
-        }
-        
-        /// <summary>
-        /// Manual music looping coroutine. Avoids browser playback controls.
-        /// </summary>
-        private System.Collections.IEnumerator PlayMusicLoop(AudioClip musicClip)
-        {
-            while (gameActive)
-            {
-                musicSource.PlayOneShot(musicClip);
-                yield return new WaitForSeconds(musicClip.length + Random.Range(0.2f, 0.5f));
-            }
+            musicSource.clip = musicClip;
+            musicSource.loop = true;
+            musicSource.Play();
         }
 
         /// <summary>
@@ -296,25 +271,13 @@ namespace PixelVanguard.Core
         {
             if (musicClip == null) return;
             
-            // Stop any existing music loop
-            if (musicLoopCoroutine != null)
-            {
-                StopCoroutine(musicLoopCoroutine);
-                musicLoopCoroutine = null;
-            }
-            
-            musicSource.loop = false; // Don't loop
+            musicSource.loop = false;
             musicSource.clip = musicClip;
             musicSource.Play();
         }
 
         public void StopMusic()
         {
-            if (musicLoopCoroutine != null)
-            {
-                StopCoroutine(musicLoopCoroutine);
-                musicLoopCoroutine = null;
-            }
             musicSource.Stop();
         }
         
