@@ -20,7 +20,7 @@
 ## ✅ Weapon Systems
 
 **4 Weapon Types:**
-- **Greatsword** - 360° periodic swing with shader fill animation, knockback 100
+- **Greatsword** - ~180° periodic swing with shader fill animation, knockback 100
 - **AutoCrossbow** - Multi-target arrows (Dual/Triple upgrade), pierce support, knockback 45
 - **HolyWater** - DoT puddles with HP scaling, knockback 20
 - **MagicOrbitals** - Continuous orbit shields, knockback 50

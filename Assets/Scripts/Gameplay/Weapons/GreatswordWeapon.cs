@@ -4,7 +4,7 @@ namespace PixelVanguard.Gameplay
 {
     /// <summary>
     /// Greatsword weapon with periodic swing attack.
-    /// Rests at player's side, then performs fast 360° swing every few seconds.
+    /// Rests at player's side, then performs fast ~180° swing every few seconds.
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     public class GreatswordWeapon : WeaponBase

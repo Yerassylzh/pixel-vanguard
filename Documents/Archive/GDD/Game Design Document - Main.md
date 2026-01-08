@@ -28,7 +28,7 @@ Spawn → Kill Enemies → Collect XP → Level Up → Choose Upgrade → Get St
 - Mobile-friendly (virtual joystick)
 
 ### 2. Weapon Variety (4 Types)
-- **Greatsword:** Melee 360° swing with visual slash
+- **Greatsword:** Melee ~180° swing with visual slash
 - **Auto Crossbow:** Ranged multi-target arrows
 - **Holy Water:** Area denial puddles with DoT
 - **Magic Orbitals:** Orbiting shield balls
