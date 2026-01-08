@@ -13,9 +13,6 @@ MonoBehaviour:
   m_Name: Translations
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Data.TranslationData
   strings:
-  - key: ui.mainmenu.title
-    english: PIXEL VANGUARD
-    russian: "\u041F\u0418\u041A\u0421\u0415\u041B\u042C \u0412\u0410\u041D\u0413\u0410\u0420\u0414"
   - key: ui.mainmenu.play
     english: Play
     russian: "\u0418\u0433\u0440\u0430\u0442\u044C"
@@ -62,9 +59,9 @@ MonoBehaviour:
     english: Pixel Vanguard v.0.1
     russian: "Pixel Vanguard \u0432.0.1"
   - key: ui.settings.remove_ads
-    english: Remove Ads - 67 YAN
+    english: Remove Ads - {0}
     russian: "\u0423\u0431\u0440\u0430\u0442\u044C \u0440\u0435\u043A\u043B\u0430\u043C\u0443
-      - 67 \u042F\u041D"
+      - {0}"
   - key: ui.settings.ads_removed
     english: "Ads Removed \u2713"
     russian: "\u0420\u0435\u043A\u043B\u0430\u043C\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0430
@@ -307,9 +304,8 @@ MonoBehaviour:
     english: Gold Earned
     russian: "\u0417\u0430\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043E \u0437\u043E\u043B\u043E\u0442\u0430"
   - key: ui.results.watch_ad_bonus
-    english: WATCH AD TO GET {0}
-    russian: "\u041F\u041E\u0421\u041C\u041E\u0422\u0420\u0415\u0422\u042C \u0420\u0415\u041A\u041B\u0410\u041C\u0423
-      \u0417\u0410 {0}"
+    english: GET {0} GOLD
+    russian: "{0} \u041C\u043E\u043D\u0435\u0442"
   - key: ui.results.main_menu
     english: Main Menu
     russian: "\u0413\u043B\u0430\u0432\u043D\u043E\u0435 \u043C\u0435\u043D\u044E"

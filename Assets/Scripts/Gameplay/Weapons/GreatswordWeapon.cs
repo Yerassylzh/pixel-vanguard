@@ -223,14 +223,21 @@ namespace PixelVanguard.Gameplay
             {
                 spriteRenderer.enabled = active;
             }
+
+            // OPTIMIZATION: Toggle collider so we can use OnTriggerEnter2D instead of Stay
+            // This ensures "Enter" fires even for enemies already in range when swing starts
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = active;
+            }
         }
 
-        private void OnTriggerStay2D(Collider2D collision)
+        private void OnTriggerEnter2D(Collider2D collision)
         {
-            // Only damage during swing
+            // Only damage during swing (Redundant if collider is toggled, but safe)
             if (!isSwinging) return;
 
-            // Check if hit an enemy
+            // Check if hit an enemy (Layer check would be better, but Tag is OK for now)
             if (!collision.CompareTag("Enemy")) return;
 
             // Get InstanceID for unique tracking per swing
@@ -239,19 +246,19 @@ namespace PixelVanguard.Gameplay
             // If already hit this swing, ignore
             if (hitEnemies.Contains(enemyID)) return;
 
-            // Get enemy health component
-            var enemyHealth = collision.GetComponent<EnemyHealth>();
-            if (enemyHealth == null || !enemyHealth.IsAlive) return;
+            // OPTIMIZATION: Use TryGetComponent to avoid garbage allocation
+            if (collision.TryGetComponent<EnemyHealth>(out var enemyHealth) && enemyHealth.IsAlive)
+            {
+                // Calculate knockback direction (away from weapon center)
+                Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
 
-            // Calculate knockback direction (away from weapon center)
-            Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
-
-            // Deal damage (REFACTORED: Direct call instead of EnemyDamageUtility)
-            float finalDamage = GetFinalDamage();
-            enemyHealth.TakeDamage(finalDamage, knockbackDir, knockback);
-            
-            // Track hit
-            hitEnemies.Add(enemyID);
+                // Deal damage (Triggers damage event for Lifesteal)
+                float finalDamage = GetFinalDamage();
+                DealDamage(enemyHealth, finalDamage, knockbackDir, knockback);
+                
+                // Track hit
+                hitEnemies.Add(enemyID);
+            }
         }
     }
 }

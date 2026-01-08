@@ -53,8 +53,7 @@ namespace PixelVanguard.Gameplay
             // Subscribe to enemy death to track count
             Core.GameEvents.OnEnemyKilled += OnEnemyKilled;
 
-            // Pre-generate placeholder sprite
-            InitializePlaceholderSprite();
+
         }
 
         private void OnDestroy()
@@ -129,9 +128,8 @@ namespace PixelVanguard.Gameplay
             }
             else
             {
-                // Fallback: Create enemy programmatically if no prefab assigned
-                Debug.LogWarning($"[EnemySpawner] {enemyData.enemyID} has no prefab! Creating placeholder.");
-                enemyObj = CreatePlaceholderEnemy(enemyData, spawnPosition);
+                Debug.LogWarning($"[EnemySpawner] {enemyData.enemyID} has no prefab! Skipping.");
+                return;
             }
 
             // Initialize enemy with data
@@ -170,43 +168,7 @@ namespace PixelVanguard.Gameplay
             }
         }
 
-        private GameObject CreatePlaceholderEnemy(Data.EnemyData enemyData, Vector3 position)
-        {
-            // Create enemy from scratch (temporary solution until prefabs ready)
-            GameObject enemyObj = new GameObject($"Enemy_{enemyData.enemyID}");
-            enemyObj.transform.position = position;
-            enemyObj.tag = "Enemy";
 
-            enemyObj.layer = LayerMask.NameToLayer("Enemy");
-
-            // Add visual (placeholder sprite)
-            var spriteRenderer = enemyObj.AddComponent<SpriteRenderer>();
-            
-            // Ensure sprite exists
-            InitializePlaceholderSprite();
-            spriteRenderer.sprite = placeholderSprite;
-            
-            spriteRenderer.color = Color.red;
-            spriteRenderer.sortingLayerName = "Enemies";
-
-            // Add Rigidbody2D (required by EnemyHealth and EnemyAI)
-            var rb = enemyObj.AddComponent<Rigidbody2D>();
-            rb.gravityScale = 0f;
-            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-            // Add Collider
-            var collider = enemyObj.AddComponent<CircleCollider2D>();
-            collider.radius = 0.5f;
-
-            // Add EnemyHealth
-            enemyObj.AddComponent<EnemyHealth>();
-
-            // Add EnemyAI
-            enemyObj.AddComponent<EnemyAI>();
-
-            return enemyObj;
-        }
 
         private void ScheduleNextSpawn()
         {
@@ -453,21 +415,7 @@ namespace PixelVanguard.Gameplay
             return withinBounds;
         }
 
-        private Sprite placeholderSprite;
 
-        private void InitializePlaceholderSprite()
-        {
-            if (placeholderSprite != null) return;
-            
-            // Create a simple square sprite (placeholder until art ready)
-            Texture2D tex = new Texture2D(32, 32);
-            Color[] pixels = new Color[32 * 32];
-            for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;
-            tex.SetPixels(pixels);
-            tex.Apply();
-
-            placeholderSprite = Sprite.Create(tex, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 32f);
-        }
 
         private void OnEnemyKilled(int totalKills)
         {

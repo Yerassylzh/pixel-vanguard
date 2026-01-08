@@ -41,7 +41,6 @@ namespace PixelVanguard.Editor
             strings.Clear();
             
             // Main Menu
-            AddTranslation(strings, "ui.mainmenu.title", "PIXEL VANGUARD", "ПИКСЕЛЬ ВАНГАРД");
             AddTranslation(strings, "ui.mainmenu.play", "Play", "Играть");
             AddTranslation(strings, "ui.mainmenu.shop", "Shop", "Магазин");
             AddTranslation(strings, "ui.mainmenu.settings", "Settings", "Настройки");
@@ -59,7 +58,7 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.settings.contact_us", "Contact Us", "Связаться с нами");
             AddTranslation(strings, "ui.settings.privacy_policy", "Privacy Policy", "Политика конфиденциальности");
             AddTranslation(strings, "ui.settings.version", "Pixel Vanguard v.0.1", "Pixel Vanguard в.0.1");
-            AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - 67 YAN", "Убрать рекламу - 67 ЯН");
+            AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - {0}", "Убрать рекламу - {0}");
             AddTranslation(strings, "ui.settings.ads_removed", "Ads Removed ✓", "Реклама удалена ✓");
 
             // Startup Screen
@@ -165,7 +164,7 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.results.enemies_killed", "Enemies Killed", "Убито врагов");
             AddTranslation(strings, "ui.results.level_reached", "Level Reached", "Достигнут уровень");
             AddTranslation(strings, "ui.results.gold_earned", "Gold Earned", "Заработано золота");
-            AddTranslation(strings, "ui.results.watch_ad_bonus", "WATCH AD TO GET {0}", "ПОСМОТРЕТЬ РЕКЛАМУ ЗА {0}");
+            AddTranslation(strings, "ui.results.watch_ad_bonus", "GET {0} GOLD", "{0} Монет");
             AddTranslation(strings, "ui.results.main_menu", "Main Menu", "Главное меню");
             AddTranslation(strings, "ui.results.continue", "Continue", "Продолжить");
             AddTranslation(strings, "ui.results.resume", "Resume", "Продолжить");
@@ -190,7 +189,7 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "upgrade.berserker_fury.desc", "Greatsword attacks 15% faster", "Меч атакует на 15% быстрее");
             
             AddTranslation(strings, "upgrade.executioner_edge.name", "Executioner's Edge", "Клинок палача");
-            AddTranslation(strings, "upgrade.executioner_edge.desc", "Greatsword: +20% damage, +100% knockback", "Меч: +20% урон, +100% отб��осыв");
+            AddTranslation(strings, "upgrade.executioner_edge.desc", "Greatsword: +20% damage, +100% knockback", "Меч: +20% урон, +100% отброса");
             
             AddTranslation(strings, "upgrade.mirror_slash.name", "Mirror Slash", "Зеркальный удар");
             AddTranslation(strings, "upgrade.mirror_slash.desc", "Spawn 2nd greatsword on opposite side", "Создать 2-й меч с противоположной стороны");

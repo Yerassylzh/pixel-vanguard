@@ -187,13 +187,5 @@ namespace PixelVanguard.Gameplay
                 goldCoin.SetGoldAmount(goldAmount);
             }
         }
-
-        /// <summary>
-        /// Reset static kill count (called when restarting game).
-        /// </summary>
-        public static void ResetKillCount()
-        {
-            totalKillCount = 0;
-        }
     }
 }

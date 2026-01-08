@@ -208,14 +208,11 @@ namespace PixelVanguard.Core
 
         /// <summary>
         /// Get WeaponData from a weapon instance.
+        /// REFACTORED: Uses public property instead of Reflection.
         /// </summary>
         private Data.WeaponData GetWeaponData(Gameplay.WeaponBase weapon)
         {
-            // Use reflection to access protected weaponData field
-            var field = typeof(Gameplay.WeaponBase).GetField("weaponData", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            return field?.GetValue(weapon) as Data.WeaponData;
+            return weapon?.Data;
         }
 
         #endregion

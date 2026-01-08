@@ -38,6 +38,7 @@ namespace PixelVanguard.UI
         [SerializeField] private Sprite uncheckedSprite;
 
         [Header("External Links")]
+        [SerializeField] private GameObject externalLinksRow;  // Parent row to hide on WebGL
         [SerializeField] private Button contactUsButton;
         [SerializeField] private Button privacyPolicyButton;
 
@@ -88,11 +89,24 @@ namespace PixelVanguard.UI
             RefreshUI();
             RefreshRemoveAdsButton();
 
-            // Hide language button on WebGL (Yandex controls language)
+            // Hide platform-specific UI on WebGL
 #if UNITY_WEBGL
+            // Yandex controls language
             if (languageRow != null)
             {
                 languageRow.SetActive(false);
+            }
+            
+            // No IAP on WebGL
+            if (removeAdsRow != null)
+            {
+                removeAdsRow.SetActive(false);
+            }
+            
+            // No external links on WebGL
+            if (externalLinksRow != null)
+            {
+                externalLinksRow.SetActive(false);
             }
 #endif
         }
@@ -326,20 +340,21 @@ namespace PixelVanguard.UI
                 if (removeAdsButton != null)
                     removeAdsButton.interactable = true;
 
-                // Get price from IAP service
-                    if (removeAdsButtonText != null)
+                // Get price from IAP service (price already includes currency from SDK)
+                if (removeAdsButtonText != null)
+                {
+                    var iapService = Core.ServiceLocator.Get<Services.IIAPService>();
+                    if (iapService != null)
                     {
-                        var iapService = Core.ServiceLocator.Get<Services.IIAPService>();
-                        if (iapService != null)
-                        {
-                            string price = iapService.GetLocalizedPrice(Services.ProductIDs.REMOVE_ADS);
-                            removeAdsButtonText.text = Core.LocalizationManager.GetFormatted("ui.settings.remove_ads", price);
-                        }
-                        else
-                        {
-                            removeAdsButtonText.text = Core.LocalizationManager.GetFormatted("ui.settings.remove_ads", "29 YAN");
-                        }
+                        string price = iapService.GetLocalizedPrice(Services.ProductIDs.REMOVE_ADS);
+                        removeAdsButtonText.text = Core.LocalizationManager.GetFormatted("ui.settings.remove_ads", price);
                     }
+                    else
+                    {
+                        // Fallback if IAP service not available
+                        removeAdsButtonText.text = "Remove Ads - ---";
+                    }
+                }
             }
         }
 

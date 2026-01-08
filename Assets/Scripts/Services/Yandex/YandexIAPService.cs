@@ -26,8 +26,27 @@ namespace PixelVanguard.Services
 
             _initialized = true;
             
-            await Task.CompletedTask;
+            // Wait a frame for PluginYG to fully initialize
+            await Task.Yield();
+            
+            // YANDEX REQUIREMENT: Consume unconsumed purchases at startup
+            ConsumePurchases();
+            
             return true;
+        }
+
+        /// <summary>
+        /// Check for and consume unconsumed purchases.
+        /// Called once at startup per Yandex requirements.
+        /// Sets onPurchaseSuccess = true to trigger existing reward logic in ShopController/SettingsController.
+        /// </summary>
+        private void ConsumePurchases()
+        {
+            Debug.Log("[YandexIAPService] Checking for unconsumed purchases...");
+            
+            // This will automatically trigger onPurchaseSuccess for each unconsumed purchase
+            // onPurchaseSuccess = true means our event handlers will be called
+            YG2.ConsumePurchases(onPurchaseSuccess: true);
         }
 
         public async Task<bool> PurchaseProduct(string productId)

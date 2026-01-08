@@ -113,9 +113,6 @@ namespace PixelVanguard.Core
             SpawnedPlayer = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
             SpawnedPlayer.name = $"Player ({SelectedCharacter.displayName})";
 
-            // Verify and fix critical components
-            ValidatePlayerSetup(SpawnedPlayer);
-
             // Set camera to follow the spawned player
             SetupCameraFollow(SpawnedPlayer.transform);
 
@@ -175,83 +172,7 @@ namespace PixelVanguard.Core
             return false;
         }
 
-        private void ValidatePlayerSetup(GameObject player)
-        {
-            // Ensure Player tag is set
-            if (player.tag != "Player")
-            {
-                player.tag = "Player";
-                Debug.LogWarning("[CharacterManager] Fixed missing 'Player' tag");
-            }
 
-            // Ensure layer is correct (Default or Player layer)
-            if (player.layer != LayerMask.NameToLayer("Default") && player.layer != LayerMask.NameToLayer("Player"))
-            {
-                player.layer = LayerMask.NameToLayer("Default");
-                Debug.LogWarning("[CharacterManager] Set player to Default layer");
-            }
-
-            // Verify PlayerController component exists
-            var controller = player.GetComponent<Gameplay.PlayerController>();
-            if (controller == null)
-            {
-                Debug.LogError("[CharacterManager] Player prefab missing PlayerController component!");
-            }
-
-            // Verify PlayerHealth component exists
-            var health = player.GetComponent<Gameplay.PlayerHealth>();
-            if (health == null)
-            {
-                Debug.LogError("[CharacterManager] Player prefab missing PlayerHealth component!");
-            }
-
-            // Verify Rigidbody2D exists and is configured
-            var rb = player.GetComponent<Rigidbody2D>();
-            if (rb == null)
-            {
-                Debug.LogError("[CharacterManager] Player prefab missing Rigidbody2D component!");
-            }
-            else
-            {
-                // Ensure correct Rigidbody2D settings
-                rb.gravityScale = 0f;
-                rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-            }
-
-            // Verify Collider2D exists
-            var collider = player.GetComponent<Collider2D>();
-            if (collider == null)
-            {
-                Debug.LogError("[CharacterManager] Player prefab missing Collider2D component!");
-            }
-
-            // Verify SpriteRenderer and set sorting layer
-            var spriteRenderer = player.GetComponentInChildren<SpriteRenderer>();
-            if (spriteRenderer != null)
-            {
-                // Set to appropriate sorting layer (usually "Player" or "Default")
-                if (SortingLayer.IsValid(SortingLayer.NameToID("Player")))
-                {
-                    spriteRenderer.sortingLayerName = "Player";
-                }
-                else
-                {
-                    spriteRenderer.sortingLayerName = "Default";
-                }
-                spriteRenderer.sortingOrder = 10; // Above ground, below UI
-            }
-            else
-            {
-                Debug.LogWarning("[CharacterManager] No SpriteRenderer found on player or children");
-            }
-
-            // Verify WeaponManager component
-            var weaponManager = player.GetComponent<Gameplay.WeaponManager>();
-            if (weaponManager == null)
-            {
-                Debug.LogError("[CharacterManager] Player prefab missing WeaponManager component!");
-            }
-        }
 
         /// <summary>
         /// Reset character selection (call when returning to main menu).

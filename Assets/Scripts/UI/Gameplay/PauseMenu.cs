@@ -190,8 +190,34 @@ namespace PixelVanguard.UI
             // Restore time scale for scene transition
             Time.timeScale = 1f;
 
+            // YANDEX REQUIREMENT: Show interstitial ad BEFORE scene loads (no frame delays)
+            ShowInterstitialAdBeforeResults();
+
             // Load Results Scene
             SceneManager.LoadScene("ResultsScene");
+        }
+
+        /// <summary>
+        /// Show interstitial ad immediately before loading results scene.
+        /// Called synchronously to avoid frame delays per Yandex requirements.
+        /// </summary>
+        private void ShowInterstitialAdBeforeResults()
+        {
+            var saveService = ServiceLocator.Get<Services.ISaveService>();
+            if (saveService != null)
+            {
+                var saveData = saveService.LoadData();
+                if (saveData.adsRemoved)
+                {
+                    return;
+                }
+            }
+
+            var adService = ServiceLocator.Get<Services.IAdService>();
+            if (adService != null)
+            {
+                adService.ShowInterstitialAd();
+            }
         }
     }
 }

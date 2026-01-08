@@ -35,6 +35,12 @@ namespace PixelVanguard.UI
 
         private void Start()
         {
+            // Reset session data when entering Main Menu (new run starts fresh)
+            if (Gameplay.SessionData.Instance != null)
+            {
+                Gameplay.SessionData.Instance.ResetSession();
+            }
+
             // Initialize navigation controller
             InitializeNavigation();
 
@@ -49,6 +55,14 @@ namespace PixelVanguard.UI
 
             // Apply saved audio settings
             ApplySavedAudioSettings();
+
+            // Hide quit button on WebGL (browsers handle closing)
+#if UNITY_WEBGL
+            if (quitButton != null)
+            {
+                quitButton.gameObject.SetActive(false);
+            }
+#endif
         }
 
         private void InitializeNavigation()

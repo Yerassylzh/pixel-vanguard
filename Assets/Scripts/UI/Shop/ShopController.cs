@@ -7,6 +7,9 @@ using PixelVanguard.UI.Animations;
 using System.Threading.Tasks;
 using System.Collections;
 using System;
+#if UNITY_WEBGL
+using YG;
+#endif
 
 namespace PixelVanguard.UI
 {
@@ -82,6 +85,11 @@ namespace PixelVanguard.UI
             // Setup buttons
             backButton.onClick.AddListener(OnBackClicked);
             iapBuyButton.onClick.AddListener(OnIAPBuyClicked);
+
+            // Subscribe to Yandex purchase success event for consumed purchases (WebGL only)
+#if UNITY_WEBGL
+            YG2.onPurchaseSuccess += OnPurchaseSuccess_GoldPack;
+#endif
 
             // Start cooldown timer coroutine
             cooldownCoroutine = StartCoroutine(UpdateAdCooldownTimer());
@@ -380,6 +388,55 @@ namespace PixelVanguard.UI
             iapButtonText.text = price;
         }
 
+#if UNITY_WEBGL
+        /// <summary>
+        /// Yandex purchase success event handler for consumed purchases.
+        /// Called when YG2.ConsumePurchases() processes unconsumed gold pack purchases.
+        /// Also called for normal purchases as a secondary event (already handled inline).
+        /// NOTE: Remove Ads is Android-only, not handled here.
+        /// </summary>
+        private void OnPurchaseSuccess_GoldPack(string productId)
+        {
+            // Only handle gold pack purchases
+            if (productId != ProductIDs.GOLD_PACK_LARGE)
+            {
+                return;
+            }
+
+            Debug.Log($"[ShopController] Purchase success event received for: {productId}");
+
+            // Check if this shop panel is active (if not, this is likely a consumed purchase at startup)
+            bool isConsumingAtStartup = !shopPanel.activeSelf;
+
+            if (isConsumingAtStartup)
+            {
+                Debug.Log("[ShopController] Consuming unconsumed gold pack purchase from startup");
+            }
+
+            // Grant gold reward
+            int goldEarned = 29900;
+            saveData.totalGold += goldEarned;
+            saveService.SaveData(saveData);
+
+            // Only play animation if shop is open (don't animate during startup consuming)
+            if (!isConsumingAtStartup && goldIconTransform != null && iapBuyButton != null && coinRewardAnimator != null)
+            {
+                coinRewardAnimator.PlayCoinReward(
+                    iapBuyButton.transform.position,
+                    goldIconTransform,
+                    goldEarned,
+                    goldText,
+                    onComplete: null
+                );
+            }
+            else
+            {
+                // Just refresh UI (startup consuming or missing animation components)
+                RefreshUI();
+            }
+        }
+#endif
+
         private IEnumerator UpdateAdCooldownTimer()
         {
             while (true)
@@ -471,6 +528,11 @@ namespace PixelVanguard.UI
             {
                 StopCoroutine(cooldownCoroutine);
             }
+
+            // Unsubscribe from Yandex events
+#if UNITY_WEBGL
+            YG2.onPurchaseSuccess -= OnPurchaseSuccess_GoldPack;
+#endif
 
             // Remove listeners
             backButton.onClick.RemoveAllListeners();

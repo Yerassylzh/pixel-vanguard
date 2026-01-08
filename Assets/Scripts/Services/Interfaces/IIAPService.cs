@@ -44,10 +44,14 @@ namespace PixelVanguard.Services
 
     /// <summary>
     /// Product IDs for IAP offerings.
+    /// Platform-specific products are marked accordingly.
     /// </summary>
     public static class ProductIDs
     {
+        // Yandex/WebGL only
         public const string GOLD_PACK_LARGE = "gold_pack";  // 29900 gold
+        
+        // Android/iOS only (NOT for Yandex/WebGL)
         public const string REMOVE_ADS = "remove_ads";      // Remove all ads permanently
     }
 }

@@ -10,6 +10,7 @@ namespace PixelVanguard.Gameplay
     {
         [Header("References")]
         [SerializeField] protected Data.WeaponData weaponData;
+        public Data.WeaponData Data => weaponData;
 
         [Header("Stats (Loaded from WeaponData)")]
         protected float damage;
@@ -22,8 +23,7 @@ namespace PixelVanguard.Gameplay
         // Player reference
         protected Transform player;
         
-        // Cached manager reference for lifesteal
-        private UpgradeManager upgradeManager;
+
         
         // Clone tracking - prevents Start() from overwriting copied stats
         private bool isClone = false;
@@ -54,9 +54,6 @@ namespace PixelVanguard.Gameplay
             {
                 LoadStatsFromData();
             }
-
-            // Cache UpgradeManager reference
-            upgradeManager = FindAnyObjectByType<UpgradeManager>();
         }
 
         protected virtual void Update()
@@ -205,32 +202,23 @@ namespace PixelVanguard.Gameplay
         /// <param name="damageAmount">Damage to deal</param>
         /// <param name="knockbackDirection">Direction of knockback</param>
         /// <param name="knockbackForce">Force of knockback</param>
-        protected void DealDamageWithLifesteal(EnemyHealth enemyHealth, float damageAmount, Vector2 knockbackDirection, float knockbackForce)
+        /// <summary>
+        /// Deal damage to an enemy and trigger damage event (for lifesteal, stats, etc).
+        /// REFACTORED: Lifesteal logic moved to LifestealSystem.
+        /// </summary>
+        /// <param name="enemyHealth">Target enemy health component</param>
+        /// <param name="damageAmount">Damage to deal</param>
+        /// <param name="knockbackDirection">Direction of knockback</param>
+        /// <param name="knockbackForce">Force of knockback</param>
+        protected void DealDamage(EnemyHealth enemyHealth, float damageAmount, Vector2 knockbackDirection, float knockbackForce)
         {
             if (enemyHealth == null || !enemyHealth.IsAlive) return;
 
             // Deal damage to enemy
             enemyHealth.TakeDamage(damageAmount, knockbackDirection, knockbackForce);
 
-            // Apply lifesteal if upgrade exists
-            if (upgradeManager != null)
-            {
-                float lifestealPercent = upgradeManager.GetLifestealPercent();
-                if (lifestealPercent > 0f)
-                {
-                    float healAmount = damageAmount * (lifestealPercent / 100f);
-                    
-                    // Heal player (find via PlayerController singleton)
-                    if (PlayerController.Instance != null)
-                    {
-                        PlayerHealth playerHealth = PlayerController.Instance.GetComponent<PlayerHealth>();
-                        if (playerHealth != null && playerHealth.IsAlive)
-                        {
-                            playerHealth.Heal(healAmount);
-                        }
-                    }
-                }
-            }
+            // Notify systems (LifestealSystem will pick this up)
+            Core.GameEvents.TriggerDamageDealtByPlayer(damageAmount);
         }
     }
 }

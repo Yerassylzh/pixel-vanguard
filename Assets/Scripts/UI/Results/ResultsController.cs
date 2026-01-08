@@ -51,32 +51,7 @@ namespace PixelVanguard.UI
         {
             Time.timeScale = 1f;
             DisplayStats();
-            ShowInterstitialAd();
-
             SetupButtons();
-        }
-
-        private void ShowInterstitialAd()
-        {
-            var saveService = ServiceLocator.Get<ISaveService>();
-            if (saveService != null)
-            {
-                var saveData = saveService.LoadData();
-                if (saveData.adsRemoved)
-                {
-                    return;
-                }
-            }
-
-            var adService = ServiceLocator.Get<IAdService>();
-            if (adService != null)
-            {
-                adService.ShowInterstitialAd();
-            }
-            else
-            {
-                Debug.LogWarning("[ResultsController] AdService not found - skipping interstitial ad");
-            }
         }
 
         private void DisplayStats()
@@ -158,7 +133,15 @@ namespace PixelVanguard.UI
         {
             if (watchAdButton != null)
             {
-                watchAdButton.onClick.AddListener(OnWatchAdClicked);
+                // Hide watch ad button if no gold was earned (0 * 2 = 0, pointless)
+                if (baseGold <= 0)
+                {
+                    watchAdButton.gameObject.SetActive(false);
+                }
+                else
+                {
+                    watchAdButton.onClick.AddListener(OnWatchAdClicked);
+                }
             }
 
             if (mainMenuButton != null)

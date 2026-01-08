@@ -179,6 +179,8 @@ namespace PixelVanguard.UI.Animations
             // INSTANT hide old panel (no overlap!)
             if (fromPanel != null)
             {
+                // Reset all button animations before hiding panel
+                ResetButtonAnimations(fromPanel);
                 fromPanel.SetActive(false);
             }
 
@@ -202,6 +204,31 @@ namespace PixelVanguard.UI.Animations
                 onComplete?.Invoke();
             }
         }
+
+        /// <summary>
+        /// Reset all button animations in a panel to prevent frozen scales.
+        /// Kills active DOTween animations and resets scale to Vector3.one.
+        /// </summary>
+        private void ResetButtonAnimations(GameObject panel)
+        {
+            if (panel == null) return;
+
+            // Find all buttons in the panel (including children)
+            UnityEngine.UI.Button[] buttons = panel.GetComponentsInChildren<UnityEngine.UI.Button>(includeInactive: true);
+            
+            foreach (var button in buttons)
+            {
+                if (button != null && button.transform != null)
+                {
+                    // Kill any active DOTween animations on this button's transform
+                    DOTween.Kill(button.transform);
+                    
+                    // Reset scale to normal
+                    button.transform.localScale = Vector3.one;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Get current panel.

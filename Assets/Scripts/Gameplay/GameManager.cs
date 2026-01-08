@@ -13,21 +13,15 @@ namespace PixelVanguard.Gameplay
         [Header("Game State")]
         [SerializeField] private GameState currentState = GameState.Initializing;
 
-        [Header("Session Data")]
-        [SerializeField] private float gameTime = 0f;
-        [SerializeField] private int currentKillCount = 0;
-        [SerializeField] private int currentGoldCollected = 0;
-        [SerializeField] private int currentLevel = 1;
-
         [Header("Debug")]
         [SerializeField] private bool enableDebugLogs = true;
 
         public GameState CurrentState => currentState;
-        public float GameTime => gameTime;
-        public int KillCount => currentKillCount;
-        public int GoldCollected => currentGoldCollected;
-        public int Level => currentLevel;
-        public GameSession CurrentSession { get; private set; }
+        // Properties redirected to SessionData for convenience/backwards compatibility if needed
+        public float GameTime => SessionData.Instance != null ? SessionData.Instance.survivalTime : 0f;
+        public int KillCount => SessionData.Instance != null ? SessionData.Instance.killCount : 0;
+        public int GoldCollected => SessionData.Instance != null ? SessionData.Instance.goldCollected : 0;
+        public int Level => SessionData.Instance != null ? SessionData.Instance.levelReached : 1;
 
         private void Awake()
         {
@@ -42,16 +36,12 @@ namespace PixelVanguard.Gameplay
 
         private void OnEnable()
         {
-            Core.GameEvents.OnEnemyKilled += OnEnemyKilled;
-            Core.GameEvents.OnGoldCollected += OnGoldCollected;
             Core.GameEvents.OnPlayerDeath += OnPlayerDeath;
             Core.GameEvents.OnPlayerLevelUp += OnPlayerLevelUp;
         }
 
         private void OnDisable()
         {
-            Core.GameEvents.OnEnemyKilled -= OnEnemyKilled;
-            Core.GameEvents.OnGoldCollected -= OnGoldCollected;
             Core.GameEvents.OnPlayerDeath -= OnPlayerDeath;
             Core.GameEvents.OnPlayerLevelUp -= OnPlayerLevelUp;
         }
@@ -63,43 +53,33 @@ namespace PixelVanguard.Gameplay
 
         private void Update()
         {
-            if (currentState == GameState.Playing)
-            {
-                gameTime += Time.deltaTime;
-                
-                // Update SessionData
-                if (SessionData.Instance != null)
-                {
-                    SessionData.Instance.survivalTime = gameTime;
-                }
-            }
+            // Logic moved to SessionStatsTracker
         }
 
         private void Initialize()
         {
-            Log("Initializing GameManager...");
-
-            // Create new game session
-            CurrentSession = new GameSession();
-
-            // Reset session data
-            gameTime = 0f;
-            currentKillCount = 0;
-            currentGoldCollected = 0;
-            currentLevel = 1; // Reset level to 1
-
-            // Initialize SessionData singleton
             if (SessionData.Instance != null)
             {
                 SessionData.Instance.ResetSession();
-                Log("SessionData initialized and reset");
+            }
+            else
+            {
+                Debug.LogError("[GameManager] SessionData.Instance is NULL! Stats will not be recorded.");
             }
 
-            // Transition to playing state
+            // Ensure LifestealSystem exists
+            if (GetComponent<LifestealSystem>() == null)
+            {
+                gameObject.AddComponent<LifestealSystem>();
+            }
+
+            if (GetComponent<SessionStatsTracker>() == null)
+            {
+                gameObject.AddComponent<SessionStatsTracker>();
+            }
+
             SetState(GameState.Playing);
             Core.GameEvents.TriggerGameStart();
-
-            Log("Game Started!");
         }
 
         public void PauseGame()
@@ -109,7 +89,6 @@ namespace PixelVanguard.Gameplay
                 SetState(GameState.Paused);
                 Time.timeScale = 0f;
                 Core.GameEvents.TriggerGamePause();
-                Log("Game Paused");
             }
         }
 
@@ -118,7 +97,6 @@ namespace PixelVanguard.Gameplay
             SetState(GameState.Playing);
             Time.timeScale = 1f;
             Core.GameEvents.TriggerGameResume();
-            Log("Game Resumed");
         }
 
         public void EndGame(Core.GameOverReason reason)
@@ -128,7 +106,6 @@ namespace PixelVanguard.Gameplay
             SetState(GameState.GameOver);
             Time.timeScale = 0f; // Pause game
             Core.GameEvents.TriggerGameOver(reason);
-            Log($"Game Over: {reason}");
         }
 
         private void SetState(GameState newState)
@@ -136,70 +113,19 @@ namespace PixelVanguard.Gameplay
             currentState = newState;
         }
 
-        private void OnEnemyKilled(int totalKills)
-        {
-            currentKillCount = totalKills;
-            
-            // Update SessionData
-            if (SessionData.Instance != null)
-            {
-                SessionData.Instance.killCount = totalKills;
-            }
-        }
 
-        private void OnGoldCollected(int amount)
-        {
-            currentGoldCollected += amount;
-            
-            // Update SessionData
-            if (SessionData.Instance != null)
-            {
-                SessionData.Instance.goldCollected = currentGoldCollected;
-            }
-        }
 
         private void OnPlayerDeath()
         {
-            Log("Player died!");
-
-            // Finalize session stats
-            FinalizeSession();
-
-            // Update SessionData with final stats
-            if (SessionData.Instance != null)
-            {
-                SessionData.Instance.gameOverReason = Core.GameOverReason.PlayerDied;
-            }
-
-            // Transition to Reviving state (offers revive option)
             SetState(GameState.Reviving);
             Time.timeScale = 0f; // Pause for revive decision
             Core.GameEvents.TriggerGameOver(Core.GameOverReason.PlayerDied);
         }
 
-        private void FinalizeSession()
-        {
-            if (CurrentSession == null) return;
-
-            CurrentSession.survivalTime = gameTime;
-            CurrentSession.killCount = currentKillCount;
-            CurrentSession.goldCollected = currentGoldCollected;
-            CurrentSession.levelReached = currentLevel;
-        }
-
         private void OnPlayerLevelUp()
         {
-            currentLevel++;
-            
-            // Update SessionData
-            if (SessionData.Instance != null)
-            {
-                SessionData.Instance.levelReached = currentLevel;
-            }
-            
             SetState(GameState.LevelUp);
             Time.timeScale = 0f; // Pause for card selection
-            Log($"Level Up - Now Level {currentLevel}");
         }
 
         /// <summary>

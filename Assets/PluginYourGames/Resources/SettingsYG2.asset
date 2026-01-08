@@ -21,7 +21,7 @@ MonoBehaviour:
     payingStatus: 0
   InterstitialAdv:
     showFirstAdv: 0
-    interAdvInterval: 60
+    interAdvInterval: 30
     postponeCallByFail: 0
     postponeCallTimer: 10
     labelAdvSimLabel: 0
@@ -39,16 +39,7 @@ MonoBehaviour:
       priceValue: 79
       priceCurrencyCode: YAN
       currencyImageURL: https://yastatic.net/s3/games-static/static-data/images/payments/sdk/currency-icon-s@2x.png
-      consumed: 0
-    - id: remove_ads
-      title: Remove Ads
-      description: Permanently remove ads
-      imageURI: demo image
-      price: 29 YAN
-      priceValue: 29
-      priceCurrencyCode: YAN
-      currencyImageURL: https://yastatic.net/s3/games-static/static-data/images/payments/sdk/currency-icon-s@2x.png
-      consumed: 0
+      consumed: 1
   RewardedAdv:
     skipInterAdvAfterReward: 0
     labelAdvSimLabel: 0
@@ -71,7 +62,7 @@ MonoBehaviour:
     buildNumber: 3
   Simulation:
     device: 0
-    language: en
+    language: ru
     advIntervalSimulation: 60
     durationAdv: 0.5
     loadAdv: 0
