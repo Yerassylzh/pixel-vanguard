@@ -65,9 +65,11 @@ namespace PixelVanguard.UI
         /// </summary>
         public void UpdateProgress(int adsWatched, int totalGold)
         {
-            // Button shows progress: "WATCH AD (2/5)"
+            // Button shows progress: "AD (2/5)"
             int remaining = requiredAds - adsWatched;
-            watchButtonText.text = $"({remaining}/{requiredAds})";
+            
+            // Format: "AD (0/5)"
+            watchButtonText.text = $"({adsWatched}/{requiredAds})";
         }
 
         /// <summary>

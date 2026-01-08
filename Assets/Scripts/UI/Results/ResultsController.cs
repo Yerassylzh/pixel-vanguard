@@ -101,10 +101,10 @@ namespace PixelVanguard.UI
                 return;
             }
 
-            var saveData = saveService.LoadData();
+            var cachedSave = ServiceLocator.Get<CachedSaveDataService>();
 
             int survivalTime = Mathf.FloorToInt(SessionData.Instance.survivalTime);
-            bool isNewRecord = saveData.UpdateHighScores(
+            bool isNewRecord = cachedSave.Data.UpdateHighScores(
                 survivalTime,
                 SessionData.Instance.killCount,
                 SessionData.Instance.levelReached,
@@ -214,15 +214,15 @@ namespace PixelVanguard.UI
             }
 
             // Load current save data
-            var saveData = saveService.LoadData();
+            var cachedSave = ServiceLocator.Get<CachedSaveDataService>();
 
             // Add gold
-            int oldGold = saveData.totalGold;
-            saveData.totalGold += goldAmount;
+            int oldGold = cachedSave.Data.totalGold;
+            cachedSave.Data.totalGold += goldAmount;
 
             // Update high scores (already done in CheckNewRecords, but ensures it's saved)
             int survivalTime = Mathf.FloorToInt(SessionData.Instance.survivalTime);
-            saveData.UpdateHighScores(
+            cachedSave.Data.UpdateHighScores(
                 survivalTime,
                 SessionData.Instance.killCount,
                 SessionData.Instance.levelReached,
@@ -230,7 +230,7 @@ namespace PixelVanguard.UI
             );
 
             // Save to disk
-            saveService.SaveData(saveData);
+            cachedSave.Save();
 
             dataSaved = true;
         }

@@ -27,124 +27,71 @@ namespace PixelVanguard.Editor
             public bool IsExactMatch;
         }
 
-        // Dictionary of Text -> Key
-        // Derived from TranslationPopulator.cs
-        private static readonly Dictionary<string, string> textToKey = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase)
-        {
-            // Main Menu
-            {"PIXEL VANGUARD", "ui.mainmenu.title"},
-            {"Play", "ui.mainmenu.play"},
-            {"Shop", "ui.shop.title"}, // Favor generic Shop title or main menu? Assuming they are same string "Shop"
-            {"Settings", "ui.settings.title"}, // Same string "Settings"
-            {"Quit", "ui.mainmenu.quit"},
-
-            // Settings
-            {"Music", "ui.settings.music"},
-            {"Sounds", "ui.settings.sounds"},
-            {"Show Damage", "ui.settings.show_damage"},
-            {"Show FPS", "ui.settings.show_fps"},
-            {"Language", "ui.settings.language"},
-            {"Apply", "ui.settings.apply"},
-            {"Back", "ui.settings.back"},
-            {"Contact Us", "ui.settings.contact_us"},
-            {"Privacy Policy", "ui.settings.privacy_policy"},
-            {"Pixel Vanguard v.0.1", "ui.settings.version"},
-            {"Ads Removed ✓", "ui.settings.ads_removed"},
-
-            // Shop
-            {"Select upgrade to see details", "ui.shop.select_upgrade"},
-            
-            // Might
-            {"MIGHT", "ui.shop.might.name"},
-            {"Damage +10%", "ui.shop.might.short"},
-            
-            // Vitality
-            {"VITALITY", "ui.shop.vitality.name"},
-            {"Max HP +10", "ui.shop.vitality.short"},
-
-            // Greaves
-            {"GREAVES", "ui.shop.greaves.name"},
-            {"Speed +5%", "ui.shop.greaves.short"},
-
-            // Magnet
-            {"MAGNET", "ui.shop.magnet.name"},
-            {"Range +10%", "ui.shop.magnet.short"},
-
-            // Ad Packs
-            {"WATCH 5 ADS", "ui.shop.ad_pack.watch_5"},
-            {"1990 Coins", "ui.shop.ad_pack.coins_5"},
-            {"WATCH 10 ADS", "ui.shop.ad_pack.watch_10"},
-            {"4990 Coins", "ui.shop.ad_pack.coins_10"},
-
-            // Gold Pack
-            {"SPECIAL OFFER", "ui.shop.gold_pack.title"},
-            {"29900 Coins", "ui.shop.gold_pack.amount"},
-            {"79 YAN", "ui.shop.gold_pack.price"},
-
-            // Common
-            {"Coins", "ui.common.coins"},
-            {"Watch Ad", "ui.common.watch_ad"},
-            {"LOCKED", "ui.common.locked"},
-            {"Purchase to unlock", "ui.common.purchase_to_unlock"},
-
-            // Character
-            {"Character Selection", "ui.character.title"},
-            {"Select", "ui.character.select"},
-            {"Selected", "ui.character.selected"},
-            {"Continue", "ui.character.continue"},
-            {"Confirm", "ui.character.confirm"},
-
-            // Names
-            {"Knight", "ui.character.knight.name"},
-            {"Pyromancer", "ui.character.pyromancer.name"},
-            {"Ranger", "ui.character.ranger.name"},
-            {"Santa", "ui.character.santa.name"},
-            {"Zombie", "ui.character.zombie.name"},
-
-            // Stats
-            {"Weapon", "ui.character.stats.weapon"},
-            {"Health", "ui.character.stats.health"},
-            {"Speed", "ui.character.stats.speed"},
-            {"Damage", "ui.character.stats.damage"},
-            {"Base Health", "ui.character.stats.base_health"},
-            {"Base Speed", "ui.character.stats.base_speed"},
-
-            // Weapon Names
-            {"Greatsword", "ui.weapon.greatsword"},
-            {"HolyWater", "ui.weapon.holywater"},
-            {"MagicOrbitals", "ui.weapon.magicorbitals"},
-            {"AutoCrossbow", "ui.weapon.autocrossbow"},
-
-            // HUD
-            {"FPS", "ui.hud.fps"},
-            {"LV", "ui.hud.level_short"},
-            {"Level", "ui.hud.level_full"},
-            {"Gold", "ui.hud.gold"},
-            {"Time", "ui.hud.time"},
-
-            // Game Over
-            {"Game Over", "ui.gameover.title"},
-            {"Revive (watch ad)", "ui.gameover.revive"},
-
-            // Results
-            {"Results", "ui.results.title"},
-            {"VICTORY", "ui.results.victory"},
-            {"DEFEATED", "ui.results.defeated"},
-            {"SESSION SUMMARY", "ui.results.session_summary"},
-            {"Time Survived", "ui.results.time_survived"},
-            {"Enemies Killed", "ui.results.enemies_killed"},
-            {"Level Reached", "ui.results.level_reached"},
-            {"Gold Earned", "ui.results.gold_earned"},
-            {"Main Menu", "ui.results.main_menu"},
-            {"Resume", "ui.results.resume"}
-        };
+        // Dictionary of Text -> Key (loaded dynamically from Translations.asset)
+        private static Dictionary<string, string> textToKey = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
 
         [MenuItem("Tools/Localization/Auto-Assign Keys")]
         public static void ShowWindow()
         {
+            // Load translations from asset before opening window
+            LoadTranslationsFromAsset();
+            
             var window = GetWindow<TextKeyReplacerWindow>("Auto-Assign Keys");
             window.minSize = new Vector2(500, 400);
             window.Show();
+        }
+        
+        /// <summary>
+        /// Load all translations from Translations.asset and build text-to-key dictionary.
+        /// This ensures the tool stays in sync with TranslationPopulator automatically.
+        /// </summary>
+        private static void LoadTranslationsFromAsset()
+        {
+            textToKey.Clear();
+            
+            // Load the Translations asset
+            string assetPath = "Assets/Resources/Translations.asset";
+            var translationData = AssetDatabase.LoadAssetAtPath<PixelVanguard.Data.TranslationData>(assetPath);
+
+            if (translationData == null)
+            {
+                Debug.LogError($"[TextKeyReplacer] Translations.asset not found at {assetPath}");
+                EditorUtility.DisplayDialog("Error", 
+                    "Translations.asset not found!\n\nPlease run 'Tools → Localization → Populate Translations' first.", "OK");
+                return;
+            }
+            
+            // Use reflection to access the private strings list
+            var stringsField = typeof(PixelVanguard.Data.TranslationData).GetField("strings", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            if (stringsField == null)
+            {
+                Debug.LogError("[TextKeyReplacer] Could not access strings field in TranslationData");
+                return;
+            }
+            
+            var strings = stringsField.GetValue(translationData) as System.Collections.Generic.List<PixelVanguard.Data.TranslationData.LocalizedString>;
+            
+            if (strings == null)
+            {
+                Debug.LogError("[TextKeyReplacer] Strings list is null");
+                return;
+            }
+            
+            // Build dictionary from English text -> Key
+            int count = 0;
+            foreach (var entry in strings)
+            {
+                if (!string.IsNullOrEmpty(entry.english) && !string.IsNullOrEmpty(entry.key))
+                {
+                    // Use English text as the lookup key (case-insensitive)
+                    textToKey[entry.english] = entry.key;
+                    count++;
+                }
+            }
+            
+            Debug.Log($"[TextKeyReplacer] ✅ Loaded {count} translation entries from Translations.asset");
         }
 
         private void OnGUI()

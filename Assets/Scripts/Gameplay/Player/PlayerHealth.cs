@@ -223,15 +223,15 @@ namespace PixelVanguard.Gameplay
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = saveService.LoadData();
+                var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
 
                 // Apply Vitality upgrade (+10 HP per level)
-                int vitalityLevel = saveData.GetStatLevel("vitality");
+                int vitalityLevel = cachedSave.Data.GetStatLevel("vitality");
                 int healthBonus = vitalityLevel * 10;
                 maxHealth = baseHealth + healthBonus;
 
                 // Apply Might upgrade (+10% damage per level)
-                int mightLevel = saveData.GetStatLevel("might");
+                int mightLevel = cachedSave.Data.GetStatLevel("might");
                 float damageBonus = mightLevel * 0.10f;
                 characterDamageMultiplier = baseDamageMultiplier * (1f + damageBonus);
             }

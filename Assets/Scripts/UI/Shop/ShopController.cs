@@ -57,11 +57,13 @@ namespace PixelVanguard.UI
         [SerializeField] private Transform goldIconTransform; // Gold icon in top bar for animations
         [SerializeField] private CoinRewardAnimator coinRewardAnimator; // Handles coin animations
 
-        private SaveData saveData;
-        private ISaveService saveService;
+        private CachedSaveDataService cachedSave;
         private IAdService adService;
         private IIAPService iapService;
         private Coroutine cooldownCoroutine;
+
+        // Android Special Offer Config
+        private const int SPECIAL_OFFER_AD_Target = 20;
 
         private void Awake()
         {            
@@ -70,17 +72,17 @@ namespace PixelVanguard.UI
 
             // Setup gold pack cards
             SetupGoldPackCards();
+
+            // Note: Don't call UpdatePlatformLayout here because it relies on cachedSave.Data 
+            // which is not loaded until Start(). Use Start() instead.
         }
 
         private void Start()
         {            
             // Get services
-            saveService = ServiceLocator.Get<ISaveService>();
+            cachedSave = ServiceLocator.Get<CachedSaveDataService>();
             adService = ServiceLocator.Get<IAdService>();
             iapService = ServiceLocator.Get<IIAPService>();
-
-            // Load save data
-            LoadSaveData();
 
             // Setup buttons
             backButton.onClick.AddListener(OnBackClicked);
@@ -93,22 +95,31 @@ namespace PixelVanguard.UI
 
             // Start cooldown timer coroutine
             cooldownCoroutine = StartCoroutine(UpdateAdCooldownTimer());
+
+            // Initialize UI
+            UpdateAllCards();
+            UpdateGoldDisplay();
+            UpdatePlatformLayout();
+            UpdateIAPButton();
+
+            // Subscribe to language change for dynamic UI refresh
+            LocalizationManager.OnLanguageChanged += OnLanguageChanged;
         }
 
         private void OnEnable()
         {
-            // Reload data when panel is re-enabled (if services are already initialized)
-            if (saveService != null)
+            // Refresh UI when panel opens
+            UpdateAllCards();
+            UpdateGoldDisplay();
+            
+            // Only update platform-specific UI if cachedSave is loaded
+            if (cachedSave != null)
             {
-                LoadSaveData();
+                UpdatePlatformLayout();
+                UpdateIAPButton();
             }
         }
 
-        private void LoadSaveData()
-        {
-            saveData = saveService.LoadData();
-            RefreshUI();
-        }
 
         private void SetupUpgradeCards()
         {
@@ -179,14 +190,14 @@ namespace PixelVanguard.UI
 
         private void RefreshUI()
         {
-            if (saveData == null)
+            // Null check - OnEnable can run before Start, so cachedSave might not be initialized yet
+            if (cachedSave == null)
             {
-                Debug.LogWarning("[ShopController] SaveData not loaded yet");
-                return;
+                return; // Skip refresh, will be called again from Start()
             }
 
             // Update gold display (top bar)
-            goldText.text = saveData.totalGold.ToString();
+            goldText.text = cachedSave.Data.totalGold.ToString();
 
             // Update upgrade cards
             RefreshUpgradeCard(mightCard, "might");
@@ -195,18 +206,31 @@ namespace PixelVanguard.UI
             RefreshUpgradeCard(magnetCard, "magnet");
 
             // Update gold pack cards (button shows total gold, like in image)
-            adPack1Card.UpdateProgress(saveData.adsWatchedForPack1, saveData.totalGold);
-            adPack2Card.UpdateProgress(saveData.adsWatchedForPack2, saveData.totalGold);
+            adPack1Card.UpdateProgress(cachedSave.Data.adsWatchedForPack1, cachedSave.Data.totalGold);
+            adPack2Card.UpdateProgress(cachedSave.Data.adsWatchedForPack2, cachedSave.Data.totalGold);
 
             // Update IAP button
             UpdateIAPButton();
         }
+        
+        private void UpdateGoldDisplay()
+        {
+            if (goldText != null && cachedSave != null)
+            {
+                goldText.text = cachedSave.TotalGold.ToString();
+            }
+        }
+        
+        private void UpdateAllCards()
+        {
+            RefreshUI();
+        }
 
         private void RefreshUpgradeCard(UpgradeCard card, string statKey)
         {
-            int currentLevel = saveData.GetStatLevel(statKey);
+            int currentLevel = cachedSave.Data.GetStatLevel(statKey);
             int cost = CalculateCost(card.BaseCost, currentLevel);
-            bool canAfford = saveData.totalGold >= cost;
+            bool canAfford = cachedSave.Data.totalGold >= cost;
             
             card.UpdateCard(currentLevel, cost, canAfford);
         }
@@ -219,7 +243,7 @@ namespace PixelVanguard.UI
 
         private void OnUpgradePurchased(string statKey)
         {
-            int currentLevel = saveData.GetStatLevel(statKey);
+            int currentLevel = cachedSave.Data.GetStatLevel(statKey);
             
             if (currentLevel >= 10)
             {
@@ -230,18 +254,18 @@ namespace PixelVanguard.UI
             UpgradeCard card = GetCardForStat(statKey);
             int cost = CalculateCost(card.BaseCost, currentLevel);
 
-            if (saveData.totalGold < cost)
+            if (cachedSave.Data.totalGold < cost)
             {
                 Debug.LogWarning("[Shop] Insufficient gold!");
                 return;
             }
 
             // Deduct gold and increment level
-            saveData.totalGold -= cost;
-            saveData.SetStatLevel(statKey, currentLevel + 1);
+            cachedSave.Data.totalGold -= cost;
+            cachedSave.Data.SetStatLevel(statKey, currentLevel + 1);
 
             // Save to disk
-            saveService.SaveData(saveData);
+            cachedSave.Save();
 
             // Refresh UI
             RefreshUI();
@@ -249,11 +273,21 @@ namespace PixelVanguard.UI
 
         private async void OnWatchAdClicked(int packNumber)
         {
+            // Ensure adService is available
+            if (adService == null)
+            {
+                adService = ServiceLocator.Get<IAdService>();
+                if (adService == null)
+                {
+                    Debug.LogError("[Shop] AdService missing! Cannot watch ad.");
+                    return;
+                }
+            }
             
             // Check cooldown
-            if (!adService.CanWatchAd(saveData.lastAdWatchedTime))
+            if (!adService.CanWatchAd(cachedSave.Data.lastAdWatchedTime))
             {
-                int remaining = adService.GetCooldownRemainingSeconds(saveData.lastAdWatchedTime);
+                int remaining = adService.GetCooldownRemainingSeconds(cachedSave.Data.lastAdWatchedTime);
                 Debug.LogWarning($"[Shop] Ad cooldown active: {remaining}s remaining");
                 return;
             }
@@ -265,41 +299,41 @@ namespace PixelVanguard.UI
             {
                 // Update ad watch count based on pack
                 int goldEarned = 0;
-                int previousGold = saveData.totalGold;
+                int previousGold = cachedSave.Data.totalGold;
                 Transform sourceTransform = null;
 
                 if (packNumber == 1)
                 {
-                    saveData.adsWatchedForPack1++;
+                    cachedSave.Data.adsWatchedForPack1++;
 
                     // Check if pack is complete
-                    if (saveData.adsWatchedForPack1 >= 5)
+                    if (cachedSave.Data.adsWatchedForPack1 >= 5)
                     {
                         goldEarned = 1990;
-                        saveData.totalGold += goldEarned;
-                        saveData.adsWatchedForPack1 = 0; // Reset progress
+                        cachedSave.Data.totalGold += goldEarned;
+                        cachedSave.Data.adsWatchedForPack1 = 0; // Reset progress
                         sourceTransform = adPack1Card.transform;
                     }
                 }
                 else if (packNumber == 2)
                 {
-                    saveData.adsWatchedForPack2++;
+                    cachedSave.Data.adsWatchedForPack2++;
 
                     // Check if pack is complete
-                    if (saveData.adsWatchedForPack2 >= 10)
+                    if (cachedSave.Data.adsWatchedForPack2 >= 10)
                     {
                         goldEarned = 4990;
-                        saveData.totalGold += goldEarned;
-                        saveData.adsWatchedForPack2 = 0; // Reset progress
+                        cachedSave.Data.totalGold += goldEarned;
+                        cachedSave.Data.adsWatchedForPack2 = 0; // Reset progress
                         sourceTransform = adPack2Card.transform;
                     }
                 }
 
                 // Update timestamp for cooldown
-                saveData.lastAdWatchedTime = DateTime.Now.ToString("o"); // ISO 8601
+                cachedSave.Data.lastAdWatchedTime = DateTime.Now.ToString("o"); // ISO 8601
 
                 // Save to disk
-                saveService.SaveData(saveData);
+                cachedSave.Save();
 
                 // Visual feedback if pack completed
                 if (goldEarned > 0 && goldIconTransform != null && sourceTransform != null && coinRewardAnimator != null)
@@ -325,67 +359,168 @@ namespace PixelVanguard.UI
             }
         }
 
-        private async void OnIAPBuyClicked()
+        private void OnIAPBuyClicked()
         {
+#if UNITY_ANDROID
+            // Android: Watch Ads Logic
+            OnWatchSpecialAdClicked();
+#else
+            // WebGL / Editor (Non-Android target): IAP Logic
             if (iapService == null || !iapService.IsInitialized)
             {
                 Debug.LogError("[Shop] IAP service not initialized!");
                 return;
             }
 
-            bool success = await iapService.PurchaseProduct(ProductIDs.GOLD_PACK_LARGE);
+            // ... (Existing IAP Logic) ...
+            PurchaseIAP_GoldPack();
+#endif
+        }
 
+        private async void PurchaseIAP_GoldPack()
+        {
+             bool success = await iapService.PurchaseProduct(ProductIDs.GOLD_PACK_LARGE);
+
+             if (success)
+             {
+                 GrantGoldPackReward();
+             }
+             else
+             {
+                 Debug.LogWarning("[Shop] IAP purchase failed or was cancelled");
+             }
+        }
+
+        private async void OnWatchSpecialAdClicked()
+        {
+            if (adService == null)
+            {
+                 adService = ServiceLocator.Get<IAdService>();
+                 if (adService == null) return;
+            }
+            
+            // Check cooldown (same as regular ad packs)
+            if (!adService.CanWatchAd(cachedSave.Data.lastAdWatchedTime))
+            {
+                int remaining = adService.GetCooldownRemainingSeconds(cachedSave.Data.lastAdWatchedTime);
+                Debug.LogWarning($"[Shop] Ad cooldown active: {remaining}s remaining");
+                return;
+            }
+            
+            // Show rewarded ad
+            bool success = await adService.ShowRewardedAd();
+            
             if (success)
             {
-                int goldEarned = 29900;
-                int previousGold = saveData.totalGold;
-
-                // Award gold
-                saveData.totalGold += goldEarned;
-                saveService.SaveData(saveData);
+                cachedSave.Data.adsWatchedForSpecialPack++;
                 
-                // Visual feedback: coin animation
-                if (goldIconTransform != null && iapBuyButton != null && coinRewardAnimator != null)
+                // Update cooldown timestamp
+                cachedSave.Data.lastAdWatchedTime = System.DateTime.Now.ToString("o");
+                
+                if (cachedSave.Data.adsWatchedForSpecialPack >= SPECIAL_OFFER_AD_Target)
                 {
-                    // Use new coin reward system
-                    coinRewardAnimator.PlayCoinReward(
-                        iapBuyButton.transform.position,
-                        goldIconTransform,
-                        goldEarned,
-                        goldText,  // Text will count up as coins arrive
-                        onComplete: null
-                    );
+                    // Complete!
+                    cachedSave.Data.adsWatchedForSpecialPack = 0;
+                    GrantGoldPackReward();
                 }
-                else
-                {
-                    // Fallback: just refresh UI
-                    RefreshUI();
-                }
+                
+                cachedSave.Save();
+                UpdateIAPButton(); // Refresh progress text
             }
-            else
-            {
-                Debug.LogWarning("[Shop] IAP purchase failed or was cancelled");
-            }
+        }
+
+        private void GrantGoldPackReward()
+        {
+             int goldEarned = 29900;
+             cachedSave.Data.totalGold += goldEarned;
+             cachedSave.Save();
+             
+             // Visual feedback: coin animation
+             if (goldIconTransform != null && iapBuyButton != null && coinRewardAnimator != null)
+             {
+                 coinRewardAnimator.PlayCoinReward(
+                     iapBuyButton.transform.position,
+                     goldIconTransform,
+                     goldEarned,
+                     goldText,
+                     onComplete: null
+                 );
+             }
+             else
+             {
+                 RefreshUI();
+             }
         }
 
         private void UpdateIAPButton()
         {
+            // Guard against null cachedSave.Data (can happen in OnEnable before Start)
+            if (cachedSave.Data == null) return;
+            
+#if UNITY_ANDROID
+            // Android: Show Ad Progress OR Cooldown Timer
+            if (iapButtonText != null)
+            {
+                // Check if there's a cooldown active
+                if (adService != null)
+                {
+                    int remaining = adService.GetCooldownRemainingSeconds(cachedSave.Data.lastAdWatchedTime);
+                    if (remaining > 0)
+                    {
+                        // Show cooldown timer
+                        iapButtonText.text = $"{remaining}s";
+                        if (iapBuyButton != null) iapBuyButton.interactable = false;
+                        return;
+                    }
+                }
+                
+                // No cooldown - show progress
+                iapButtonText.text = $"{cachedSave.Data.adsWatchedForSpecialPack}/{SPECIAL_OFFER_AD_Target}";
+                if (iapBuyButton != null) iapBuyButton.interactable = true;
+            }
+#else
+            // Standard IAP (WebGL / Non-Android Editor)
             if (iapService == null)
             {
-                Debug.LogWarning("[ShopController] IAP service is null!");
-                iapButtonText.text = "---";
+                if (iapButtonText) iapButtonText.text = "---";
                 return;
             }
             
             if (!iapService.IsInitialized)
             {
-                Debug.LogWarning("[ShopController] IAP service not initialized!");
-                iapButtonText.text = "---";
+                if (iapButtonText) iapButtonText.text = "---";
                 return;
             }
             
             string price = iapService.GetLocalizedPrice(ProductIDs.GOLD_PACK_LARGE);
-            iapButtonText.text = price;
+            if (iapButtonText) iapButtonText.text = price;
+#endif
+        }
+
+        private void UpdatePlatformLayout()
+        {
+#if UNITY_ANDROID
+             // Android Special Setup
+             // Change IAP card visual to look like "Free Ad Pack"
+             
+             if (iapBuyButton != null) 
+             {
+                 iapBuyButton.interactable = true;
+             }
+             
+             // Ensure UpdateIAPButton is called next frame or immediately to set text
+             UpdateIAPButton();
+#endif
+        }
+
+        private void OnLanguageChanged()
+        {
+            // Re-initialize cards to update localized static text (Name, Desc)
+            SetupUpgradeCards();
+            SetupGoldPackCards();
+            
+            // Refresh dynamic UI (Labels, Buttons)
+            RefreshUI();
         }
 
 #if UNITY_WEBGL
@@ -415,8 +550,8 @@ namespace PixelVanguard.UI
 
             // Grant gold reward
             int goldEarned = 29900;
-            saveData.totalGold += goldEarned;
-            saveService.SaveData(saveData);
+            cachedSave.Data.totalGold += goldEarned;
+            cachedSave.Save();
 
             // Only play animation if shop is open (don't animate during startup consuming)
             if (!isConsumingAtStartup && goldIconTransform != null && iapBuyButton != null && coinRewardAnimator != null)
@@ -443,19 +578,22 @@ namespace PixelVanguard.UI
             {
                 yield return new WaitForSeconds(1f);
 
-                if (saveData != null && adService != null)
+                if (cachedSave.Data != null && adService != null)
                 {
-                    int remaining = adService.GetCooldownRemainingSeconds(saveData.lastAdWatchedTime);
+                    int remaining = adService.GetCooldownRemainingSeconds(cachedSave.Data.lastAdWatchedTime);
 
                     // Update both ad pack cards with same cooldown
                     adPack1Card.UpdateCooldown(remaining);
                     adPack2Card.UpdateCooldown(remaining);
+                    
+                    // Update Special Offer (IAP button) cooldown display
+                    UpdateIAPButton();
 
                     // When cooldown ends, refresh to show gold again
                     if (remaining == 0)
                     {
-                        adPack1Card.UpdateProgress(saveData.adsWatchedForPack1, saveData.totalGold);
-                        adPack2Card.UpdateProgress(saveData.adsWatchedForPack2, saveData.totalGold);
+                        adPack1Card.UpdateProgress(cachedSave.Data.adsWatchedForPack1, cachedSave.Data.totalGold);
+                        adPack2Card.UpdateProgress(cachedSave.Data.adsWatchedForPack2, cachedSave.Data.totalGold);
                     }
                 }
             }
@@ -535,6 +673,8 @@ namespace PixelVanguard.UI
 #endif
 
             // Remove listeners
+            LocalizationManager.OnLanguageChanged -= OnLanguageChanged;
+            
             backButton.onClick.RemoveAllListeners();
             iapBuyButton.onClick.RemoveAllListeners();
         }

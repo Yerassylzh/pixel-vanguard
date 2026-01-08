@@ -5,27 +5,34 @@ namespace PixelVanguard.Core
 {
     /// <summary>
     /// Global settings manager for gameplay preferences.
-    /// Uses platform-adaptive ISaveService for persistence.
+    /// Uses centralized CachedSaveDataService for persistence.
     /// </summary>
     public class GameSettings
     {
-        private readonly ISaveService saveService;
-        private SaveData cachedSaveData;
+        private readonly CachedSaveDataService cachedSave;
+        private readonly IAudioConfig audioConfig;
+
+        // Interface for audio defaults (to avoid dependency on AudioManager singleton)
+        public interface IAudioConfig
+        {
+            float DefaultSFXVolume { get; }
+            float DefaultMusicVolume { get; }
+        }
+
+        // Default implementation using AudioManager
+        private class AudioManagerConfig : IAudioConfig
+        {
+            public float DefaultSFXVolume => AudioManager.Instance?.DefaultSFXVolume ?? 0.67f;
+            public float DefaultMusicVolume => AudioManager.Instance?.DefaultMusicVolume ?? 0.67f;
+        }
 
         /// <summary>
         /// Should damage numbers be displayed?
         /// </summary>
         public bool ShowDamageNumbers
         {
-            get => cachedSaveData?.showDamageNumbers ?? true;
-            set
-            {
-                if (cachedSaveData != null)
-                {
-                    cachedSaveData.showDamageNumbers = value;
-                    SaveSettings();
-                }
-            }
+            get => cachedSave.ShowDamageNumbers;
+            set => cachedSave.ShowDamageNumbers = value;  // Auto-saves
         }
 
         /// <summary>
@@ -33,15 +40,8 @@ namespace PixelVanguard.Core
         /// </summary>
         public bool ShowFPS
         {
-            get => cachedSaveData?.showFPS ?? false;
-            set
-            {
-                if (cachedSaveData != null)
-                {
-                    cachedSaveData.showFPS = value;
-                    SaveSettings();
-                }
-            }
+            get => cachedSave.ShowFPS;
+            set => cachedSave.ShowFPS = value;  // Auto-saves
         }
 
         /// <summary>
@@ -51,22 +51,13 @@ namespace PixelVanguard.Core
         {
             get
             {
-                if (cachedSaveData == null) return AudioManager.Instance?.DefaultSFXVolume ?? 0.67f;
-                
-                // If -1, use AudioManager default
-                if (cachedSaveData.sfxVolume < 0f)
-                    return AudioManager.Instance?.DefaultSFXVolume ?? 0.67f;
-                
-                return cachedSaveData.sfxVolume;
+                float volume = cachedSave.SFXVolume;
+                // If -1, use default
+                if (volume < 0f)
+                    return audioConfig.DefaultSFXVolume;
+                return volume;
             }
-            set
-            {
-                if (cachedSaveData != null)
-                {
-                    cachedSaveData.sfxVolume = Mathf.Clamp01(value);
-                    SaveSettings();
-                }
-            }
+            set => cachedSave.SFXVolume = Mathf.Clamp01(value);  // Auto-saves
         }
 
         /// <summary>
@@ -76,22 +67,13 @@ namespace PixelVanguard.Core
         {
             get
             {
-                if (cachedSaveData == null) return AudioManager.Instance?.DefaultMusicVolume ?? 0.67f;
-                
-                // If -1, use AudioManager default
-                if (cachedSaveData.musicVolume < 0f)
-                    return AudioManager.Instance?.DefaultMusicVolume ?? 0.67f;
-                
-                return cachedSaveData.musicVolume;
+                float volume = cachedSave.MusicVolume;
+                // If -1, use default
+                if (volume < 0f)
+                    return audioConfig.DefaultMusicVolume;
+                return volume;
             }
-            set
-            {
-                if (cachedSaveData != null)
-                {
-                    cachedSaveData.musicVolume = Mathf.Clamp01(value);
-                    SaveSettings();
-                }
-            }
+            set => cachedSave.MusicVolume = Mathf.Clamp01(value);  // Auto-saves
         }
 
         /// <summary>
@@ -99,51 +81,24 @@ namespace PixelVanguard.Core
         /// </summary>
         public string Language
         {
-            get => cachedSaveData?.language ?? "en";
+            get => cachedSave.Language;
             set
             {
-                if (cachedSaveData != null)
+                if (cachedSave.Language != value)
                 {
-                    cachedSaveData.language = value;
-                    SaveSettings();
+                    cachedSave.Language = value;  // Auto-saves
+                    LocalizationManager.SetLanguage(value);  // Notify UI to refresh
                 }
             }
         }
 
         /// <summary>
-        /// Constructor - loads settings from ISaveService.
+        /// Constructor - uses centralized cache service.
         /// </summary>
-        public GameSettings(ISaveService saveService)
+        public GameSettings(CachedSaveDataService cachedSave, IAudioConfig audioConfig = null)
         {
-            this.saveService = saveService;
-            LoadSettings();
-        }
-
-        /// <summary>
-        /// Load settings from save data.
-        /// </summary>
-        private void LoadSettings()
-        {
-            cachedSaveData = saveService.LoadData();
-            
-            if (cachedSaveData == null)
-            {
-                Debug.LogWarning("[GameSettings] No save data found, creating default");
-                cachedSaveData = SaveData.CreateDefault();
-                SaveSettings();
-            }
-        }
-
-        /// <summary>
-        /// Save settings to persistent storage.
-        /// </summary>
-        private void SaveSettings()
-        {
-            if (cachedSaveData != null)
-            {
-                saveService.SaveData(cachedSaveData);
-                cachedSaveData = saveService.LoadData();
-            }
+            this.cachedSave =cachedSave;
+            this.audioConfig = audioConfig ?? new AudioManagerConfig();
         }
 
         /// <summary>
@@ -151,15 +106,11 @@ namespace PixelVanguard.Core
         /// </summary>
         public void ResetToDefaults()
         {
-            if (cachedSaveData == null) return;
-
-            cachedSaveData.showDamageNumbers = true;
-            cachedSaveData.showFPS = false;
-            cachedSaveData.sfxVolume = -1f; // Use AudioManager default
-            cachedSaveData.musicVolume = -1f; // Use AudioManager default
-            cachedSaveData.language = "en";
-            
-            SaveSettings();
+            cachedSave.ShowDamageNumbers = true;
+            cachedSave.ShowFPS = false;
+            cachedSave.SFXVolume = -1f; // Use AudioManager default
+            cachedSave.MusicVolume = -1f; // Use AudioManager default
+            cachedSave.Language = "en";
         }
 
         /// <summary>
@@ -167,7 +118,7 @@ namespace PixelVanguard.Core
         /// </summary>
         public void Reload()
         {
-            LoadSettings();
+            cachedSave.Reload();
         }
     }
 }

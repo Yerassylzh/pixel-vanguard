@@ -58,8 +58,10 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.settings.contact_us", "Contact Us", "Связаться с нами");
             AddTranslation(strings, "ui.settings.privacy_policy", "Privacy Policy", "Политика конфиденциальности");
             AddTranslation(strings, "ui.settings.version", "Pixel Vanguard v.0.1", "Pixel Vanguard в.0.1");
-            AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - {0}", "Убрать рекламу - {0}");
-            AddTranslation(strings, "ui.settings.ads_removed", "Ads Removed ✓", "Реклама удалена ✓");
+            AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - 4990 coins", "Убрать рекламу - 4990 монет");
+            AddTranslation(strings, "ui.settings.ads_removed", "Ads Removed", "Реклама удалена");
+
+            AddTranslation(strings, "ui.currency.coins", "Coins", "Монет(ы)");
 
             // Startup Screen
             AddTranslation(strings, "ui.startup.press_to_start", "Press to Start", "Нажмите для начала");

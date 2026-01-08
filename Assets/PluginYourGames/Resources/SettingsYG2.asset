@@ -30,16 +30,7 @@ MonoBehaviour:
   Payments:
     durationPayPanel: 1
     testBuyFail: 0
-    purshases:
-    - id: gold_pack
-      title: Premium Gold Pack
-      description: Get 29900 coins for a very low price
-      imageURI: demo image
-      price: 79 YAN
-      priceValue: 79
-      priceCurrencyCode: YAN
-      currencyImageURL: https://yastatic.net/s3/games-static/static-data/images/payments/sdk/currency-icon-s@2x.png
-      consumed: 1
+    purshases: []
   RewardedAdv:
     skipInterAdvAfterReward: 0
     labelAdvSimLabel: 0
@@ -59,7 +50,7 @@ MonoBehaviour:
     loadSceneIfSDKLate: 0
     loadSceneIndex: 0
     initDelaySimulation: 0
-    buildNumber: 3
+    buildNumber: 8
   Simulation:
     device: 0
     language: ru

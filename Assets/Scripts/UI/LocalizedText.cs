@@ -33,6 +33,12 @@ namespace PixelVanguard.UI
             Core.LocalizationManager.OnLanguageChanged += Refresh;
         }
 
+        private void OnEnable()
+        {
+            // Refresh when object becomes active (in case language changed while inactive)
+            Refresh();
+        }
+
         private void Start()
         {
             // Initial translation (done in Start to ensure LocalizationManager is initialized)
@@ -53,15 +59,29 @@ namespace PixelVanguard.UI
             if (textComponent == null || string.IsNullOrEmpty(translationKey))
                 return;
 
-            // Check if LocalizationManager is initialized
-            // This handles script execution order issues
+            // Get translation (returns "[key]" if not found)
             string translation = Core.LocalizationManager.Get(translationKey);
+
+            // Always update text - this ensures we see the translation or the debug key
+            textComponent.text = translation;
+        }
+
+        private string formatArgs;
+        
+        /// <summary>
+        /// Set formatted translation with arguments.
+        /// Example: SetFormatted("ui.gold.total", 1500)
+        /// </summary>
+        public void SetFormatted(string key, params object[] args)
+        {
+            if (textComponent == null) return;
+
+            translationKey = key;
+            // Store args for refresh if needed (basic implementation)
+            // Implementation note: Storing object[] args is tricky if they change. 
+            // Better to only support static or dynamic-push updates.
             
-            // Only update if we got a valid translation (not the [key] fallback)
-            if (!translation.StartsWith("["))
-            {
-                textComponent.text = translation;
-            }
+            textComponent.text = Core.LocalizationManager.GetFormatted(key, args);
         }
 
         /// <summary>
@@ -73,18 +93,7 @@ namespace PixelVanguard.UI
             Refresh();
         }
 
-        /// <summary>
-        /// Set formatted translation with arguments.
-        /// Example: SetFormatted("ui.gold.total", 1500)
-        /// </summary>
-        public void SetFormatted(string key, params object[] args)
-        {
-            if (textComponent == null)
-                return;
 
-            translationKey = key;
-            textComponent.text = Core.LocalizationManager.GetFormatted(key, args);
-        }
 
 #if UNITY_EDITOR
         /// <summary>

@@ -52,8 +52,8 @@ namespace PixelVanguard.Gameplay
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = saveService.LoadData();
-                int magnetLevel = saveData.GetStatLevel("magnet");
+                var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
+                int magnetLevel = cachedSave.Data.GetStatLevel("magnet");
                 float radiusBonus = magnetLevel * 0.10f;
                 magnetRange = baseRange * (1f + radiusBonus);  
             }

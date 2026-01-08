@@ -32,8 +32,7 @@ namespace PixelVanguard.UI.CharacterSelect
         private List<CharacterCard> characterCards = new List<CharacterCard>();
         private CharacterData currentlyViewedCharacter;
         private CharacterData selectedCharacter;
-        private SaveData saveData;
-        private ISaveService saveService;
+        private CachedSaveDataService cachedSave;
 
         private void Awake()
         {
@@ -42,8 +41,7 @@ namespace PixelVanguard.UI.CharacterSelect
 
         private void Start()
         {
-            saveService = Core.ServiceLocator.Get<ISaveService>();
-            LoadSaveData();
+            cachedSave = Core.ServiceLocator.Get<CachedSaveDataService>();
 
             if (backButton != null)
                 backButton.onClick.AddListener(OnBackClicked);
@@ -51,13 +49,69 @@ namespace PixelVanguard.UI.CharacterSelect
             if (actionButton != null)
                 actionButton.onClick.AddListener(OnActionClicked);
 
-            RefreshUI();
+            // Note: Don't call SelectInitialCharacter here - wait until OnEnable when panel is shown
+        }
+        
+        private void SelectInitialCharacter()
+        {
+            // Safety check - cards must be initialized first
+            if (characterCards == null || characterCards.Count == 0) return;
+            if (cachedSave == null) return;
+            
+            // Try to get the previously selected character from save data
+            string selectedId = cachedSave.Data?.selectedCharacterID;
+            
+            // If no saved selection, try CharacterManager
+            if (string.IsNullOrEmpty(selectedId))
+            {
+                var selected = Core.CharacterManager.SelectedCharacter;
+                if (selected != null)
+                    selectedId = selected.characterID;
+            }
+            
+            if (!string.IsNullOrEmpty(selectedId))
+            {
+                // Find and select the previously selected character
+                foreach (var card in characterCards)
+                {
+                    if (card?.CharacterData?.characterID == selectedId)
+                    {
+                        OnCharacterCardClicked(card.CharacterData);
+                        return;
+                    }
+                }
+            }
+            
+            // If no previous selection or character not found, select the first one (Knight)
+            if (characterCards.Count > 0 && characterCards[0]?.CharacterData != null)
+            {
+                OnCharacterCardClicked(characterCards[0].CharacterData);
+            }
         }
 
         private void OnEnable()
         {
-            // Automatically refresh when panel is enabled (SetActive(true))
+            // Ensure cachedSave is initialized (OnEnable can run before Start)
+            if (cachedSave == null)
+                cachedSave = Core.ServiceLocator.Get<CachedSaveDataService>();
+            
+            // RefreshUI first to ensure cards are initialized with data
             RefreshGoldAndUI();
+            
+            // Then select initial character (needs cards to be initialized)
+            SelectInitialCharacter();
+            
+            Core.LocalizationManager.OnLanguageChanged += OnLanguageChanged;
+        }
+
+        private void OnDisable()
+        {
+            Core.LocalizationManager.OnLanguageChanged -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged()
+        {
+            RefreshUI();
         }
 
         /// <summary>
@@ -66,13 +120,12 @@ namespace PixelVanguard.UI.CharacterSelect
         /// </summary>
         public void RefreshGoldAndUI()
         {
-            if (saveService != null)
+            if (cachedSave != null)
             {
-                saveData = saveService.LoadData();
 
                 if (goldText != null)
                 {
-                    goldText.text = saveData.totalGold.ToString();
+                    goldText.text = cachedSave.Data.totalGold.ToString();
                 }
                 else
                 {
@@ -90,17 +143,22 @@ namespace PixelVanguard.UI.CharacterSelect
             {
                 GameObject cardObj = Instantiate(characterCardPrefab, characterCardsContainer);
                 CharacterCard card = cardObj.GetComponent<CharacterCard>();
-                card.OnCardClicked += () => OnCharacterCardClicked(character);
-                characterCards.Add(card);
+                
+                if (card != null)
+                {
+                    // Subscribe to card click
+                    card.OnCardClicked += () => OnCharacterCardClicked(card);
+                    characterCards.Add(card);
+                }
             }
         }
 
         private void LoadSaveData()
         {
-            if (saveService != null)
+            if (cachedSave != null)
             {
-                saveData = saveService.LoadData();
-                selectedCharacter = FindCharacterById(saveData.selectedCharacterID);
+                
+                selectedCharacter = FindCharacterById(cachedSave.Data.selectedCharacterID);
 
                 if (selectedCharacter == null && availableCharacters.Length > 0)
                     selectedCharacter = availableCharacters[0];
@@ -109,15 +167,15 @@ namespace PixelVanguard.UI.CharacterSelect
 
         private void RefreshUI()
         {
-            if (saveData == null) return;
+            if (cachedSave.Data == null) return;
 
             if (goldText != null)
-                goldText.text = saveData.totalGold.ToString();
+                goldText.text = cachedSave.Data.totalGold.ToString();
 
             for (int i = 0; i < availableCharacters.Length && i < characterCards.Count; i++)
             {
                 var character = availableCharacters[i];
-                bool isLocked = !saveData.IsCharacterUnlocked(character.characterID);
+                bool isLocked = !cachedSave.Data.IsCharacterUnlocked(character.characterID);
                 characterCards[i].Initialize(character, isLocked);
             }
 
@@ -135,19 +193,28 @@ namespace PixelVanguard.UI.CharacterSelect
             ShowCharacterDetails(character);
             UpdateActionButton();
         }
+        
+        // Overload for card click events
+        private void OnCharacterCardClicked(CharacterCard card)
+        {
+            if (card != null && card.CharacterData != null)
+            {
+                OnCharacterCardClicked(card.CharacterData);
+            }
+        }
 
         private void ShowCharacterDetails(CharacterData character)
         {
             if (detailsPanel == null || character == null) return;
-            bool isLocked = !saveData.IsCharacterUnlocked(character.characterID);
-            detailsPanel.ShowCharacterDetails(character, saveData, isLocked);
+            bool isLocked = !cachedSave.Data.IsCharacterUnlocked(character.characterID);
+            detailsPanel.ShowCharacterDetails(character, cachedSave.Data, isLocked);
         }
 
         private void UpdateActionButton()
         {
             if (currentlyViewedCharacter == null) return;
 
-            bool isLocked = !saveData.IsCharacterUnlocked(currentlyViewedCharacter.characterID);
+            bool isLocked = !cachedSave.Data.IsCharacterUnlocked(currentlyViewedCharacter.characterID);
 
             if (confirmContainer != null) confirmContainer.SetActive(false);
             if (playContainer != null) playContainer.SetActive(false);
@@ -161,7 +228,7 @@ namespace PixelVanguard.UI.CharacterSelect
                     if (buyPriceText != null)
                         buyPriceText.text = currentlyViewedCharacter.goldCost.ToString();
 
-                    bool canAfford = saveData.totalGold >= currentlyViewedCharacter.goldCost;
+                    bool canAfford = cachedSave.Data.totalGold >= currentlyViewedCharacter.goldCost;
                     if (actionButton != null)
                         actionButton.interactable = canAfford;
                 }
@@ -194,7 +261,7 @@ namespace PixelVanguard.UI.CharacterSelect
         {
             if (currentlyViewedCharacter == null) return;
 
-            bool isLocked = !saveData.IsCharacterUnlocked(currentlyViewedCharacter.characterID);
+            bool isLocked = !cachedSave.Data.IsCharacterUnlocked(currentlyViewedCharacter.characterID);
 
             if (isLocked)
             {
@@ -216,14 +283,14 @@ namespace PixelVanguard.UI.CharacterSelect
         private void PurchaseCharacter(CharacterData character)
         {
             int cost = character.goldCost;
-            if (saveData.totalGold < cost) return;
+            if (cachedSave.Data.totalGold < cost) return;
 
-            saveData.totalGold -= cost;
-            saveData.UnlockCharacter(character.characterID);
-            saveService.SaveData(saveData);
+            cachedSave.Data.totalGold -= cost;
+            cachedSave.Data.UnlockCharacter(character.characterID);
+            cachedSave.Save();
 
             if (goldText != null)
-                goldText.text = saveData.totalGold.ToString();
+                goldText.text = cachedSave.Data.totalGold.ToString();
 
             // Update the purchased character's card visual state (opacity 59% → 100%)
             for (int i = 0; i < availableCharacters.Length && i < characterCards.Count; i++)
@@ -241,8 +308,8 @@ namespace PixelVanguard.UI.CharacterSelect
         private void ConfirmSelection()
         {
             selectedCharacter = currentlyViewedCharacter;
-            saveData.selectedCharacterID = selectedCharacter.characterID;
-            saveService.SaveData(saveData);
+            cachedSave.Data.selectedCharacterID = selectedCharacter.characterID;
+            cachedSave.Save();
 
             Core.CharacterManager.SelectedCharacter = selectedCharacter;
 

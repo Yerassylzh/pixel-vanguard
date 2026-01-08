@@ -63,6 +63,11 @@ namespace PixelVanguard.UI
                 quitButton.gameObject.SetActive(false);
             }
 #endif
+            // Subscribe to language changes
+            Core.LocalizationManager.OnLanguageChanged += OnLanguageChanged;
+            
+            // Initial localization update
+            RefreshLocalization();
         }
 
         private void InitializeNavigation()
@@ -121,10 +126,10 @@ namespace PixelVanguard.UI
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = saveService.LoadData();
+                var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
                 if (goldText != null)
                 {
-                    goldText.text = saveData.totalGold.ToString();
+                    goldText.text = cachedSave.Data.totalGold.ToString();
                 }
             }
         }
@@ -181,6 +186,9 @@ namespace PixelVanguard.UI
                 ShowPanelDirect(mainMenuPanel);
                 RefreshGoldDisplay();
             }
+            
+            // Force refresh immediately as well, just in case
+            RefreshGoldDisplay();
         }
 
         // ============================================
@@ -235,6 +243,34 @@ namespace PixelVanguard.UI
 #endif
         }
 
+        private void OnLanguageChanged()
+        {
+            RefreshLocalization();
+        }
+
+        private void RefreshLocalization()
+        {
+            // Update button texts if they exist
+            // Keys assumed: ui.menu.play, ui.menu.shop, ui.menu.settings, ui.menu.quit
+            
+            UpdateText(playButton, "ui.menu.play");
+            UpdateText(shopButton, "ui.shop.title");
+            UpdateText(settingsButton, "ui.menu.settings");
+            UpdateText(quitButton, "ui.menu.quit");
+        }
+
+        private void UpdateText(Button button, string key)
+        {
+            if (button != null)
+            {
+                var textComp = button.GetComponentInChildren<TextMeshProUGUI>();
+                if (textComp != null)
+                {
+                    textComp.text = Core.LocalizationManager.Get(key);
+                }
+            }
+        }
+
         private void OnDestroy()
         {
             // Clean up listeners
@@ -242,6 +278,8 @@ namespace PixelVanguard.UI
             if (shopButton != null) shopButton.onClick.RemoveAllListeners();
             if (settingsButton != null) settingsButton.onClick.RemoveAllListeners();
             if (quitButton != null) quitButton.onClick.RemoveAllListeners();
+            
+            Core.LocalizationManager.OnLanguageChanged -= OnLanguageChanged;
         }
     }
 }

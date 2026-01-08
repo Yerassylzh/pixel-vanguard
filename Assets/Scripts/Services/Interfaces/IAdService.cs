@@ -22,6 +22,7 @@ namespace PixelVanguard.Services
 
         /// <summary>
         /// Show an interstitial ad (non-rewarded, typically at end of game).
+        /// Returns a Task that completes when the ad is closed (or fails).
         /// </summary>
         void ShowInterstitialAd();
 

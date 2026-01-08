@@ -72,10 +72,10 @@ namespace PixelVanguard.Gameplay
             var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
             if (saveService != null)
             {
-                var saveData = saveService.LoadData();
+                var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
 
                 // Apply Greaves upgrade (+5% speed per level)
-                int greavesLevel = saveData.GetStatLevel("greaves");
+                int greavesLevel = cachedSave.Data.GetStatLevel("greaves");
                 float speedBonus = greavesLevel * 0.05f;
                 moveSpeed = baseSpeed * (1f + speedBonus);
             }

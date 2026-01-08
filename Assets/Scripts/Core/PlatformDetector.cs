@@ -78,21 +78,7 @@ namespace PixelVanguard.Core
                 return Application.isMobilePlatform ? PlatformType.WebMobile : PlatformType.Desktop;
             }
 #else
-            // For non-WebGL builds (Editor, Native Mobile, etc.)
-            // Check if running on mobile device
-            if (Application.isMobilePlatform)
-            {
-                // Check if WebGL on mobile browser (shouldn't happen in non-WebGL builds, but safety check)
-                if (Application.platform == RuntimePlatform.WebGLPlayer)
-                {
-                    return PlatformType.WebMobile;
-                }
-                // Native mobile app
-                return PlatformType.NativeMobile;
-            }
-
-            // Desktop (Windows, Mac, Linux, WebGL on desktop)
-            return PlatformType.Desktop;
+            return PlatformType.NativeMobile;
 #endif
         }
 

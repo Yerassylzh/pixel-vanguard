@@ -40,6 +40,9 @@ namespace PixelVanguard.Core
                 var saveService = PlatformServiceFactory.CreateSaveService();
                 saveService.Initialize();
                 ServiceLocator.Register<ISaveService>(saveService);
+                
+                // Register centralized cached save data service
+                ServiceLocator.Register<Services.CachedSaveDataService>(new Services.CachedSaveDataService(saveService));
             }
 
             // === Ad Service ===
@@ -77,16 +80,19 @@ namespace PixelVanguard.Core
                 Debug.LogError("[GameBootstrap] Please create it via: Assets → Create → Localization → Translation Data");
                 return;
             }
+            
+            // Get save service for language persistence
+            var saveService = ServiceLocator.Get<ISaveService>();
 
-            // Initialize LocalizationManager
-            LocalizationManager.Initialize(languageProvider, translationData);
+            // Initialize LocalizationManager with ISaveService
+            LocalizationManager.Initialize(languageProvider, translationData, saveService);
             
             // === Game Settings Service ===
-            // Must be initialized after ISaveService and before AudioManager is used
+            // Must be initialized after CachedSaveDataService
             if (!ServiceLocator.Has<GameSettings>())
             {
-                var saveService = ServiceLocator.Get<ISaveService>();
-                var gameSettings = new GameSettings(saveService);
+                var cachedSave = ServiceLocator.Get<CachedSaveDataService>();
+                var gameSettings = new GameSettings(cachedSave);
                 ServiceLocator.Register<GameSettings>(gameSettings);
             }
         }

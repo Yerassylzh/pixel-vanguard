@@ -30,6 +30,7 @@ namespace PixelVanguard.Services
         public int adsWatchedForPack1 = 0;  // 5 ads → 1990 gold
         public int adsWatchedForPack2 = 0;  // 10 ads → 4990 gold
         public string lastAdWatchedTime = "";  // ISO 8601 timestamp
+        public int adsWatchedForSpecialPack = 0; // Android special offer (20 ads)
         public bool adsRemoved = false;  // IAP: Remove Ads purchase
 
         // Game Settings (platform-adaptive)

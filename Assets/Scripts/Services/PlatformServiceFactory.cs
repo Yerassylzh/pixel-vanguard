@@ -31,6 +31,8 @@ namespace PixelVanguard.Services
         {
 #if UNITY_WEBGL
             return new YandexAdService();
+#elif UNITY_ANDROID
+            return new AdMobAdService();
 #else
             return new PlaceholderAdService();
 #endif

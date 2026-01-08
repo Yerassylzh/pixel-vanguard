@@ -9,7 +9,8 @@ namespace PixelVanguard.Core
     /// </summary>
     public static class LocalizationManager
     {
-        private static Services.ILanguageProvider _languageProvider;
+        private static Services.ILanguageProvider _languageProvider; // Optional, for Yandex WebGL
+        private static Services.ISaveService _saveService; // Primary storage
         private static Data.TranslationData _translationData;
         private static string _currentLanguage = "en";
 
@@ -27,10 +28,11 @@ namespace PixelVanguard.Core
         /// Initialize the localization system.
         /// Called from GameBootstrap.
         /// </summary>
-        public static void Initialize(Services.ILanguageProvider languageProvider, Data.TranslationData translationData)
+        public static void Initialize(Services.ILanguageProvider languageProvider, Data.TranslationData translationData, Services.ISaveService saveService)
         {
-            _languageProvider = languageProvider;
+            _languageProvider = languageProvider; // Keep for Yandex WebGL compatibility
             _translationData = translationData;
+            _saveService = saveService;
 
             if (_translationData == null)
             {
@@ -38,8 +40,14 @@ namespace PixelVanguard.Core
                 return;
             }
 
-            // Get initial language from platform
-            _currentLanguage = _languageProvider.GetCurrentLanguage();
+            // Get initial language from SaveData (single source of truth)
+            var saveData = _saveService.LoadData();
+            _currentLanguage = saveData?.language ?? "en";
+            
+            Debug.Log($"[LocalizationManager] Initialized with language: {_currentLanguage}");
+            
+            // Fire event to refresh any LocalizedText components that already ran Refresh() before we were ready
+            OnLanguageChanged?.Invoke();
         }
 
         /// <summary>
@@ -50,7 +58,7 @@ namespace PixelVanguard.Core
         {
             if (_translationData == null)
             {
-                Debug.LogError($"[LocalizationManager] Not initialized! Returning key: {key}");
+                Debug.LogError($"[LocalizationManager] ❌ Not initialized! Returning key: {key}");
                 return $"[{key}]";
             }
 
@@ -58,7 +66,7 @@ namespace PixelVanguard.Core
 
             if (string.IsNullOrEmpty(translation))
             {
-                Debug.LogWarning($"[LocalizationManager] Missing translation for key '{key}' in language '{_currentLanguage}'");
+                Debug.LogWarning($"[LocalizationManager] ⚠️ Missing translation for key '{key}' in language '{_currentLanguage}'");
                 
                 // Fallback to English
                 if (_currentLanguage != "en")
@@ -96,7 +104,8 @@ namespace PixelVanguard.Core
 
         /// <summary>
         /// Switch to a different language.
-        /// Triggers OnLanguageChanged event for UI refresh.
+        /// Saves to storage and triggers OnLanguageChanged event.
+        /// Called by GameSettings when language property is set.
         /// </summary>
         public static void SwitchLanguage(string languageCode)
         {
@@ -108,16 +117,59 @@ namespace PixelVanguard.Core
 
             if (_currentLanguage == languageCode)
             {
+                Debug.Log($"[LocalizationManager] Language already set to '{languageCode}', ignoring");
                 return;
             }
 
             _currentLanguage = languageCode;
+            
+            // Save to SaveData (single source of truth)
+            if (_saveService != null)
+            {
+                var saveData = _saveService.LoadData();
+                if (saveData != null)
+                {
+                    saveData.language = languageCode;
+                    _saveService.SaveData(saveData);
+                    Debug.Log($"[LocalizationManager] Saved language '{languageCode}' to SaveData");
+                }
+            }
 
-            // Notify platform provider (saves to Yandex or PlayerPrefs)
+            // Notify platform provider (for Yandex WebGL compatibility)
             _languageProvider?.SwitchLanguage(languageCode);
 
             // Trigger UI refresh
             OnLanguageChanged?.Invoke();
+            
+            Debug.Log($"[LocalizationManager] ✅ Language switched to: {languageCode}");
+        }
+        
+        /// <summary>
+        /// Set current language without saving (used by GameSettings).
+        /// GameSettings handles the save, we just update UI.
+        /// </summary>
+        public static void SetLanguage(string languageCode)
+        {
+            if (languageCode != "en" && languageCode != "ru")
+            {
+                Debug.LogWarning($"[LocalizationManager] Unsupported language '{languageCode}', defaulting to English");
+                languageCode = "en";
+            }
+
+            if (_currentLanguage == languageCode)
+            {
+                return;  // No change needed
+            }
+
+            _currentLanguage = languageCode;
+            
+            // Notify platform provider (for Yandex WebGL compatibility)
+            _languageProvider?.SwitchLanguage(languageCode);
+
+            // Trigger UI refresh
+            OnLanguageChanged?.Invoke();
+            
+            Debug.Log($"[LocalizationManager] ✅ Language set to: {languageCode}");
         }
 
         /// <summary>

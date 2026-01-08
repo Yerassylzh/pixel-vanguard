@@ -16,15 +16,36 @@ namespace PixelVanguard.Services
 
         public string GetCurrentLanguage()
         {
-            // Load from PlayerPrefs, default to English
-            string savedLang = PlayerPrefs.GetString(LANGUAGE_PREF_KEY, "en");
+            // Load from PlayerPrefs. If not set, try to detect system language.
+            string defaultLang = "en";
+            bool hasKey = PlayerPrefs.HasKey(LANGUAGE_PREF_KEY);
+            
+            Debug.Log($"[DefaultLanguageProvider] PlayerPrefs.HasKey('{LANGUAGE_PREF_KEY}'): {hasKey}");
+            
+            if (!hasKey)
+            {
+                if (Application.systemLanguage == SystemLanguage.Russian)
+                {
+                    defaultLang = "ru";
+                    Debug.Log($"[DefaultLanguageProvider] Detected system language: Russian, using 'ru'");
+                }
+                else
+                {
+                    Debug.Log($"[DefaultLanguageProvider] Detected system language: {Application.systemLanguage}, using 'en'");
+                }
+            }
+        
+            string savedLang = PlayerPrefs.GetString(LANGUAGE_PREF_KEY, defaultLang);
+            Debug.Log($"[DefaultLanguageProvider] PlayerPrefs.GetString result: '{savedLang}' (default: '{defaultLang}')");
             
             // Validate
             if (savedLang != "en" && savedLang != "ru")
             {
-                Debug.LogWarning($"[DefaultLanguageProvider] Invalid saved language '{savedLang}', defaulting to English");
+                Debug.LogWarning($"[DefaultLanguageProvider] ⚠️ Invalid saved language '{savedLang}', defaulting to English");
                 savedLang = "en";
             }
+            
+            Debug.Log($"[DefaultLanguageProvider] ✅ Final language: '{savedLang}'");
 
             return savedLang;
         }

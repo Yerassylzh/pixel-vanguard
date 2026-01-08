@@ -54,9 +54,11 @@ namespace PixelVanguard.UI
         [SerializeField] private TextMeshProUGUI goldText;
 
         [Header("Remove Ads IAP")]
-        [SerializeField] private GameObject removeAdsRow;  // Parent row to hide after purchase
+        [SerializeField] private GameObject removeAdsRow;
         [SerializeField] private Button removeAdsButton;
         [SerializeField] private TextMeshProUGUI removeAdsButtonText;
+        
+        private UI.LocalizedText removeAdsLocalizedText;  // Cached component
 
         // Pending changes (not yet saved)
         private string pendingLanguage;
@@ -83,6 +85,16 @@ namespace PixelVanguard.UI
 
             if (removeAdsButton != null)
                 removeAdsButton.onClick.AddListener(OnRemoveAdsClicked);
+
+            // Get or add LocalizedText component to Remove Ads button
+            if (removeAdsButtonText != null)
+            {
+                removeAdsLocalizedText = removeAdsButtonText.GetComponent<UI.LocalizedText>();
+                if (removeAdsLocalizedText == null)
+                {
+                    removeAdsLocalizedText = removeAdsButtonText.gameObject.AddComponent<UI.LocalizedText>();
+                }
+            }
 
             // Load initial values
             LoadCurrentSettings();
@@ -160,18 +172,14 @@ namespace PixelVanguard.UI
 
         private void RefreshGoldDisplay()
         {
-            var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
-            if (saveService != null)
+            var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
+            if (cachedSave != null && goldText != null)
             {
-                var saveData = saveService.LoadData();
-                if (goldText != null)
-                {
-                    goldText.text = saveData.totalGold.ToString();
-                }
-                else
-                {
-                    Debug.LogError("[Settings] Gold Text component is MISSING!");
-                }
+                goldText.text = cachedSave.TotalGold.ToString();
+            }
+            else if (goldText == null)
+            {
+                Debug.LogError("[Settings] Gold Text component is MISSING!");
             }
         }
 
@@ -269,92 +277,56 @@ namespace PixelVanguard.UI
         // REMOVE ADS IAP
         // ============================================
 
-        private async void OnRemoveAdsClicked()
+        private void OnRemoveAdsClicked()
         {
+            var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
+            if (cachedSave == null) return;
 
-            var iapService = Core.ServiceLocator.Get<Services.IIAPService>();
-            if (iapService == null)
+            int cost = 4990;
+
+            if (cachedSave.SpendGold(cost))
             {
-                return;
-            }
+                cachedSave.Data.adsRemoved = true;
+                cachedSave.Save();
 
-            // Purchase remove ads
-            bool success = await iapService.PurchaseProduct(Services.ProductIDs.REMOVE_ADS);
-
-            if (success)
-            {
-                // Update save data
-                var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
-                if (saveService != null)
-                {
-                    var saveData = saveService.LoadData();
-                    
-                    saveData.adsRemoved = true;
-                    saveService.SaveData(saveData);
-                    
-                    RefreshRemoveAdsButton(saveData);
-                }
-                else
-                {
-                    Debug.LogError("[Settings] SaveService is NULL!");
-                }
+                // Update UI
+                if (goldText != null) goldText.text = cachedSave.TotalGold.ToString();
+                RefreshRemoveAdsButton();
+                
+                Debug.Log("[Settings] Remove Ads purchased for 4990 coins!");
             }
             else
             {
-                Debug.LogWarning("[Settings] Remove Ads purchase failed or was cancelled");
+                Debug.LogWarning("[Settings] Not enough gold for Remove Ads!");
             }
         }
 
-        private void RefreshRemoveAdsButton(Services.SaveData cachedData = null)
+        private void RefreshRemoveAdsButton()
         {            
-            if (removeAdsRow == null)
-            {
-                Debug.LogError("[Settings] CRITICAL: removeAdsRow is NULL!");
-                return;
-            }
+            if (removeAdsRow == null) return;
 
-            // Use cached data if provided (e.g., right after purchase), otherwise load
-            Services.SaveData saveData = cachedData;
-            if (saveData == null)
-            {
-                var saveService = Core.ServiceLocator.Get<Services.ISaveService>();
-                if (saveService != null)
-                {
-                    saveData = saveService.LoadData();
-                }
-                else
-                {
-                    Debug.LogError("[Settings] SaveService is NULL in RefreshRemoveAdsButton!");
-                    return;
-                }
-            }
+            var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
+            if (cachedSave == null) return;
 
-            if (saveData.adsRemoved)
+            if (cachedSave.Data.adsRemoved)
             {
-                removeAdsRow.SetActive(false);
+                // Disable button and change to "Ads Removed"
+                removeAdsRow.SetActive(true);
+                if (removeAdsButton != null)
+                    removeAdsButton.interactable = false;
+                
+                if (removeAdsLocalizedText != null)
+                    removeAdsLocalizedText.SetKey("ui.settings.ads_removed");
             }
             else
             {
+                // Enable button and change to "Remove Ads - 4990 coins"
                 removeAdsRow.SetActive(true);
-                
                 if (removeAdsButton != null)
                     removeAdsButton.interactable = true;
-
-                // Get price from IAP service (price already includes currency from SDK)
-                if (removeAdsButtonText != null)
-                {
-                    var iapService = Core.ServiceLocator.Get<Services.IIAPService>();
-                    if (iapService != null)
-                    {
-                        string price = iapService.GetLocalizedPrice(Services.ProductIDs.REMOVE_ADS);
-                        removeAdsButtonText.text = Core.LocalizationManager.GetFormatted("ui.settings.remove_ads", price);
-                    }
-                    else
-                    {
-                        // Fallback if IAP service not available
-                        removeAdsButtonText.text = "Remove Ads - ---";
-                    }
-                }
+                
+                if (removeAdsLocalizedText != null)
+                    removeAdsLocalizedText.SetKey("ui.settings.remove_ads");
             }
         }
 
