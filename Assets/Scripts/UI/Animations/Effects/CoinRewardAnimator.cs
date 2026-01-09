@@ -54,7 +54,7 @@ namespace PixelVanguard.UI.Animations
                 return;
             }
 
-            int coinsToSpawn = Mathf.Min(coinsPerReward, totalGold);
+            int coinsToSpawn = CalculateCoinCount(totalGold);
             int goldPerCoin = Mathf.CeilToInt((float)totalGold / coinsToSpawn);
             int coinsCompleted = 0;
             int currentGoldValue = goldText != null ? int.Parse(goldText.text) : 0;
@@ -117,6 +117,24 @@ namespace PixelVanguard.UI.Animations
                     );
                 }).SetUpdate(true);
             }
+        }
+
+        /// <summary>
+        /// Calculate dynamic coin count based on reward amount.
+        /// Uses logarithmic-style scaling for pleasing visual feedback.
+        /// 1990 gold → ~7 coins, 4990 gold → ~13 coins, 29900 gold → ~24 coins
+        /// </summary>
+        private int CalculateCoinCount(int goldAmount)
+        {
+            // Use a logarithmic-ish formula for smooth scaling
+            // Base: 7 coins at ~2000 gold, 13 coins at ~5000 gold, 24 coins at ~30000 gold
+            float logValue = Mathf.Log10(goldAmount + 1); // +1 to avoid log(0)
+            int coinCount = Mathf.RoundToInt(logValue * 14.5f - 40.5f);
+            
+            // Clamp to reasonable range (5-30 coins)
+            coinCount = Mathf.Clamp(coinCount, 5, 30);
+            
+            return coinCount;
         }
 
         private void AnimateSingleCoin(Vector3 sourcePos, Transform target, int goldValue, Action onComplete)

@@ -186,13 +186,15 @@ namespace PixelVanguard.Services
 
         public int GetCooldownRemainingSeconds(string lastWatchedTime)
         {
+            int cooldownSeconds = 1;
+
             if (string.IsNullOrEmpty(lastWatchedTime)) return 0;
             if (DateTime.TryParse(lastWatchedTime, out DateTime lastTime))
             {
                 var diff = DateTime.Now - lastTime;
-                if (diff.TotalSeconds < 60)
+                if (diff.TotalSeconds < cooldownSeconds)
                 {
-                    return 60 - (int)diff.TotalSeconds;
+                    return cooldownSeconds - (int)diff.TotalSeconds;
                 }
             }
             return 0;

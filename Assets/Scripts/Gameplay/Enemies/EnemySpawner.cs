@@ -29,6 +29,10 @@ namespace PixelVanguard.Gameplay
         [Tooltip("Show spawn bounds in Scene view")]
         [SerializeField] private bool showBoundsGizmo = true;
         
+        [Header("Fallback Spawn")]
+        [Tooltip("Safe spawn position when all validation attempts fail")]
+        [SerializeField] private Transform fallbackSpawnPoint;
+        
         [Header("Collision Detection")]
         [Tooltip("Layers to check for blocking spawn (e.g., Ground, Water, Obstacles)")]
         [SerializeField] private LayerMask blockedLayers = -1; // Default: check all layers
@@ -238,8 +242,11 @@ namespace PixelVanguard.Gameplay
                 }
             }
 
-            // If all attempts failed, return last calculated position anyway
-            // (Better to spawn in blocked area than not spawn at all)
+            if (fallbackSpawnPoint != null)
+            {
+                return fallbackSpawnPoint.position;
+            }
+
             return CalculateSpawnPosition();
         }
 

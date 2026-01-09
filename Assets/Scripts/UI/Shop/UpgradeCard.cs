@@ -34,6 +34,7 @@ namespace PixelVanguard.UI
         private string detailsDescription; // For details panel
 
         public int BaseCost => baseCost;
+        public string StatName => statKey; // Expose for handlers
         public event Action OnPurchaseClicked;
         public event Action OnCardClicked; // When card itself is clicked (not buy button)
 

@@ -24,6 +24,9 @@ namespace PixelVanguard.Gameplay
 
         private bool isAlive = true;
         private Rigidbody2D rb;
+        
+        // Performance: Cache UpgradeManager reference (issue #1 fix)
+        private UpgradeManager upgradeManager;
 
         // IDamageable implementation
         public event System.Action<float, Vector3> OnDamaged;
@@ -42,6 +45,13 @@ namespace PixelVanguard.Gameplay
             if (enemyData != null)
             {
                 currentHealth = enemyData.maxHealth;
+            }
+            
+            // Cache UpgradeManager reference to avoid FindFirstObjectByType on every death
+            upgradeManager = FindFirstObjectByType<UpgradeManager>();
+            if (upgradeManager == null)
+            {
+                Debug.LogWarning("[EnemyHealth] UpgradeManager not found - gold bonus upgrades will not work");
             }
         }
 
@@ -135,10 +145,11 @@ namespace PixelVanguard.Gameplay
 
         /// <summary>
         /// Calculate final gold amount with Lucky Coins upgrade bonus.
+        /// Uses cached UpgradeManager reference for performance.
         /// </summary>
         private int CalculateGoldWithBonus(int baseGold)
         {
-            var upgradeManager = FindFirstObjectByType<UpgradeManager>();
+            // ✅ FIXED: Use cached reference instead of FindFirstObjectByType
             if (upgradeManager != null)
             {
                 float bonus = upgradeManager.GetGoldBonusPercent();

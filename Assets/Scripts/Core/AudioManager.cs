@@ -55,6 +55,12 @@ namespace PixelVanguard.Core
 
             sfxSource.volume = sfxVolume;
             musicSource.volume = musicVolume;
+
+            // Validate SFX Library
+            if (sfxLibrary == null)
+            {
+                Debug.LogError("[AudioManager] SFXLibrary is null! Assign in Inspector. All sound effects will be disabled.");
+            }
         }
 
         private void OnEnable()

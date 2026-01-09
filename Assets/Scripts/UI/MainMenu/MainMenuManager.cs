@@ -31,14 +31,13 @@ namespace PixelVanguard.UI
         [Header("Navigation")]
         [SerializeField] private MenuNavigationController navigationController;
 
-        private bool navigationInitialized = false;
-
         private void Start()
         {
-            // Reset session data when entering Main Menu (new run starts fresh)
+            // Destroy any lingering SessionData from previous game
+            // This prevents "Duplicate instance" warnings when reloading GameScene
             if (Gameplay.SessionData.Instance != null)
             {
-                Gameplay.SessionData.Instance.ResetSession();
+                Destroy(Gameplay.SessionData.Instance.gameObject);
             }
 
             // Initialize navigation controller
@@ -63,11 +62,6 @@ namespace PixelVanguard.UI
                 quitButton.gameObject.SetActive(false);
             }
 #endif
-            // Subscribe to language changes
-            Core.LocalizationManager.OnLanguageChanged += OnLanguageChanged;
-            
-            // Initial localization update
-            RefreshLocalization();
         }
 
         private void InitializeNavigation()
@@ -91,7 +85,6 @@ namespace PixelVanguard.UI
                 if (characterPanel != null) characterPanel.SetActive(false);
 
                 navigationController.Initialize(mainMenuPanel);
-                navigationInitialized = true;
             }
             else
             {
@@ -139,56 +132,39 @@ namespace PixelVanguard.UI
         /// </summary>
         private void NavigateToPanel(GameObject panelToShow)
         {
-            if (!navigationInitialized || navigationController == null)
+            if (panelToShow == null)
             {
-                Debug.LogWarning("[MainMenuManager] Navigation not initialized, falling back to direct show.");
-                ShowPanelDirect(panelToShow);
+                Debug.LogError("[MainMenuManager] Panel to show is null!");
                 return;
             }
 
-            if (panelToShow == null) return;
+            if (navigationController == null)
+            {
+                Debug.LogError("[MainMenuManager] NavigationController is null! Assign in Inspector.");
+                return;
+            }
 
             navigationController.NavigateToPanel(panelToShow);
         }
 
-        /// <summary>
-        /// Fallback: Show panel directly without animation (for compatibility).
-        /// </summary>
-        private void ShowPanelDirect(GameObject panelToShow)
-        {
-            if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
-            if (settingsPanel != null) settingsPanel.SetActive(false);
-            if (shopPanel != null) shopPanel.SetActive(false);
-            if (characterPanel != null) characterPanel.SetActive(false);
 
-            if (panelToShow != null)
-            {
-                panelToShow.SetActive(true);
-            }
-        }
 
         /// <summary>
         /// Called from Settings/Shop/Character "Back" button to return to main menu.
         /// </summary>
         public void ReturnToMainMenu()
         {
-            if (navigationController != null && navigationInitialized)
+            if (navigationController == null)
             {
-                navigationController.NavigateBack(() =>
-                {
-                    // Refresh gold after navigation
-                    RefreshGoldDisplay();
-                });
+                Debug.LogError("[MainMenuManager] NavigationController is null!");
+                return;
             }
-            else
+
+            navigationController.NavigateBack(() =>
             {
-                // Fallback
-                ShowPanelDirect(mainMenuPanel);
+                // Refresh gold after navigation
                 RefreshGoldDisplay();
-            }
-            
-            // Force refresh immediately as well, just in case
-            RefreshGoldDisplay();
+            });
         }
 
         // ============================================
@@ -243,22 +219,6 @@ namespace PixelVanguard.UI
 #endif
         }
 
-        private void OnLanguageChanged()
-        {
-            RefreshLocalization();
-        }
-
-        private void RefreshLocalization()
-        {
-            // Update button texts if they exist
-            // Keys assumed: ui.menu.play, ui.menu.shop, ui.menu.settings, ui.menu.quit
-            
-            UpdateText(playButton, "ui.menu.play");
-            UpdateText(shopButton, "ui.shop.title");
-            UpdateText(settingsButton, "ui.menu.settings");
-            UpdateText(quitButton, "ui.menu.quit");
-        }
-
         private void UpdateText(Button button, string key)
         {
             if (button != null)
@@ -278,8 +238,6 @@ namespace PixelVanguard.UI
             if (shopButton != null) shopButton.onClick.RemoveAllListeners();
             if (settingsButton != null) settingsButton.onClick.RemoveAllListeners();
             if (quitButton != null) quitButton.onClick.RemoveAllListeners();
-            
-            Core.LocalizationManager.OnLanguageChanged -= OnLanguageChanged;
         }
     }
 }

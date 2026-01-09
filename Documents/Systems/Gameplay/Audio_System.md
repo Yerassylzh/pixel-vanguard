@@ -29,3 +29,10 @@ void OnEnable() {
     GameEvents.OnGoldCollected += PlayGoldSound;
 }
 ```
+
+## 5. Error Handling (NEW - 2026-01-09)
+
+**sfxLibrary Validation**: Added null check in `Awake()` to detect unassigned SFXLibrary in Inspector.
+
+**Impact**: Prevents silent audio failures, shows clear error message in Console if library not assigned.
+

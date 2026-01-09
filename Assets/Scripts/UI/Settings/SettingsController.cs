@@ -60,13 +60,6 @@ namespace PixelVanguard.UI
         
         private UI.LocalizedText removeAdsLocalizedText;  // Cached component
 
-        // Pending changes (not yet saved)
-        private string pendingLanguage;
-        private float pendingMusicVolume;
-        private float pendingSFXVolume;
-        private bool pendingShowDamage;
-        private bool pendingShowFPS;
-
         private void Start()
         {
             // Get GameSettings service
@@ -81,7 +74,6 @@ namespace PixelVanguard.UI
             contactUsButton.onClick.AddListener(OnContactUsClicked);
             privacyPolicyButton.onClick.AddListener(OnPrivacyPolicyClicked);
             backButton.onClick.AddListener(OnBackClicked);
-            applyButton.onClick.AddListener(OnApplyClicked);
 
             if (removeAdsButton != null)
                 removeAdsButton.onClick.AddListener(OnRemoveAdsClicked);
@@ -97,7 +89,6 @@ namespace PixelVanguard.UI
             }
 
             // Load initial values
-            LoadCurrentSettings();
             RefreshUI();
             RefreshRemoveAdsButton();
 
@@ -125,8 +116,7 @@ namespace PixelVanguard.UI
 
         private void OnEnable()
         {
-            // Reload settings when panel opens (in case they changed elsewhere)
-            LoadCurrentSettings();
+            // Refresh UI when panel opens
             RefreshUI();
             
             // Only refresh if services are ready (after Start() has run)
@@ -137,34 +127,26 @@ namespace PixelVanguard.UI
         }
 
         /// <summary>
-        /// Load current saved settings into pending variables.
-        /// </summary>
-        private void LoadCurrentSettings()
-        {
-            if (gameSettings == null) return;
-            
-            pendingLanguage = gameSettings.Language;
-            pendingMusicVolume = gameSettings.MusicVolume;
-            pendingSFXVolume = gameSettings.SFXVolume;
-            pendingShowDamage = gameSettings.ShowDamageNumbers;
-            pendingShowFPS = gameSettings.ShowFPS;
-        }
-
-        /// <summary>
-        /// Update UI to reflect pending settings (not yet saved).
+        /// Update UI to reflect current saved settings.
         /// </summary>
         private void RefreshUI()
         {
-            // Language
-            languageButtonText.text = Core.LocalizationManager.GetLanguageName(pendingLanguage);
+            // Guard: OnEnable can run before Start, so gameSettings might not be initialized yet
+            if (gameSettings == null)
+            {
+                return; // Will be called again from Start() when ready
+            }
+            
+            // Load directly from GameSettings (no pending state)
+            languageButtonText.text = Core.LocalizationManager.GetLanguageName(gameSettings.Language);
 
             // Volume sliders
-            musicSlider.SetValueWithoutNotify(pendingMusicVolume);
-            soundsSlider.SetValueWithoutNotify(pendingSFXVolume);
+            musicSlider.SetValueWithoutNotify(gameSettings.MusicVolume);
+            soundsSlider.SetValueWithoutNotify(gameSettings.SFXVolume);
 
             // Checkboxes
-            UpdateCheckboxVisual(showDamageCheckImage, pendingShowDamage);
-            UpdateCheckboxVisual(showFPSCheckImage, pendingShowFPS);
+            UpdateCheckboxVisual(showDamageCheckImage, gameSettings.ShowDamageNumbers);
+            UpdateCheckboxVisual(showFPSCheckImage, gameSettings.ShowFPS);
 
             // Gold
             RefreshGoldDisplay();
@@ -193,20 +175,21 @@ namespace PixelVanguard.UI
         }
 
         // ============================================
-        // SETTING CHANGE HANDLERS (Pending Only)
+        // SETTING CHANGE HANDLERS (Auto-Save)
         // ============================================
 
         private void OnLanguageToggle()
         {
-            pendingLanguage = (pendingLanguage == "en") ? "ru" : "en";
-            languageButtonText.text = Core.LocalizationManager.GetLanguageName(pendingLanguage);
+            string newLanguage = (gameSettings.Language == "en") ? "ru" : "en";
+            gameSettings.Language = newLanguage; // Auto-saves via GameSettings
+            languageButtonText.text = Core.LocalizationManager.GetLanguageName(newLanguage);
         }
 
         private void OnMusicVolumeChanged(float value)
         {
-            pendingMusicVolume = value;
+            gameSettings.MusicVolume = value; // Auto-saves
 
-            // Apply volume change immediately for preview (but don't save yet)
+            // Apply volume change immediately for preview
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.SetMusicVolume(value);
@@ -215,9 +198,9 @@ namespace PixelVanguard.UI
 
         private void OnSoundsVolumeChanged(float value)
         {
-            pendingSFXVolume = value;
+            gameSettings.SFXVolume = value; // Auto-saves
 
-            // Apply volume change immediately for preview (but don't save yet)
+            // Apply volume change immediately for preview
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.SetSFXVolume(value);
@@ -226,42 +209,36 @@ namespace PixelVanguard.UI
 
         private void OnShowDamageToggle()
         {
-            pendingShowDamage = !pendingShowDamage;
-            UpdateCheckboxVisual(showDamageCheckImage, pendingShowDamage);
+            gameSettings.ShowDamageNumbers = !gameSettings.ShowDamageNumbers; // Auto-saves
+            UpdateCheckboxVisual(showDamageCheckImage, gameSettings.ShowDamageNumbers);
         }
 
         private void OnShowFPSToggle()
         {
-            pendingShowFPS = !pendingShowFPS;
-            UpdateCheckboxVisual(showFPSCheckImage, pendingShowFPS);
-        }
-
-        // ============================================
-        // APPLY BUTTON - Save All Changes
-        // ============================================
-
-        private void OnApplyClicked()
-        {
-            if (gameSettings == null) return;
+            gameSettings.ShowFPS = !gameSettings.ShowFPS; // Auto-saves
+            UpdateCheckboxVisual(showFPSCheckImage, gameSettings.ShowFPS);
             
-            // Save all pending changes to GameSettings service
-            gameSettings.Language = pendingLanguage;
-            gameSettings.MusicVolume = pendingMusicVolume;
-            gameSettings.SFXVolume = pendingSFXVolume;
-            gameSettings.ShowDamageNumbers = pendingShowDamage;
-            gameSettings.ShowFPS = pendingShowFPS;
-
-            // Apply FPS counter visibility if in GameScene
+            // Apply immediately if in GameScene
             var fpsCounter = FindFirstObjectByType<FPSCounter>();
             if (fpsCounter != null)
             {
-                fpsCounter.SetVisible(pendingShowFPS);
+                fpsCounter.SetVisible(gameSettings.ShowFPS);
             }
         }
 
         // ============================================
-        // EXTERNAL LINKS
+        // NAVIGATION
         // ============================================
+
+        private void OnBackClicked()
+        {
+            // No need to revert - changes already auto-saved
+            if (settingsPanel != null)
+            {
+                settingsPanel.SetActive(false);
+                mainMenuManager.ReturnToMainMenu();
+            }
+        }
 
         private void OnContactUsClicked()
         {
@@ -331,30 +308,7 @@ namespace PixelVanguard.UI
         }
 
         // ============================================
-        // NAVIGATION
-        // ============================================
-
-        private void OnBackClicked()
-        {
-            // Revert to saved settings (discard pending changes)
-            LoadCurrentSettings();
-
-            // Restore audio to saved values
-            if (AudioManager.Instance != null && gameSettings != null)
-            {
-                AudioManager.Instance.SetMusicVolume(gameSettings.MusicVolume);
-                AudioManager.Instance.SetSFXVolume(gameSettings.SFXVolume);
-            }
-
-            if (settingsPanel != null)
-            {
-                settingsPanel.SetActive(false);
-                mainMenuManager.ReturnToMainMenu();
-            }
-        }
-
-        // ============================================
-        // HELPERS
+        // REMOVE ADS IAP
         // ============================================
 
         private void UpdateCheckboxVisual(Image checkboxImage, bool isChecked)
@@ -376,7 +330,6 @@ namespace PixelVanguard.UI
             contactUsButton.onClick.RemoveAllListeners();
             privacyPolicyButton.onClick.RemoveAllListeners();
             backButton.onClick.RemoveAllListeners();
-            applyButton.onClick.RemoveAllListeners();
         }
     }
 }

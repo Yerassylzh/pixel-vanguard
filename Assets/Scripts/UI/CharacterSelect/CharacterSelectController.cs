@@ -31,7 +31,7 @@ namespace PixelVanguard.UI.CharacterSelect
 
         private List<CharacterCard> characterCards = new List<CharacterCard>();
         private CharacterData currentlyViewedCharacter;
-        private CharacterData selectedCharacter;
+        // ✅ REMOVED: selectedCharacter - using Single Source of Truth (cachedSave.Data.selectedCharacterID)
         private CachedSaveDataService cachedSave;
 
         private void Awake()
@@ -58,33 +58,17 @@ namespace PixelVanguard.UI.CharacterSelect
             if (characterCards == null || characterCards.Count == 0) return;
             if (cachedSave == null) return;
             
-            // Try to get the previously selected character from save data
-            string selectedId = cachedSave.Data?.selectedCharacterID;
+            // ✅ SINGLE SOURCE OF TRUTH: Get from CachedSaveDataService only
+            CharacterData selectedChar = GetSelectedCharacter();
             
-            // If no saved selection, try CharacterManager
-            if (string.IsNullOrEmpty(selectedId))
+            if (selectedChar != null)
             {
-                var selected = Core.CharacterManager.SelectedCharacter;
-                if (selected != null)
-                    selectedId = selected.characterID;
+                // Select the saved character
+                OnCharacterCardClicked(selectedChar);
             }
-            
-            if (!string.IsNullOrEmpty(selectedId))
+            else if (characterCards.Count > 0 && characterCards[0]?.CharacterData != null)
             {
-                // Find and select the previously selected character
-                foreach (var card in characterCards)
-                {
-                    if (card?.CharacterData?.characterID == selectedId)
-                    {
-                        OnCharacterCardClicked(card.CharacterData);
-                        return;
-                    }
-                }
-            }
-            
-            // If no previous selection or character not found, select the first one (Knight)
-            if (characterCards.Count > 0 && characterCards[0]?.CharacterData != null)
-            {
+                // Fallback to first character if none selected
                 OnCharacterCardClicked(characterCards[0].CharacterData);
             }
         }
@@ -153,18 +137,6 @@ namespace PixelVanguard.UI.CharacterSelect
             }
         }
 
-        private void LoadSaveData()
-        {
-            if (cachedSave != null)
-            {
-                
-                selectedCharacter = FindCharacterById(cachedSave.Data.selectedCharacterID);
-
-                if (selectedCharacter == null && availableCharacters.Length > 0)
-                    selectedCharacter = availableCharacters[0];
-            }
-        }
-
         private void RefreshUI()
         {
             if (cachedSave.Data == null) return;
@@ -179,10 +151,11 @@ namespace PixelVanguard.UI.CharacterSelect
                 characterCards[i].Initialize(character, isLocked);
             }
 
-            if (selectedCharacter != null && currentlyViewedCharacter == null)
+            // ✅ Use GetSelectedCharacter() for Single Source of Truth
+            if (GetSelectedCharacter() != null && currentlyViewedCharacter == null)
             {
-                currentlyViewedCharacter = selectedCharacter;
-                ShowCharacterDetails(selectedCharacter);
+                currentlyViewedCharacter = GetSelectedCharacter();
+                ShowCharacterDetails(GetSelectedCharacter());
                 UpdateActionButton();
             }
         }
@@ -235,9 +208,11 @@ namespace PixelVanguard.UI.CharacterSelect
             }
             else
             {
+                // ✅ Use GetSelectedCharacter() for comparison
+                CharacterData selectedChar = GetSelectedCharacter();
                 bool isSelected = string.Equals(
                     currentlyViewedCharacter.characterID,
-                    selectedCharacter?.characterID,
+                    selectedChar?.characterID,
                     System.StringComparison.OrdinalIgnoreCase
                 );
 
@@ -307,11 +282,12 @@ namespace PixelVanguard.UI.CharacterSelect
 
         private void ConfirmSelection()
         {
-            selectedCharacter = currentlyViewedCharacter;
-            cachedSave.Data.selectedCharacterID = selectedCharacter.characterID;
+            // ✅ SINGLE SOURCE OF TRUTH: Save to CachedSaveDataService only
+            cachedSave.Data.selectedCharacterID = currentlyViewedCharacter.characterID;
             cachedSave.Save();
 
-            Core.CharacterManager.SelectedCharacter = selectedCharacter;
+            // Update CharacterManager static property for backward compatibility
+            Core.CharacterManager.SelectedCharacter = currentlyViewedCharacter;
 
             UpdateActionButton();
         }
@@ -319,6 +295,19 @@ namespace PixelVanguard.UI.CharacterSelect
         private void StartGame()
         {
             SceneManager.LoadScene("GameScene");
+        }
+
+        /// <summary>
+        /// Get the currently selected character from save data (Single Source of Truth).
+        /// </summary>
+        private CharacterData GetSelectedCharacter()
+        {
+            if (cachedSave?.Data == null) return null;
+            
+            string selectedId = cachedSave.Data.selectedCharacterID;
+            if (string.IsNullOrEmpty(selectedId)) return null;
+            
+            return FindCharacterById(selectedId);
         }
 
         private CharacterData FindCharacterById(string characterId)
