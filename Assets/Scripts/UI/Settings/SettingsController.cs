@@ -60,6 +60,11 @@ namespace PixelVanguard.UI
         
         private UI.LocalizedText removeAdsLocalizedText;  // Cached component
 
+        private void Awake()
+        {
+            Services.CachedSaveDataService.OnGoldChanged += RefreshGoldDisplay;
+        }
+
         private void Start()
         {
             // Get GameSettings service
@@ -321,6 +326,9 @@ namespace PixelVanguard.UI
 
         private void OnDestroy()
         {
+            // Unsubscribe from gold change event
+            Services.CachedSaveDataService.OnGoldChanged -= RefreshGoldDisplay;
+
             // Clean up listeners
             languageButton.onClick.RemoveAllListeners();
             musicSlider.onValueChanged.RemoveAllListeners();

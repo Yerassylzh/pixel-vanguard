@@ -14,8 +14,12 @@ namespace PixelVanguard.Services
     {
         // Replace these with your actual Ad Unit IDs from AdMob Console
         // These are official Google Test IDs
-        private const string REWARDED_AD_UNIT_ID = "ca-app-pub-4326973674601582/2935167324"; 
-        private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4326973674601582/9876497111";
+        // private const string REWARDED_AD_UNIT_ID = "ca-app-pub-4326973674601582/2935167324"; 
+        // private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4326973674601582/9876497111";
+
+        private const string REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"; 
+        private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
+
 
         private RewardedAd _rewardedAd;
         private InterstitialAd _interstitialAd;
@@ -186,7 +190,7 @@ namespace PixelVanguard.Services
 
         public int GetCooldownRemainingSeconds(string lastWatchedTime)
         {
-            int cooldownSeconds = 1;
+            int cooldownSeconds = 60;
 
             if (string.IsNullOrEmpty(lastWatchedTime)) return 0;
             if (DateTime.TryParse(lastWatchedTime, out DateTime lastTime))

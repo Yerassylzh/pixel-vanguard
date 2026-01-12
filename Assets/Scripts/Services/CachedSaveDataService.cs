@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using PixelVanguard.Data;
 
@@ -12,6 +13,11 @@ namespace PixelVanguard.Services
     {
         private readonly ISaveService saveService;
         private SaveData cache;
+
+        /// <summary>
+        /// Event fired whenever gold amount changes. UI panels can subscribe to auto-update displays.
+        /// </summary>
+        public static event Action OnGoldChanged;
 
         /// <summary>
         /// Get the current save data. Loads if not cached.
@@ -127,6 +133,7 @@ namespace PixelVanguard.Services
             {
                 Data.totalGold = value;
                 Save();
+                OnGoldChanged?.Invoke();
             }
         }
 
@@ -137,6 +144,7 @@ namespace PixelVanguard.Services
         {
             Data.totalGold += amount;
             Save();
+            OnGoldChanged?.Invoke();
         }
 
         /// <summary>
@@ -148,6 +156,7 @@ namespace PixelVanguard.Services
             {
                 Data.totalGold -= amount;
                 Save();
+                OnGoldChanged?.Invoke();
                 return true;
             }
             return false;

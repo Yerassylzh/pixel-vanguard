@@ -4,7 +4,10 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using PixelVanguard.UI.CharacterSelect;
 using PixelVanguard.UI.Animations;
+
+#if UNITY_WebGL
 using YG;
+#endif
 
 namespace PixelVanguard.UI
 {
@@ -30,6 +33,11 @@ namespace PixelVanguard.UI
 
         [Header("Navigation")]
         [SerializeField] private MenuNavigationController navigationController;
+
+        private void Awake()
+        {
+            Services.CachedSaveDataService.OnGoldChanged += RefreshGoldDisplay;
+        }
 
         private void Start()
         {
@@ -233,6 +241,9 @@ namespace PixelVanguard.UI
 
         private void OnDestroy()
         {
+            // Unsubscribe from gold change event
+            Services.CachedSaveDataService.OnGoldChanged -= RefreshGoldDisplay;
+
             // Clean up listeners
             if (playButton != null) playButton.onClick.RemoveAllListeners();
             if (shopButton != null) shopButton.onClick.RemoveAllListeners();

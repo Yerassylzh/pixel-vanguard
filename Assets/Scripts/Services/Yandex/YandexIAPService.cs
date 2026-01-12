@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using YG;
+using PixelVanguard.UI;
 
 namespace PixelVanguard.Services
 {
@@ -17,36 +18,19 @@ namespace PixelVanguard.Services
 
         public bool IsInitialized => _initialized;
 
-        public async Task<bool> Initialize()
+        public bool Initialize()
         {
+            Debug.Log("[YandexIAPService] Initializing...");
+            
             // Subscribe to Yandex payment events
             YG2.onPurchaseSuccess += OnPurchaseSuccess;
             YG2.onPurchaseFailed += OnPurchaseFailed;
             YG2.onGetPayments += OnGetPayments;
 
             _initialized = true;
-            
-            // Wait a frame for PluginYG to fully initialize
-            await Task.Yield();
-            
-            // YANDEX REQUIREMENT: Consume unconsumed purchases at startup
-            ConsumePurchases();
-            
-            return true;
-        }
 
-        /// <summary>
-        /// Check for and consume unconsumed purchases.
-        /// Called once at startup per Yandex requirements.
-        /// Sets onPurchaseSuccess = true to trigger existing reward logic in ShopController/SettingsController.
-        /// </summary>
-        private void ConsumePurchases()
-        {
-            Debug.Log("[YandexIAPService] Checking for unconsumed purchases...");
-            
-            // This will automatically trigger onPurchaseSuccess for each unconsumed purchase
-            // onPurchaseSuccess = true means our event handlers will be called
-            YG2.ConsumePurchases(onPurchaseSuccess: true);
+            Debug.Log("[YandexIAPService] Initialization complete!");
+            return true;
         }
 
         public async Task<bool> PurchaseProduct(string productId)

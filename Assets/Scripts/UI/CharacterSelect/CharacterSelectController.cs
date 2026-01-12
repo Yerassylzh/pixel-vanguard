@@ -37,6 +37,7 @@ namespace PixelVanguard.UI.CharacterSelect
         private void Awake()
         {
             CreateCharacterCards();
+            Services.CachedSaveDataService.OnGoldChanged += RefreshGoldDisplay;
         }
 
         private void Start()
@@ -104,21 +105,18 @@ namespace PixelVanguard.UI.CharacterSelect
         /// </summary>
         public void RefreshGoldAndUI()
         {
-            if (cachedSave != null)
+            RefreshGoldDisplay();
+            RefreshUI();
+        }
+
+        private void RefreshGoldDisplay()
+        {
+            if (cachedSave != null && goldText != null)
             {
-
-                if (goldText != null)
-                {
-                    goldText.text = cachedSave.Data.totalGold.ToString();
-                }
-                else
-                {
-                    Debug.LogError("[CharacterSelect] Gold Text component is MISSING!");
-                }
-
-                // Refresh all character cards to show correct affordability
-                RefreshUI();
+                goldText.text = cachedSave.Data.totalGold.ToString();
             }
+            // Refresh all character cards to show correct affordability
+            RefreshUI();
         }
 
         private void CreateCharacterCards()
@@ -327,6 +325,12 @@ namespace PixelVanguard.UI.CharacterSelect
                 mainMenu.ReturnToMainMenu();
             else
                 SceneManager.LoadScene("MainMenu");
+        }
+
+        private void OnDestroy()
+        {
+            // Unsubscribe from gold change event
+            Services.CachedSaveDataService.OnGoldChanged -= RefreshGoldDisplay;
         }
     }
 }

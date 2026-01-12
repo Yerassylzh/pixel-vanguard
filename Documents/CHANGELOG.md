@@ -4,7 +4,135 @@
 
 ---
 
+## January 12, 2026
+
+### Yandex IAP & Gold Display System Fixes ✅
+
+**Critical fixes for In-App Purchase initialization and gold UI synchronization across panels:**
+
+#### 1. IAP Service Initialization Fix 🐛
+
+**Problem:** `YandexIAPService.Initialize()` wasn't completing fully - only first debug log appeared, price display showed "---", unconsumed purchases weren't processed.
+
+**Root Cause:** 
+- `GameBootstrap` was using "fire and forget" pattern: `_ = iapService.Initialize()`
+- When `Initialize()` hit `await Task.Yield()`, execution yielded but never resumed (Task was discarded)
+- ShopController subscription and ConsumePurchases logic never executed
+
+**Solution:**
+-Made `YandexIAPService.Initialize()` synchronous (returns `bool` instead of `Task<bool>`)
+- Removed problematic `await Task.Yield()` and redundant ShopController subscription
+- Updated `IIAPService` interface to match synchronous signature
+- Updated `PlaceholderIAPService` to match
+- Removed fire-and-forget pattern in `GameBootstrap.cs` (no longer needed since it's synchronous)
+
+**Modified Files:**
+- `YandexIAPService.cs` - Made Initialize() synchronous, removed Task.Yield() and redundant subscription
+- `IIAPService.cs` - Changed Initialize() signature from `Task<bool>` to `bool`
+- `PlaceholderIAPService.cs` - Updated Initialize() to match interface
+- `GameBootstrap.cs` - Updated service initialization call
+
+#### 2. Unconsumed Purchase Logic Moved 🔄
+
+**Change:** Moved purchase consumption from YandexIAPService to ShopController for better separation of concerns.
+
+**Implementation:**
+- `ShopController.Awake()` now calls `YG2.ConsumePurchases(onPurchaseSuccess: true)`
+- Ensures unconsumed purchases are processed when shop opens, not just at game startup
+- Subscribes to `YG2.onPurchaseSuccess` event for gold pack purchases
+
+**Modified Files:**
+- `ShopController.cs` - Added Awake() with consume logic and event subscription
+
+#### 3. Gold Display Synchronization - Event System ✅
+
+**Problem:** Main Menu gold display didn't update after purchases/consumption until navigating to another panel and back.
+
+**Solution:** Implemented centralized event-based system for automatic gold UI updates.
+
+**Architecture:**
+```csharp
+// CachedSaveDataService.cs
+public static event Action OnGoldChanged;
+
+public void AddGold(int amount) {
+    Data.totalGold += amount;
+    Save();
+    OnGoldChanged?.Invoke(); // Notify all subscribers
+}
+```
+
+**Panel Integration:**
+All UI panels now subscribe to `OnGoldChanged` in `Awake()`:
+- `MainMenuManager.cs`
+- `ShopController.cs` 
+- `CharacterSelectController.cs`
+- `SettingsController.cs`
+
+**Benefits:**
+- Gold updates instantly across **all panels** when changed anywhere
+- No manual refresh calls needed
+- Decoupled architecture - panels don't need to know about each other
+- Event unsubscription in `OnDestroy()` prevents memory leaks
+
+**Modified Files:**
+- `CachedSaveDataService.cs` - Added OnGoldChanged event, fires in AddGold(), SpendGold(), TotalGold setter
+- `MainMenuManager.cs` - Subscribe/unsubscribe to event
+- `ShopController.cs` - Subscribe/unsubscribe, CoinRewardAnimator handles text updates
+- `CharacterSelectController.cs` - Subscribe/unsubscribe, added RefreshGoldDisplay() method
+- `SettingsController.cs` - Subscribe/unsubscribe to event
+
+#### 4. Coin Reward Animation Integration ✨
+
+**Design Decision:** Keep animation simple - let `CoinRewardAnimator` handle gold text updates during animation, event system updates other panels.
+
+**Flow:**
+1. Purchase succeeds → `cachedSave.AddGold(29900)` called
+2. `OnGoldChanged` fires → All panels (Main Menu, Settings, Character Select) update immediately
+3. If shop is open → `CoinRewardAnimator` plays coin flight animation with text count-up
+4. Animation completes → Final state already synchronized via event
+
+**Result:**  Smooth visual feedback with automatic cross-panel synchronization.
+
+#### 5. Canvas Resolution Setter Tool 🛠️
+
+**Created:** Unity Editor tool for configuring Canvas Scaler settings across scenes.
+
+**Features:**
+- Platform-specific settings (Android vs WebGL)
+- Reference resolution and match width/height configuration
+- Apply to current scene or all scenes in build settings
+- Ensures consistent UI scaling across platforms
+
+**File Created:**
+- `Editor/CanvasResolutionSetter.cs`
+
+---
+
+### Technical Highlights
+
+**Async Initialization Pattern (What NOT to Do):**
+```csharp
+// ❌ WRONG - Fire and forget
+_ = service.Initialize(); // Execution stops at first await
+
+// ✅ RIGHT - Made synchronous
+bool success = service.Initialize(); // No await needed
+```
+
+**Event-Based Gold Updates:**
+```csharp
+// Awake in all UI panels
+Services.CachedSaveDataService.OnGoldChanged += RefreshGoldDisplay;
+
+// OnDestroy in all UI panels  
+Services.CachedSaveDataService.OnGoldChanged -= RefreshGoldDisplay;
+```
+
+---
+
 ## January 3, 2026
+
 
 ### Startup Scene Interaction Improvements ✅
 

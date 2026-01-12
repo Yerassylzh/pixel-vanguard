@@ -12,7 +12,7 @@ namespace PixelVanguard.Services
         /// <summary>
         /// Initialize IAP service (called by GameBootstrap).
         /// </summary>
-        Task<bool> Initialize();
+        bool Initialize();
 
         /// <summary>
         /// Is the IAP service ready?

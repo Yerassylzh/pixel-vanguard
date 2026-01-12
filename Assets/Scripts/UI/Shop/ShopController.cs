@@ -71,6 +71,18 @@ namespace PixelVanguard.UI
         // Android Special Offer Config
         private const int SPECIAL_OFFER_AD_Target = 20;
 
+        private void Awake() {
+            // Subscribe to gold change event
+            Services.CachedSaveDataService.OnGoldChanged += RefreshUI;
+
+            // Subscribe to Yandex purchase success event (WebGL only)
+#if UNITY_WEBGL
+            YG2.onPurchaseSuccess += OnPurchaseSuccess_GoldPack;            
+            YG2.ConsumePurchases(onPurchaseSuccess: true);
+            Debug.Log("[ShopController] Consumed unconsumed purchases");
+#endif
+        }
+
         private void Start()
         {            
             // Get services
@@ -114,11 +126,6 @@ namespace PixelVanguard.UI
             {
                 iapCardButton.onClick.AddListener(OnIAPCardClicked);
             }
-
-            // Subscribe to Yandex purchase success event (WebGL only)
-#if UNITY_WEBGL
-            YG2.onPurchaseSuccess += OnPurchaseSuccess_GoldPack;
-#endif
 
             // Start cooldown timer UPDATE coroutine for UI refreshing
             cooldownCoroutine = StartCoroutine(ShopUpdateCoroutine.UpdateCooldownTimer(
@@ -197,8 +204,9 @@ namespace PixelVanguard.UI
         /// Called when YG2.ConsumePurchases() processes unconsumed gold pack purchases.
         /// Also called for normal purchases as a secondary event (already handled inline).
         /// NOTE: Remove Ads is Android-only, not handled here.
+        /// Subscribed in YandexIAPService Initialize() function
         /// </summary>
-        private void OnPurchaseSuccess_GoldPack(string productId)
+        public void OnPurchaseSuccess_GoldPack(string productId)
         {
             // Only handle gold pack purchases
             if (productId != ProductIDs.GOLD_PACK_LARGE)
@@ -216,10 +224,9 @@ namespace PixelVanguard.UI
                 Debug.Log("[ShopController] Consuming unconsumed gold pack purchase from startup");
             }
 
-            // Grant gold reward
+            // Grant gold reward - this will automatically trigger OnGoldChanged event
             int goldEarned = 29900;
-            cachedSave.Data.totalGold += goldEarned;
-            cachedSave.Save();
+            cachedSave.AddGold(goldEarned);
 
             // Only play animation if shop is open (don't animate during startup consuming)
             if (!isConsumingAtStartup && goldIconTransform != null && iapBuyButton != null && coinRewardAnimator != null)
@@ -232,18 +239,15 @@ namespace PixelVanguard.UI
                     onComplete: null
                 );
             }
-            else
-            {
-                // Just refresh UI (startup consuming or missing animation components)
-                RefreshUI();
-            }
+            // No need for else RefreshUI() - OnGoldChanged event will handle updates
         }
 #endif
 
-
-
         private void OnDestroy()
         {
+            // Unsubscribe from gold change event
+            Services.CachedSaveDataService.OnGoldChanged -= RefreshUI;
+
             // Stop coroutine
             if (cooldownCoroutine != null)
             {

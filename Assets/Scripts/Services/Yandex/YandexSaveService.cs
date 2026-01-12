@@ -33,7 +33,13 @@ namespace PixelVanguard.Services
         public void SaveData(SaveData data)
         {
             SyncSaveDataToYandex(data);
-            YG2.SaveProgress(); // Send to Yandex cloud (synchronous)
+            
+            // Only save to cloud if SDK is fully initialized
+            if (YG2.isSDKEnabled)
+            {
+                YG2.SaveProgress(); // Send to Yandex cloud (synchronous)
+            }
+            // If not initialized yet, data is still synced to YG2.saves and will be saved after init
         }
 
         /// <summary>

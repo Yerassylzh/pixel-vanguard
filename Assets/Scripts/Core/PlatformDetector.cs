@@ -1,6 +1,8 @@
 using UnityEngine;
-using YG;
 
+#if UNITY_WEBGL
+using YG;
+#endif
 
 namespace PixelVanguard.Core
 {

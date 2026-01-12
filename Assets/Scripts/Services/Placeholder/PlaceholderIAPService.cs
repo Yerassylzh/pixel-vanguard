@@ -13,11 +13,8 @@ namespace PixelVanguard.Services
 
         public bool IsInitialized => _initialized;
 
-        public async Task<bool> Initialize()
+        public bool Initialize()
         {            
-            // Simulate initialization delay
-            await Task.Delay(500);
-            
             _initialized = true;
             return true;
         }

@@ -13,7 +13,7 @@ namespace PixelVanguard.Core
     {
         public static GameBootstrap Instance { get; private set; }
 
-        private void Awake()
+        private async void Awake()
         {
             // Singleton pattern with DontDestroyOnLoad
             if (Instance != null && Instance != this)
@@ -26,13 +26,13 @@ namespace PixelVanguard.Core
             DontDestroyOnLoad(gameObject);
 
             // Initialize ServiceLocator
-            InitializeServiceLocator();
+            await InitializeServiceLocator();
 
             // Load and apply audio settings
             InitializeAudioSettings();
         }
 
-        private void InitializeServiceLocator()
+        private async System.Threading.Tasks.Task InitializeServiceLocator()
         {
             // === Save Service ===
             if (!ServiceLocator.Has<ISaveService>())
@@ -49,7 +49,7 @@ namespace PixelVanguard.Core
             if (!ServiceLocator.Has<IAdService>())
             {
                 var adService = PlatformServiceFactory.CreateAdService();
-                _ = adService.Initialize(); // Fire and forget
+                await adService.Initialize(); // Properly await
                 ServiceLocator.Register<IAdService>(adService);
             }
 
@@ -57,7 +57,7 @@ namespace PixelVanguard.Core
             if (!ServiceLocator.Has<IIAPService>())
             {
                 var iapService = PlatformServiceFactory.CreateIAPService();
-                _ = iapService.Initialize(); // Fire and forget
+                iapService.Initialize(); // Properly await
                 ServiceLocator.Register<IIAPService>(iapService);
             }
 

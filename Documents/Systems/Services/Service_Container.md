@@ -89,14 +89,40 @@ Platform-specific code (Ads, Saves, IAP) hidden behind interfaces. Core game nev
 ### 4.1 CachedSaveDataService
 **Type**: Concrete class (not interface)
 
-**Purpose**: In-memory cache of SaveData with helper methods
+**Purpose**: In-memory cache of SaveData with helper methods and event notifications
 
 **Key Features**:
 - Caches SaveData after first load
-- Helper methods: `SpendGold(amount)`, `CanAffordUpgrade()`
+- Helper methods: `SpendGold(amount)`, `AddGold(amount)`
+- **Event System**: `OnGoldChanged` static event fires when gold changes
 - Auto-refreshes cache after save (Yandex cloud sync)
 
+**Gold Change Event** (Added Jan 2026):
+```csharp
+public static event Action OnGoldChanged;
+
+// Fires automatically in:
+- AddGold(amount)
+- SpendGold(amount) 
+- TotalGold property setter
+```
+
+**UI Integration Pattern**:
+```csharp
+// Subscribe in Awake()
+void Awake() {
+    Services.CachedSaveDataService.OnGoldChanged += RefreshGoldDisplay;
+}
+
+// Unsubscribe in OnDestroy()
+void OnDestroy() {
+    Services.CachedSaveDataService.OnGoldChanged -= RefreshGoldDisplay;
+}
+```
+
 **Why Refresh After Save?**: Yandex Cloud Save may sync data from other devices
+
+**Why Static Event?**: Allows UI panels to subscribe before CachedSaveDataService instance is created
 
 ---
 
