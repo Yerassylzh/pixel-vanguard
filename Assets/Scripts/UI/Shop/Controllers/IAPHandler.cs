@@ -85,6 +85,9 @@ namespace PixelVanguard.UI.Shop
                 return;
             }
 
+            // Show loading state
+            SetButtonState(Core.LocalizationManager.Get("ui.shop.ad_loading"), false);
+
             bool success = await adService.ShowRewardedAd();
 
             if (success)
@@ -100,6 +103,13 @@ namespace PixelVanguard.UI.Shop
 
                 cachedSave.Save();
                 UpdateButton();
+            }
+            else
+            {
+                // Show error state for 2 seconds
+                SetButtonState(Core.LocalizationManager.Get("ui.shop.ad_error"), false);
+                await System.Threading.Tasks.Task.Delay(2000);
+                UpdateButton(); // Restore normal state
             }
         }
 
@@ -151,6 +161,15 @@ namespace PixelVanguard.UI.Shop
             string price = iapService.GetLocalizedPrice(ProductIDs.GOLD_PACK_LARGE);
             if (iapButtonText) iapButtonText.text = price;
 #endif
+        }
+
+        /// <summary>
+        /// Helper to set button text and interactable state.
+        /// </summary>
+        private void SetButtonState(string text, bool interactable)
+        {
+            if (iapButtonText != null) iapButtonText.text = text;
+            if (iapBuyButton != null) iapBuyButton.interactable = interactable;
         }
     }
 }

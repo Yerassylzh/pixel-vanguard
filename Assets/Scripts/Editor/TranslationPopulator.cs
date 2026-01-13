@@ -106,6 +106,8 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.shop.gold_pack.amount", "29900 Coins", "29900 монет");
             AddTranslation(strings, "ui.shop.gold_pack.price", "79 YAN", "79 ЯН");
             AddTranslation(strings, "ui.shop.gold_pack.desc", "Premium gold pack with the best value. Purchase directly to support development!", "Премиум пак золота с лучшим соотношением. Купите, чтобы поддержать разработку!");
+            AddTranslation(strings, "ui.shop.ad_loading", "Wait..", "Секунду..");
+            AddTranslation(strings, "ui.shop.ad_error", "No ad", "Ошибка");
 
             // Common Shop
             AddTranslation(strings, "ui.common.coins", "Coins", "Монет");

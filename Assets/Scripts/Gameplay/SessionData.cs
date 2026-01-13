@@ -39,6 +39,16 @@ namespace PixelVanguard.Gameplay
         /// </summary>
         public GameOverReason gameOverReason;
 
+        /// <summary>
+        /// Number of times player has revived in this session (max 3).
+        /// </summary>
+        public int revivesUsed;
+
+        /// <summary>
+        /// Can the player revive? (Limited to 3 revives per session)
+        /// </summary>
+        public bool CanRevive => revivesUsed < 3;
+
         private void Awake()
         {
             // Singleton pattern with DontDestroyOnLoad
@@ -51,7 +61,20 @@ namespace PixelVanguard.Gameplay
             {
                 Debug.LogWarning("[SessionData] Duplicate instance detected, destroying...");
                 Destroy(gameObject);
+                return;
             }
+            
+            // Subscribe to revive event
+            Core.GameEvents.OnPlayerRevived += OnPlayerRevived;
+        }
+        
+        /// <summary>
+        /// Called when player revives via GameEvents.
+        /// </summary>
+        private void OnPlayerRevived()
+        {
+            revivesUsed++;
+            Debug.Log($"[SessionData] Player revived ({revivesUsed}/3 revives used)");
         }
 
         /// <summary>
@@ -65,6 +88,7 @@ namespace PixelVanguard.Gameplay
             goldCollected = 0;
             levelReached = 1;
             gameOverReason = GameOverReason.PlayerDied;
+            revivesUsed = 0;
         }
 
         /// <summary>
@@ -90,6 +114,12 @@ namespace PixelVanguard.Gameplay
                 return $"{hours:00}:{minutes:00}:{seconds:00}";
             else
                 return $"{minutes:00}:{seconds:00}";
+        }
+
+        private void OnDisable()
+        {
+            // Unsubscribe from events
+            Core.GameEvents.OnPlayerRevived -= OnPlayerRevived;
         }
 
         private void OnDestroy()

@@ -19,6 +19,9 @@ namespace PixelVanguard.Core
         [Header("Spawn Settings")]
         [Tooltip("Where to spawn the player (leave empty for (0,0,0))")]
         [SerializeField] private Transform spawnPoint;
+        
+        [Tooltip("Manual spawn position override (if spawnPoint is null)")]
+        [SerializeField] private Vector2 manualSpawnPosition = Vector2.zero;
 
         [Tooltip("Cinemachine camera to follow player (optional - auto-detects if empty)")]
         [SerializeField] private MonoBehaviour cinemachineCamera;
@@ -88,7 +91,9 @@ namespace PixelVanguard.Core
             }
 
             // Determine spawn position
-            Vector3 spawnPosition = spawnPoint != null ? spawnPoint.position : Vector3.zero;
+            Vector3 spawnPosition = spawnPoint != null 
+                ? spawnPoint.position 
+                : new Vector3(manualSpawnPosition.x, manualSpawnPosition.y, 0f);
 
             GameObject playerPrefab = SelectedCharacter.characterPrefab;
 

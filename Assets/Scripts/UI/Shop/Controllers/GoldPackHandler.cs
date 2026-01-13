@@ -77,6 +77,10 @@ namespace PixelVanguard.UI.Shop
                 return;
             }
 
+            // Show loading state
+            AdPackCard activeCard = packNumber == 1 ? adPack1Card : adPack2Card;
+            activeCard.SetLoadingState();
+
             bool success = await adService.ShowRewardedAd();
 
             if (success)
@@ -122,13 +126,18 @@ namespace PixelVanguard.UI.Shop
                         onComplete: () => RefreshCards() // Refresh after animation
                     );
                 }
-                
-                // Always refresh cards to show updated progress
-                RefreshCards();
+                else
+                {
+                    // No reward this time, just refresh to show updated progress
+                    RefreshCards();
+                }
             }
             else
             {
                 Debug.LogWarning("[GoldPackHandler] Ad failed or cancelled");
+                
+                // Show error state for 2 seconds (error state coroutine will restore button)
+                activeCard.SetErrorStateWithCallback(() => RefreshCards());
             }
         }
 

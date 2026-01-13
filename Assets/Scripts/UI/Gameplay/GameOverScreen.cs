@@ -50,12 +50,20 @@ namespace PixelVanguard.UI
 
         private void ShowGameOver()
         {
+            // Check revive limit
+            bool canRevive = SessionData.Instance != null && SessionData.Instance.CanRevive;
+            
+            // Disable revive button if limit exceeded
+            if (reviveButton != null)
+            {
+                reviveButton.gameObject.SetActive(canRevive);
+            }
+
             // Show panel
             if (gameOverPanel != null)
             {
                 gameOverPanel.SetActive(true);
             }
-
         }
 
         private async void OnReviveClicked()

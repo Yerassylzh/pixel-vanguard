@@ -20,6 +20,11 @@ namespace PixelVanguard.Services
         private const string REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"; 
         private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
 
+        // === DEBUG: Simulate Poor Network ===
+        private const bool SIMULATE_SLOW_LOADING = false; // Set true to test "Wait.." UI
+        private const int SIMULATED_LOAD_DELAY_MS = 3000; // 3 second delay
+        private const bool SIMULATE_AD_FAILURE = false;   // Set true to test "No ad" UI
+
 
         private RewardedAd _rewardedAd;
         private InterstitialAd _interstitialAd;
@@ -55,6 +60,21 @@ namespace PixelVanguard.Services
 
         public async Task<bool> ShowRewardedAd()
         {
+            // === DEBUG: Simulate slow loading ===
+            if (SIMULATE_SLOW_LOADING)
+            {
+                Debug.LogWarning($"[AdMobAdService] DEBUG: Simulating {SIMULATED_LOAD_DELAY_MS}ms ad load delay");
+                await Task.Delay(SIMULATED_LOAD_DELAY_MS);
+            }
+            
+            // === DEBUG: Simulate ad failure ===
+            if (SIMULATE_AD_FAILURE)
+            {
+                Debug.LogWarning("[AdMobAdService] DEBUG: Simulating ad failure");
+                await Task.Delay(1000); // Simulate failed load attempt
+                return false;
+            }
+            
             if (_rewardedAd != null && _rewardedAd.CanShowAd())
             {
                 _rewardedAdTcs = new TaskCompletionSource<bool>();

@@ -11,6 +11,11 @@ namespace PixelVanguard.Services
     public class PlaceholderAdService : IAdService
     {
         private const int COOLDOWN_SECONDS = 60; // 1 minute cooldown
+        
+        // === DEBUG: Simulate Poor Network ===
+        private const bool SIMULATE_SLOW_LOADING = false; // Set true to test "Wait.." UI
+        private const int SIMULATED_LOAD_DELAY_MS = 3000; // 3 second delay
+        private const bool SIMULATE_AD_FAILURE = false;   // Set true to test "No ad" UI
 
         public bool IsRewardedAdReady()
         {
@@ -20,10 +25,25 @@ namespace PixelVanguard.Services
 
         public async Task<bool> ShowRewardedAd()
         {            
+            // === DEBUG: Simulate slow loading ===
+            if (SIMULATE_SLOW_LOADING)
+            {
+                Debug.LogWarning($"[PlaceholderAdService] DEBUG: Simulating {SIMULATED_LOAD_DELAY_MS}ms ad load delay");
+                await Task.Delay(SIMULATED_LOAD_DELAY_MS);
+            }
+            
+            // === DEBUG: Simulate ad failure ===
+            if (SIMULATE_AD_FAILURE)
+            {
+                Debug.LogWarning("[PlaceholderAdService] DEBUG: Simulating ad failure");
+                await Task.Delay(1000);
+                return false;
+            }
+            
             // Simulate ad loading delay
             await Task.Delay(500);
             
-            // Placeholder: always succeeds
+            // Placeholder: always succeeds (unless debug failure enabled)
             return true;
         }
 

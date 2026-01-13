@@ -15,6 +15,11 @@ namespace PixelVanguard.Services
         private const int COOLDOWN_SECONDS = 60; // 1 minute cooldown
         private TaskCompletionSource<bool> rewardedAdTask;
         private const string REWARD_ID = "gold_reward";
+        
+        // === DEBUG: Simulate Poor Network ===
+        private const bool SIMULATE_SLOW_LOADING = false; // Set true to test "Wait.." UI
+        private const int SIMULATED_LOAD_DELAY_MS = 3000; // 3 second delay
+        private const bool SIMULATE_AD_FAILURE = false;   // Set true to test "No ad" UI
 
         public void Initialize()
         {
@@ -32,6 +37,21 @@ namespace PixelVanguard.Services
 
         public async Task<bool> ShowRewardedAd()
         {
+            // === DEBUG: Simulate slow loading ===
+            if (SIMULATE_SLOW_LOADING)
+            {
+                Debug.LogWarning($"[YandexAdService] DEBUG: Simulating {SIMULATED_LOAD_DELAY_MS}ms ad load delay");
+                await Task.Delay(SIMULATED_LOAD_DELAY_MS);
+            }
+            
+            // === DEBUG: Simulate ad failure ===
+            if (SIMULATE_AD_FAILURE)
+            {
+                Debug.LogWarning("[YandexAdService] DEBUG: Simulating ad failure");
+                await Task.Delay(1000); // Simulate failed load attempt
+                return false;
+            }
+            
             rewardedAdTask = new TaskCompletionSource<bool>();
 
             // Call Yandex rewarded ad

@@ -4,6 +4,137 @@
 
 ---
 
+## January 13, 2026
+
+### Gameplay & UX Improvements ✅
+
+**Three professional features added to improve game balance and user experience:**
+
+#### 1. Revive Limit System (Max 3 Per Session) 🎮
+
+**Implementation:**
+- Added `revivesUsed` counter and `CanRevive` property to `SessionData.cs`
+- SessionData subscribes to `GameEvents.OnPlayerRevived` (event-driven architecture)
+- GameOverScreen disables revive button GameObject when limit exceeded
+- Counter resets each time GameScene loads
+
+**Files Modified:**
+- `SessionData.cs` - Added revive tracking with event subscription (OnPlayerRevived)
+- `GameManager.cs` - Removed direct counter increment (now event-driven)
+- `GameOverScreen.cs` - Hides revive button when `!CanRevive`
+
+**Architecture:** Event-driven pattern - SessionData auto-increments on revive event, no tight coupling
+
+#### 2. Ad Loading Visual Feedback 📱
+
+**Problem:** Users with slow networks had no feedback while ads loaded
+**Solution:** Loading/error states with localized text for better UX
+
+**Implementation:**
+- Loading state: Shows "Wait.." (EN) / "Секунду.." (RU) while ad loads
+- Error state: Shows "No ad" (EN) / "Ошибка" (RU) for 2 seconds if ad fails
+- State machine with lock prevents cooldown timer from overriding states
+
+**Files Modified:**
+- `AdPackCard.cs` - Added state machine (enum + isStateLocked guard)
+- `GoldPackHandler.cs` - Shows loading before ShowRewardedAd(), error on failure
+- `IAPHandler.cs` - Same loading/error states for Android special pack
+- `TranslationPopulator.cs` - Added ui.shop.ad_loading and ui.shop.ad_error keys
+
+**State Machine Design:**
+```csharp
+enum AdButtonState { Ready, Cooldown, Loading, Error }
+private bool isStateLocked; // Prevents cooldown from overriding
+```
+
+**Critical Fix:** Multiple update sources override text
+- `ShopUpdateCoroutine` calls `UpdateCooldown()` every second
+- `OnGoldChanged` event triggers `RefreshCards()` → `UpdateProgress()`
+- **Solution:** Both methods check `IsInTemporaryState` and return early if locked
+- After delay: Unlock → normal updates work again
+
+**Lock Guards Added:**
+- ✅ `UpdateCooldown()` - Respects lock
+- ✅ `UpdateProgress()` - Respects lock (critical for gold change events)
+
+#### 3. Configurable Player Spawn Position 🎯
+
+**Implementation:**
+- Added `manualSpawnPosition` Vector2 field to CharacterManager
+- Priority: Transform > Vector2 > (0,0,0)
+- Allows spawn configuration via Inspector without creating GameObjects
+
+**Files Modified:**
+- `CharacterManager.cs` - Added Vector2 spawn field, updated SpawnPlayer() logic
+
+---
+
+### Service Architecture Refactoring 🔧
+
+**Event-Driven Best Practices:**
+
+#### IAdService.Initialize() Made Synchronous
+
+**Reason:** Both YandexAdService and AdMobAdService only subscribe to events - no async work needed
+**Change:** Removed `async Task` → now `void Initialize()`
+
+**Files Modified:**
+- `IAdService.cs` - Interface signature updated
+- `YandexAdService.cs` - Removed async/await, just subscribes to events
+- `AdMobAdService.cs` - Removed async/await
+- `PlaceholderAdService.cs` - Removed async/await  
+- `GameBootstrap.cs` - Removed await from Initialize() call
+
+#### Event-Driven Revive Counter
+
+**Before (Bad):** GameManager directly modified SessionData.revivesUsed++
+**After (Good):** SessionData subscribes to GameEvents.OnPlayerRevived
+
+**Benefits:**
+- ✅ Decoupled - GameManager doesn't know about revivesUsed field
+- ✅ Consistent - Matches patterns for gold, kills, XP (all use events)
+- ✅ Scalable - Other systems can easily subscribe to same event
+- ✅ Follows SOLID principles
+
+---
+
+### Debug Testing Features 🧪
+
+**Added to all ad services for testing:**
+
+```csharp
+private const bool SIMULATE_SLOW_LOADING = false; // Test "Wait.." UI
+private const int SIMULATED_LOAD_DELAY_MS = 3000;
+private const bool SIMULATE_AD_FAILURE = false;   // Test "No ad" UI
+```
+
+**Purpose:** Simulate poor network conditions to test loading/error state UI
+**Files:** YandexAdService.cs, AdMobAdService.cs, PlaceholderAdService.cs
+
+---
+
+### Files Modified Summary
+
+| File | Changes |
+|------|---------|
+| SessionData.cs | Added revive counter with event subscription |
+| GameManager.cs | Removed direct revive increment |
+| GameOverScreen.cs | Hide button on revive limit |
+| AdPackCard.cs | State machine with lock mechanism |
+| GoldPackHandler.cs | Loading/error states + callback |
+| IAPHandler.cs | Loading/error states for special pack |
+| CharacterManager.cs | Manual spawn position field |
+| All AdServices | Made Initialize() synchronous + debug flags |
+| TranslationPopulator.cs | Added loading/error translation keys |
+
+**Architecture Patterns:**
+- ✅ State Machine (AdPackCard)
+- ✅ Event-Driven (SessionData revive counter)
+- ✅ Observer Pattern (GameEvents subscribers)
+- ✅ Single Responsibility (state lock prevents timer conflicts)
+
+---
+
 ## January 12, 2026
 
 ### Yandex IAP & Gold Display System Fixes ✅

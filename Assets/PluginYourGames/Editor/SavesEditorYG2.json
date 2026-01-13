@@ -7,8 +7,8 @@
         false,
         false
     ],
-    "idSave": 188,
-    "totalGold": 1583044,
+    "idSave": 203,
+    "totalGold": 1587025,
     "unlockedCharacterIDs": [
         "knight",
         "pyromancer",
@@ -16,10 +16,10 @@
         "zombie",
         "santa"
     ],
-    "selectedCharacterID": "knight",
-    "adsWatchedForPack1": 1,
-    "adsWatchedForPack2": 0,
-    "lastAdWatchedTime": "2026-01-12T08:28:04.9666749+05:00",
+    "selectedCharacterID": "zombie",
+    "adsWatchedForPack1": 2,
+    "adsWatchedForPack2": 1,
+    "lastAdWatchedTime": "2026-01-13T22:00:16.3229135+05:00",
     "longestTime": 179.0,
     "highestKills": 172,
     "highestLevel": 6,
