@@ -25,7 +25,7 @@ namespace PixelVanguard.Services
         private InterstitialAd _interstitialAd;
         private TaskCompletionSource<bool> _rewardedAdTcs;
 
-        public async Task Initialize()
+        public void Initialize()
         {
             var requestConfiguration = new RequestConfiguration
             {
@@ -46,8 +46,6 @@ namespace PixelVanguard.Services
                 LoadRewardedAd();
                 LoadInterstitialAd();
             });
-
-            await Task.CompletedTask;
         }
 
         public bool IsRewardedAdReady()

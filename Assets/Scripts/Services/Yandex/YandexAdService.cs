@@ -16,14 +16,12 @@ namespace PixelVanguard.Services
         private TaskCompletionSource<bool> rewardedAdTask;
         private const string REWARD_ID = "gold_reward";
 
-        public async Task Initialize()
+        public void Initialize()
         {
             // Subscribe to Yandex ad events
             YG2.onRewardAdv += OnRewardReceived;
             YG2.onErrorRewardedAdv += OnAdError;
             YG2.onCloseRewardedAdv += OnAdClosed;
-
-            await Task.CompletedTask;
         }
 
         public bool IsRewardedAdReady()

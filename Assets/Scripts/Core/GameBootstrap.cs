@@ -49,7 +49,7 @@ namespace PixelVanguard.Core
             if (!ServiceLocator.Has<IAdService>())
             {
                 var adService = PlatformServiceFactory.CreateAdService();
-                await adService.Initialize(); // Properly await
+                adService.Initialize();
                 ServiceLocator.Register<IAdService>(adService);
             }
 

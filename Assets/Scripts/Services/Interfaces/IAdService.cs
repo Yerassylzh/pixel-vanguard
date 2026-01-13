@@ -29,7 +29,7 @@ namespace PixelVanguard.Services
         /// <summary>
         /// Initialize the ad service (called by GameBootstrap).
         /// </summary>
-        Task Initialize();
+        void Initialize();
 
         /// <summary>
         /// Check if ad cooldown period has passed (60 seconds).

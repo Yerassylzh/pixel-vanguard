@@ -32,9 +32,9 @@ namespace PixelVanguard.Services
             // Placeholder: instant, no reward
         }
 
-        public async Task Initialize()
+        public void Initialize()
         {
-            await Task.CompletedTask;
+            Debug.Log("[PlaceholderAdService] Initialized (Editor/Test mode)");
         }
 
         public bool CanWatchAd(string lastWatchedTime)
