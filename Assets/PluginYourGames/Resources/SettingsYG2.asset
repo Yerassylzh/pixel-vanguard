@@ -53,7 +53,7 @@ MonoBehaviour:
     buildNumber: 11
   Simulation:
     device: 0
-    language: ru
+    language: en
     advIntervalSimulation: 60
     durationAdv: 0.5
     loadAdv: 0

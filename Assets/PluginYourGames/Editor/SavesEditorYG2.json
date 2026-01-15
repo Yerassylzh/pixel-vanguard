@@ -7,8 +7,8 @@
         false,
         false
     ],
-    "idSave": 203,
-    "totalGold": 1587025,
+    "idSave": 206,
+    "totalGold": 1588425,
     "unlockedCharacterIDs": [
         "knight",
         "pyromancer",
@@ -20,14 +20,14 @@
     "adsWatchedForPack1": 2,
     "adsWatchedForPack2": 1,
     "lastAdWatchedTime": "2026-01-13T22:00:16.3229135+05:00",
-    "longestTime": 179.0,
-    "highestKills": 172,
-    "highestLevel": 6,
-    "mostGold": 44,
+    "longestTime": 928.0,
+    "highestKills": 1556,
+    "highestLevel": 18,
+    "mostGold": 1400,
     "adsRemoved": false,
     "showDamageNumbers": true,
     "showFPS": true,
     "sfxVolume": 0.6700000166893005,
     "musicVolume": 0.6700000166893005,
-    "language": "ru"
+    "language": "en"
 }

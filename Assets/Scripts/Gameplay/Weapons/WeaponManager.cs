@@ -29,22 +29,8 @@ namespace PixelVanguard.Gameplay
 
         private void Start()
         {
-            // Equip starter weapon from selected character
             var selectedCharacter = Core.CharacterManager.SelectedCharacter;
-            if (selectedCharacter != null && selectedCharacter.starterWeapon != null)
-            {
-                EquipWeapon(selectedCharacter.starterWeapon);
-            }
-            else if (availableWeapons != null && availableWeapons.Length > 0)
-            {
-                // Fallback: equip first weapon in array (Greatsword)
-                EquipWeapon(availableWeapons[0]);
-                Debug.LogWarning("[WeaponManager] No character starter weapon, using fallback");
-            }
-            else
-            {
-                Debug.LogError("[WeaponManager] No weapons available to equip!");
-            }
+            EquipWeapon(selectedCharacter.starterWeapon);
         }
 
         /// <summary>

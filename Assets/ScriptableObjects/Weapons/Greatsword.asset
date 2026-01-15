@@ -18,7 +18,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 7f4585c8f789e14429794fb53bc858c2, type: 3}
   type: 0
   baseDamage: 5
-  cooldown: 3.5
+  cooldown: 2.5
   knockback: 100
   baseDuration: 0
   baseTickRate: 0
