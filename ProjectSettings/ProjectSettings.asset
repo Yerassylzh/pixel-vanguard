@@ -175,7 +175,7 @@ PlayerSettings:
     iPhone: 0
     tvOS: 0
   overrideDefaultApplicationIdentifier: 1
-  AndroidBundleVersionCode: 2
+  AndroidBundleVersionCode: 3
   AndroidMinSdkVersion: 23
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
@@ -794,24 +794,24 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
+    Android: DOTWEEN;PLUGIN_YG_2;YandexGamesPlatform_yg;Authorization_yg;EnvirData_yg;InterstitialAdv_yg;Localization_yg;Payments_yg;RewardedAdv_yg;Storage_yg;TMP_YG2
     EmbeddedLinux: DOTWEEN
     GameCoreScarlett: DOTWEEN
     GameCoreXboxOne: DOTWEEN
     Kepler: DOTWEEN
-    LinuxHeadlessSimulation: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
-    Nintendo Switch: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
-    PS4: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
-    PS5: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
+    LinuxHeadlessSimulation: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
+    Nintendo Switch: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
+    PS4: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
+    PS5: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
     QNX: DOTWEEN
     ReservedCFE: DOTWEEN
-    Standalone: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
+    Standalone: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
     VisionOS: DOTWEEN
-    WebGL: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
-    Windows Store Apps: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
-    XboxOne: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
-    iPhone: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
-    tvOS: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;RU_YG2;DOTWEEN;YandexGamesPlatform_yg
+    WebGL: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
+    Windows Store Apps: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
+    XboxOne: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
+    iPhone: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
+    tvOS: PLUGIN_YG_2;TMP_YG2;InterstitialAdv_yg;RewardedAdv_yg;Storage_yg;Authorization_yg;Localization_yg;Payments_yg;EnvirData_yg;DOTWEEN;YandexGamesPlatform_yg
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
