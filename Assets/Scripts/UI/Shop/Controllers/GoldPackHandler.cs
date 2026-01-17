@@ -85,6 +85,9 @@ namespace PixelVanguard.UI.Shop
 
             if (success)
             {
+                // Clear loading state first so RefreshCards() can update the button
+                activeCard.ClearLoadingState();
+                
                 int goldEarned = 0;
                 Transform sourceTransform = null;
 

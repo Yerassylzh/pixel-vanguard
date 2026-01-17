@@ -172,6 +172,17 @@ namespace PixelVanguard.UI
         }
 
         /// <summary>
+        /// Clear loading state after successful ad completion.
+        /// Unlocks the state so RefreshCards() can update the progress text.
+        /// </summary>
+        public void ClearLoadingState()
+        {
+            isStateLocked = false; // Unlock
+            currentState = AdButtonState.Ready;
+            watchButton.interactable = true;
+        }
+
+        /// <summary>
         /// Show error state ("No ad" or "Ошибка") for 2 seconds.
         /// </summary>
         public void SetErrorState()
