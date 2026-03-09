@@ -47,9 +47,11 @@ namespace PixelVanguard.Services
             return true;
         }
 
-        public void ShowInterstitialAd()
+        public void ShowInterstitialAd(System.Action onComplete = null)
         {
-            // Placeholder: instant, no reward
+            // Placeholder: no real ad, just proceed immediately
+            Debug.Log("[PlaceholderAdService] ShowInterstitialAd called (placeholder).");
+            onComplete?.Invoke();
         }
 
         public void Initialize()

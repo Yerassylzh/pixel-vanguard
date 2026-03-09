@@ -21,10 +21,10 @@ namespace PixelVanguard.Services
         Task<bool> ShowRewardedAd();
 
         /// <summary>
-        /// Show an interstitial ad (non-rewarded, typically at end of game).
-        /// Returns a Task that completes when the ad is closed (or fails).
+        /// Show an interstitial ad (non-rewarded, typically at transitions).
+        /// onComplete is called when the ad closes or fails (or immediately if no ad is ready).
         /// </summary>
-        void ShowInterstitialAd();
+        void ShowInterstitialAd(System.Action onComplete = null);
 
         /// <summary>
         /// Initialize the ad service (called by GameBootstrap).

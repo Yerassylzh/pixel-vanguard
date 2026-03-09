@@ -292,7 +292,21 @@ namespace PixelVanguard.UI.CharacterSelect
 
         private void StartGame()
         {
-            SceneManager.LoadScene("GameScene");
+            // Prevent double-tap while ad is showing
+            if (actionButton != null) actionButton.interactable = false;
+
+            var adService = Core.ServiceLocator.Get<Services.IAdService>();
+            if (adService != null)
+            {
+                adService.ShowInterstitialAd(() =>
+                {
+                    SceneManager.LoadScene("GameScene");
+                });
+            }
+            else
+            {
+                SceneManager.LoadScene("GameScene");
+            }
         }
 
         /// <summary>

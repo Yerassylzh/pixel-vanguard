@@ -15,6 +15,7 @@ namespace PixelVanguard.Services
         private const int COOLDOWN_SECONDS = 60; // 1 minute cooldown
         private TaskCompletionSource<bool> rewardedAdTask;
         private const string REWARD_ID = "gold_reward";
+        private System.Action _interstitialOnComplete;
         
         // === DEBUG: Simulate Poor Network ===
         private const bool SIMULATE_SLOW_LOADING = false; // Set true to test "Wait.." UI
@@ -27,6 +28,8 @@ namespace PixelVanguard.Services
             YG2.onRewardAdv += OnRewardReceived;
             YG2.onErrorRewardedAdv += OnAdError;
             YG2.onCloseRewardedAdv += OnAdClosed;
+            YG2.onCloseInterstitialAdv += OnInterstitialClosed;
+            YG2.onErrorInterstitialAdv += OnInterstitialError;
         }
 
         public bool IsRewardedAdReady()
@@ -62,11 +65,13 @@ namespace PixelVanguard.Services
             return result;
         }
 
-        public void ShowInterstitialAd()
+        public void ShowInterstitialAd(System.Action onComplete = null)
         {            
+            _interstitialOnComplete = onComplete;
             // Call Yandex interstitial ad
             // Plugin handles cooldown and frequency internally
             YG2.InterstitialAdvShow();
+            // onComplete is called in OnInterstitialClosed / OnInterstitialError
         }
 
         public bool CanWatchAd(string lastWatchedTime)
@@ -138,6 +143,24 @@ namespace PixelVanguard.Services
             
             // If task not completed yet (user closed ad without watching), fail the task
             rewardedAdTask?.TrySetResult(false);
+        }
+
+        private void OnInterstitialClosed()
+        {
+            Debug.Log("[YandexAdService] Interstitial ad closed.");
+            Time.timeScale = 1f;
+            var cb = _interstitialOnComplete;
+            _interstitialOnComplete = null;
+            cb?.Invoke();
+        }
+
+        private void OnInterstitialError()
+        {
+            Debug.LogWarning("[YandexAdService] Interstitial ad error.");
+            Time.timeScale = 1f;
+            var cb = _interstitialOnComplete;
+            _interstitialOnComplete = null;
+            cb?.Invoke();
         }
     }
 }

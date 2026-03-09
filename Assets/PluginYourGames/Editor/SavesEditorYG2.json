@@ -7,8 +7,8 @@
         false,
         false
     ],
-    "idSave": 208,
-    "totalGold": 1588425,
+    "idSave": 222,
+    "totalGold": 1588429,
     "unlockedCharacterIDs": [
         "knight",
         "pyromancer",
@@ -16,7 +16,7 @@
         "zombie",
         "santa"
     ],
-    "selectedCharacterID": "zombie",
+    "selectedCharacterID": "pyromancer",
     "adsWatchedForPack1": 4,
     "adsWatchedForPack2": 1,
     "lastAdWatchedTime": "2026-01-17T10:53:08.5930954+05:00",
@@ -28,6 +28,6 @@
     "showDamageNumbers": true,
     "showFPS": true,
     "sfxVolume": 0.6700000166893005,
-    "musicVolume": 0.6700000166893005,
-    "language": "en"
+    "musicVolume": 0.0,
+    "language": "ru"
 }

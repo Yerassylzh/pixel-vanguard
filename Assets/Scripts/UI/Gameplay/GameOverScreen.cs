@@ -123,33 +123,36 @@ namespace PixelVanguard.UI
             // Restore time scale for scene transition
             Time.timeScale = 1f;
 
-            // YANDEX REQUIREMENT: Show interstitial ad BEFORE scene loads (no frame delays)
-            ShowInterstitialAdBeforeResults();
-
-            // Load Results Scene
-            SceneManager.LoadScene("ResultsScene");
+            // Show interstitial ad, then load Results Scene inside the callback.
+            // This ensures the scene only loads AFTER the ad fully closes.
+            ShowInterstitialAdBeforeResults(() =>
+            {
+                SceneManager.LoadScene("ResultsScene");
+            });
         }
 
         /// <summary>
-        /// Show interstitial ad immediately before loading results scene.
-        /// Called synchronously to avoid frame delays per Yandex requirements.
+        /// Show interstitial ad before loading results scene.
+        /// onComplete is called when the ad closes (or immediately if ads removed / no ad ready).
         /// </summary>
-        private void ShowInterstitialAdBeforeResults()
+        private void ShowInterstitialAdBeforeResults(System.Action onComplete)
         {
-            var saveService = ServiceLocator.Get<ISaveService>();
-            if (saveService != null)
+            // Check if ads have been removed via IAP (AdMob only — use CachedSaveDataService)
+            var cachedSave = ServiceLocator.Get<CachedSaveDataService>();
+            if (cachedSave != null && cachedSave.Data.adsRemoved)
             {
-                var saveData = saveService.LoadData();
-                if (saveData.adsRemoved)
-                {
-                    return;
-                }
+                onComplete?.Invoke();
+                return;
             }
 
             var adService = ServiceLocator.Get<IAdService>();
             if (adService != null)
             {
-                adService.ShowInterstitialAd();
+                adService.ShowInterstitialAd(onComplete);
+            }
+            else
+            {
+                onComplete?.Invoke();
             }
         }
     }

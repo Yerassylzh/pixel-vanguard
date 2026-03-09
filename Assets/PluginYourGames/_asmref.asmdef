@@ -1,9 +1,9 @@
 {
-    "name": "asmdef",
+    "name": "_asmref",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [
-        "Android"
+        "WebGL"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -14,11 +14,11 @@ namespace PixelVanguard.Services
     {
         // Replace these with your actual Ad Unit IDs from AdMob Console
         // These are official Google Test IDs
-        // private const string REWARDED_AD_UNIT_ID = "ca-app-pub-4326973674601582/2935167324"; 
-        // private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4326973674601582/9876497111";
+        private const string REWARDED_AD_UNIT_ID = "ca-app-pub-4326973674601582/2935167324"; 
+        private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4326973674601582/9876497111";
 
-        private const string REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"; 
-        private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
+        // private const string REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"; 
+        // private const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
 
         // === DEBUG: Simulate Poor Network ===
         private const bool SIMULATE_SLOW_LOADING = false; // Set true to test "Wait.." UI
@@ -29,6 +29,7 @@ namespace PixelVanguard.Services
         private RewardedAd _rewardedAd;
         private InterstitialAd _interstitialAd;
         private TaskCompletionSource<bool> _rewardedAdTcs;
+        private System.Action _interstitialOnComplete;
 
         public void Initialize()
         {
@@ -99,16 +100,26 @@ namespace PixelVanguard.Services
             }
         }
 
-        public void ShowInterstitialAd()
+        public void ShowInterstitialAd(System.Action onComplete = null)
         {
+            // === AdMob only: respect IAP "Remove Ads" purchase ===
+            if (AreAdsRemoved())
+            {
+                Debug.Log("[AdMob] Ads removed — skipping interstitial.");
+                onComplete?.Invoke();
+                return;
+            }
+
             if (_interstitialAd != null && _interstitialAd.CanShowAd())
             {
+                _interstitialOnComplete = onComplete;
                 _interstitialAd.Show();
-                // Reload happens in event handler
+                // onComplete is called in OnAdFullScreenContentClosed / Failed
             }
             else
             {
-                Debug.LogWarning("[AdMob] Interstitial ad not ready.");
+                Debug.LogWarning("[AdMob] Interstitial ad not ready. Proceeding without ad.");
+                onComplete?.Invoke();
             }
         }
 
@@ -193,12 +204,29 @@ namespace PixelVanguard.Services
             {
                 Debug.Log("[AdMob] Interstitial ad closed.");
                 LoadInterstitialAd();
+                var cb = _interstitialOnComplete;
+                _interstitialOnComplete = null;
+                cb?.Invoke();
             };
             ad.OnAdFullScreenContentFailed += (AdError error) =>
             {
                 Debug.LogError($"[AdMob] Interstitial ad failed to show: {error}");
                 LoadInterstitialAd();
+                var cb = _interstitialOnComplete;
+                _interstitialOnComplete = null;
+                cb?.Invoke();
             };
+        }
+
+        /// <summary>
+        /// Check if the player has purchased "Remove Ads" via IAP.
+        /// Reads from CachedSaveDataService (same source of truth used everywhere).
+        /// </summary>
+        private bool AreAdsRemoved()
+        {
+            var cachedSave = Core.ServiceLocator.TryGet<CachedSaveDataService>(out var svc)
+                ? svc : null;
+            return cachedSave?.Data?.adsRemoved == true;
         }
 
         public bool CanWatchAd(string lastWatchedTime)

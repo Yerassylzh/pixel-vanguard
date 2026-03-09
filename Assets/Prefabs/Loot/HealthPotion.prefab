@@ -140,6 +140,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f156da1e045aae448aec19ca60f28332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.HealthPotion
-  healAmount: 25
+  healAmount: 10
   magnetRange: 3
   moveSpeed: 8

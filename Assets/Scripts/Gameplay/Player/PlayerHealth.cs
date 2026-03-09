@@ -21,7 +21,7 @@ namespace PixelVanguard.Gameplay
         [HideInInspector] public float characterDamageMultiplier = 1f; // For Might upgrade
 
         [Header("Damage Cooldown")]
-        [SerializeField] private float damageCooldown = 1f; // Seconds between taking damage
+        [SerializeField] private float damageCooldown = 0.5f; // Seconds between taking damage
         private float lastDamageTime = -999f;
 
         [Header("Invincibility")]

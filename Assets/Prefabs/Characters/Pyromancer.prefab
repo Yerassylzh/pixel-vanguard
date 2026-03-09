@@ -222,7 +222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PixelVanguard.Gameplay.PlayerHealth
   characterDamageMultiplier: 1
-  damageCooldown: 1
+  damageCooldown: 0.5
   isInvincible: 0
   invincibilityDuration: 0
 --- !u!212 &4264115221482180708
