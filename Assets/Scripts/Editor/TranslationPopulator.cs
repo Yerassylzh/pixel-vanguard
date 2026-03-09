@@ -60,6 +60,7 @@ namespace PixelVanguard.Editor
             AddTranslation(strings, "ui.settings.version", "Pixel Vanguard v.0.1", "Pixel Vanguard в.0.1");
             AddTranslation(strings, "ui.settings.remove_ads", "Remove Ads - 4990 coins", "Убрать рекламу - 4990 монет");
             AddTranslation(strings, "ui.settings.ads_removed", "Ads Removed", "Реклама удалена");
+            AddTranslation(strings, "ui.settings.remove_ads_label", "Remove Ads", "Убрать рекламу");
 
             AddTranslation(strings, "ui.currency.coins", "Coins", "Монет(ы)");
 

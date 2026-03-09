@@ -57,7 +57,8 @@ namespace PixelVanguard.Core
             if (!ServiceLocator.Has<IIAPService>())
             {
                 var iapService = PlatformServiceFactory.CreateIAPService();
-                iapService.Initialize(); // Properly await
+                iapService.Initialize();
+                await iapService.InitializeAsync(); // Await async init (Google Play: connect → fetch products → fetch purchases)
                 ServiceLocator.Register<IIAPService>(iapService);
             }
 

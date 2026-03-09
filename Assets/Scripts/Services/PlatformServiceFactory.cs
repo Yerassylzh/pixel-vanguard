@@ -47,6 +47,8 @@ namespace PixelVanguard.Services
         {
 #if UNITY_WEBGL
             return new YandexIAPService();
+#elif UNITY_ANDROID
+            return new GooglePlayIAPService();
 #else
             return new PlaceholderIAPService();
 #endif

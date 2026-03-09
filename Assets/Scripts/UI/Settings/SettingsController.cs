@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using PixelVanguard.Core;
+using PixelVanguard.Services;
 
 namespace PixelVanguard.UI
 {
@@ -14,6 +15,7 @@ namespace PixelVanguard.UI
     {
         private MainMenuManager mainMenuManager;
         private GameSettings gameSettings;
+        private IIAPService iapService;
 
         [Header("UI References")]
         [SerializeField] private GameObject settingsPanel;
@@ -57,7 +59,7 @@ namespace PixelVanguard.UI
         [SerializeField] private GameObject removeAdsRow;
         [SerializeField] private Button removeAdsButton;
         [SerializeField] private TextMeshProUGUI removeAdsButtonText;
-        
+
         private UI.LocalizedText removeAdsLocalizedText;  // Cached component
 
         private void Awake()
@@ -67,9 +69,11 @@ namespace PixelVanguard.UI
 
         private void Start()
         {
-            // Get GameSettings service
+            // Get services
             gameSettings = Core.ServiceLocator.Get<GameSettings>();
             mainMenuManager = FindFirstObjectByType<MainMenuManager>();
+            iapService = Core.ServiceLocator.Get<IIAPService>();
+
             // Add listeners
             languageButton.onClick.AddListener(OnLanguageToggle);
             musicSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
@@ -82,6 +86,7 @@ namespace PixelVanguard.UI
 
             if (removeAdsButton != null)
                 removeAdsButton.onClick.AddListener(OnRemoveAdsClicked);
+
 
             // Get or add LocalizedText component to Remove Ads button
             if (removeAdsButtonText != null)
@@ -97,7 +102,7 @@ namespace PixelVanguard.UI
             RefreshUI();
             RefreshRemoveAdsButton();
 
-            // Hide platform-specific UI on WebGL
+            // Hide platform-specific UI
 #if UNITY_WEBGL
             // Yandex controls language
             if (languageRow != null)
@@ -116,6 +121,7 @@ namespace PixelVanguard.UI
             {
                 externalLinksRow.SetActive(false);
             }
+
 #endif
         }
 
@@ -259,8 +265,34 @@ namespace PixelVanguard.UI
         // REMOVE ADS IAP
         // ============================================
 
-        private void OnRemoveAdsClicked()
+        private async void OnRemoveAdsClicked()
         {
+#if UNITY_ANDROID
+            // Android: Real IAP purchase via Google Play
+            if (iapService == null || !iapService.IsInitialized)
+            {
+                Debug.LogError("[Settings] IAP service not ready!");
+                return;
+            }
+
+            // Disable button during purchase flow
+            if (removeAdsButton != null) removeAdsButton.interactable = false;
+
+            bool success = await iapService.PurchaseProduct(ProductIDs.REMOVE_ADS);
+
+            if (success)
+            {
+                // Entitlement granted by GooglePlayIAPService.OnPurchasePending → GrantRemoveAds()
+                Debug.Log("[Settings] Remove Ads purchased via Google Play! ✅");
+            }
+            else
+            {
+                Debug.LogWarning("[Settings] Remove Ads purchase failed or cancelled.");
+            }
+
+            RefreshRemoveAdsButton();
+#else
+            // Other platforms: spend gold
             var cachedSave = Core.ServiceLocator.Get<Services.CachedSaveDataService>();
             if (cachedSave == null) return;
 
@@ -281,6 +313,7 @@ namespace PixelVanguard.UI
             {
                 Debug.LogWarning("[Settings] Not enough gold for Remove Ads!");
             }
+#endif
         }
 
         private void RefreshRemoveAdsButton()
@@ -302,18 +335,35 @@ namespace PixelVanguard.UI
             }
             else
             {
-                // Enable button and change to "Remove Ads - 4990 coins"
+                // Enable button and show price
                 removeAdsRow.SetActive(true);
                 if (removeAdsButton != null)
                     removeAdsButton.interactable = true;
-                
+
+#if UNITY_ANDROID
+                // Show localized label + localized price from Google Play (e.g., "Remove Ads — $0.99")
+                if (iapService != null && iapService.IsInitialized)
+                {
+                    string label = Core.LocalizationManager.Get("ui.settings.remove_ads_label");
+                    string price = iapService.GetLocalizedPrice(ProductIDs.REMOVE_ADS);
+                    if (removeAdsButtonText != null)
+                        removeAdsButtonText.text = $"{label} — {price}";
+                }
+                else
+                {
+                    if (removeAdsLocalizedText != null)
+                        removeAdsLocalizedText.SetKey("ui.settings.remove_ads");
+                }
+#else
                 if (removeAdsLocalizedText != null)
                     removeAdsLocalizedText.SetKey("ui.settings.remove_ads");
+#endif
             }
         }
 
+
         // ============================================
-        // REMOVE ADS IAP
+        // HELPERS
         // ============================================
 
         private void UpdateCheckboxVisual(Image checkboxImage, bool isChecked)
@@ -329,6 +379,7 @@ namespace PixelVanguard.UI
             // Unsubscribe from gold change event
             Services.CachedSaveDataService.OnGoldChanged -= RefreshGoldDisplay;
 
+
             // Clean up listeners
             languageButton.onClick.RemoveAllListeners();
             musicSlider.onValueChanged.RemoveAllListeners();
@@ -341,3 +392,4 @@ namespace PixelVanguard.UI
         }
     }
 }
+

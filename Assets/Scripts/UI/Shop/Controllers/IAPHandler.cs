@@ -43,11 +43,7 @@ namespace PixelVanguard.UI.Shop
 
         public void HandleIAPButtonClick()
         {
-#if UNITY_ANDROID
-            WatchSpecialAd();
-#else
             PurchaseIAP();
-#endif
         }
 
         private async void PurchaseIAP()
@@ -58,59 +54,33 @@ namespace PixelVanguard.UI.Shop
                 return;
             }
 
+            // Disable button during purchase flow
+            SetButtonState(Core.LocalizationManager.Get("ui.shop.ad_loading"), false);
+
             bool success = await iapService.PurchaseProduct(ProductIDs.GOLD_PACK_LARGE);
 
             if (success)
             {
-                GrantGoldPackReward();
+                // Gold is granted by GooglePlayIAPService.OnPurchasePending → GrantGoldPack()
+                // Play coin animation locally for UX feedback
+                if (goldIconTransform != null && iapBuyButton != null && coinRewardAnimator != null)
+                {
+                    coinRewardAnimator.PlayCoinReward(
+                        iapBuyButton.transform.position,
+                        goldIconTransform,
+                        GOLD_PACK_REWARD,
+                        goldText,
+                        onComplete: null
+                    );
+                }
             }
             else
             {
                 Debug.LogWarning("[IAPHandler] IAP purchase failed or cancelled");
             }
-        }
 
-        private async void WatchSpecialAd()
-        {
-            if (adService == null)
-            {
-                Debug.LogError("[IAPHandler] AdService missing!");
-                return;
-            }
-
-            if (!adService.CanWatchAd(cachedSave.Data.lastAdWatchedTime))
-            {
-                int remaining = adService.GetCooldownRemainingSeconds(cachedSave.Data.lastAdWatchedTime);
-                Debug.LogWarning($"[IAPHandler] Ad cooldown: {remaining}s remaining");
-                return;
-            }
-
-            // Show loading state
-            SetButtonState(Core.LocalizationManager.Get("ui.shop.ad_loading"), false);
-
-            bool success = await adService.ShowRewardedAd();
-
-            if (success)
-            {
-                cachedSave.Data.adsWatchedForSpecialPack++;
-                cachedSave.Data.lastAdWatchedTime = System.DateTime.Now.ToString("o");
-
-                if (cachedSave.Data.adsWatchedForSpecialPack >= SPECIAL_OFFER_AD_TARGET)
-                {
-                    cachedSave.Data.adsWatchedForSpecialPack = 0;
-                    GrantGoldPackReward();
-                }
-
-                cachedSave.Save();
-                UpdateButton();
-            }
-            else
-            {
-                // Show error state for 2 seconds
-                SetButtonState(Core.LocalizationManager.Get("ui.shop.ad_error"), false);
-                await System.Threading.Tasks.Task.Delay(2000);
-                UpdateButton(); // Restore normal state
-            }
+            // Restore button state
+            UpdateButton();
         }
 
         private void GrantGoldPackReward()
@@ -134,24 +104,6 @@ namespace PixelVanguard.UI.Shop
         {
             if (cachedSave.Data == null) return;
 
-#if UNITY_ANDROID
-            if (iapButtonText != null)
-            {
-                if (adService != null)
-                {
-                    int remaining = adService.GetCooldownRemainingSeconds(cachedSave.Data.lastAdWatchedTime);
-                    if (remaining > 0)
-                    {
-                        iapButtonText.text = $"{remaining}s";
-                        if (iapBuyButton != null) iapBuyButton.interactable = false;
-                        return;
-                    }
-                }
-
-                iapButtonText.text = $"{cachedSave.Data.adsWatchedForSpecialPack}/{SPECIAL_OFFER_AD_TARGET}";
-                if (iapBuyButton != null) iapBuyButton.interactable = true;
-            }
-#else
             if (iapService == null || !iapService.IsInitialized)
             {
                 if (iapButtonText) iapButtonText.text = "---";
@@ -160,7 +112,7 @@ namespace PixelVanguard.UI.Shop
 
             string price = iapService.GetLocalizedPrice(ProductIDs.GOLD_PACK_LARGE);
             if (iapButtonText) iapButtonText.text = price;
-#endif
+            if (iapBuyButton != null) iapBuyButton.interactable = true;
         }
 
         /// <summary>

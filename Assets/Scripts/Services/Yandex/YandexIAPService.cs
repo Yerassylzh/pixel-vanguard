@@ -33,6 +33,8 @@ namespace PixelVanguard.Services
             return true;
         }
 
+        public Task InitializeAsync() => Task.CompletedTask;
+
         public async Task<bool> PurchaseProduct(string productId)
         {
             if (!_initialized)

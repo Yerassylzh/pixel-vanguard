@@ -10,9 +10,16 @@ namespace PixelVanguard.Services
     public interface IIAPService
     {
         /// <summary>
-        /// Initialize IAP service (called by GameBootstrap).
+        /// Initialize IAP service synchronously (called by GameBootstrap).
         /// </summary>
         bool Initialize();
+
+        /// <summary>
+        /// Async initialization for platforms that require it (e.g., Google Play).
+        /// Handles store connection, product fetching, and purchase restoration.
+        /// Called by GameBootstrap after Initialize().
+        /// </summary>
+        Task InitializeAsync();
 
         /// <summary>
         /// Is the IAP service ready?
@@ -22,12 +29,12 @@ namespace PixelVanguard.Services
         /// <summary>
         /// Purchase a product by ID.
         /// </summary>
-        /// <param name="productId">Product ID (e.g., "gold_pack_large")</param>
+        /// <param name="productId">Product ID (e.g., "gold_pack")</param>
         /// <returns>True if purchase succeeded</returns>
         Task<bool> PurchaseProduct(string productId);
 
         /// <summary>
-        /// Restore previous purchases (iOS requirement).
+        /// Restore previous purchases (required for Google Play / App Store).
         /// </summary>
         Task RestorePurchases();
 
@@ -48,7 +55,7 @@ namespace PixelVanguard.Services
     /// </summary>
     public static class ProductIDs
     {
-        // Yandex/WebGL only
+        // Shared: available on all platforms
         public const string GOLD_PACK_LARGE = "gold_pack";  // 29900 gold
         
         // Android/iOS only (NOT for Yandex/WebGL)

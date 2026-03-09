@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Threading.Tasks;
 
@@ -18,6 +19,8 @@ namespace PixelVanguard.Services
             _initialized = true;
             return true;
         }
+
+        public Task InitializeAsync() => Task.CompletedTask;
 
         public async Task<bool> PurchaseProduct(string productId)
         {
