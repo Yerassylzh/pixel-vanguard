@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: skeleton_grunt
   displayName: Skeleton Grunt
   maxHealth: 10
-  moveSpeed: 1.25
+  moveSpeed: 1.65
   contactDamage: 5
   weightResistance: 0
   xpDrop: 5

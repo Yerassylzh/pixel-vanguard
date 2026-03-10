@@ -26,6 +26,10 @@ namespace PixelVanguard.UI.CharacterSelect
         [SerializeField] private GameObject playContainer;
         [SerializeField] private GameObject buyContainer;
 
+        [Header("Ad Setup")]
+        [Tooltip("How many games must be played before an interstitial ad is shown? (e.g., 2 = every 2nd game)")]
+        [SerializeField] private int gamesPerAd = 2;
+
         [Header("Buy Container Elements")]
         [SerializeField] private TextMeshProUGUI buyPriceText;
 
@@ -292,11 +296,23 @@ namespace PixelVanguard.UI.CharacterSelect
 
         private void StartGame()
         {
-            // Prevent double-tap while ad is showing
+            // Prevent double-tap while loading/showing ad
             if (actionButton != null) actionButton.interactable = false;
 
+            // Increment and save games played count
+            cachedSave.Data.gamesPlayedCount++;
+            cachedSave.Save();
+
+            Debug.Log($"Games played: {cachedSave.Data.gamesPlayedCount}");
+
+            // Check if we should show an ad this time around
+            bool shouldShowAd = cachedSave.Data.gamesPlayedCount % gamesPerAd == 0;
+
             var adService = Core.ServiceLocator.Get<Services.IAdService>();
-            if (adService != null)
+            
+            // If Ads are removed by IAP, adService might be set up to not show them, 
+            // but we can also add a quick check if needed. Assuming adService handles it.
+            if (shouldShowAd && adService != null && !cachedSave.Data.adsRemoved)
             {
                 adService.ShowInterstitialAd(() =>
                 {
@@ -308,6 +324,7 @@ namespace PixelVanguard.UI.CharacterSelect
                 SceneManager.LoadScene("GameScene");
             }
         }
+        
 
         /// <summary>
         /// Get the currently selected character from save data (Single Source of Truth).

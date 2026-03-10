@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: armored_orc
   displayName: Armored Orc
   maxHealth: 80
-  moveSpeed: 1.2
+  moveSpeed: 1.6
   contactDamage: 10
   weightResistance: 0.7
   xpDrop: 15

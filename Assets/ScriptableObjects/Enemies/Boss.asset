@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: abomination
   displayName: The Abomination
   maxHealth: 200
-  moveSpeed: 1.75
+  moveSpeed: 2.15
   contactDamage: 20
   weightResistance: 0.9
   xpDrop: 50

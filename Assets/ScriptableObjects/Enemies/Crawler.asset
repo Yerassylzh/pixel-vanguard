@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: crawler
   displayName: Crawler
   maxHealth: 15
-  moveSpeed: 1.6
+  moveSpeed: 2
   contactDamage: 8
   weightResistance: 0.1
   xpDrop: 8

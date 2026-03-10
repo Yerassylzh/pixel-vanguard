@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: slime
   displayName: Slime
   maxHealth: 80
-  moveSpeed: 1.7
+  moveSpeed: 2.1
   contactDamage: 5
   weightResistance: 0
   xpDrop: 20

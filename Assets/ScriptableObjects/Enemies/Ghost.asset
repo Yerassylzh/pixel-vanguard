@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyID: ghost
   displayName: The Ghost
   maxHealth: 30
-  moveSpeed: 1.5
+  moveSpeed: 1.9
   contactDamage: 5
   weightResistance: 0
   xpDrop: 12

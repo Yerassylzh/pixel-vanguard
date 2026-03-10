@@ -25,6 +25,9 @@ namespace PixelVanguard.Services
         public int highestKillCount = 0;
         public int highestLevelReached = 0;
         public int mostGoldInRun = 0;
+        
+        // Progression
+        public int gamesPlayedCount = 0;
 
         // Ad Tracking (for monetization)
         public int adsWatchedForPack1 = 0;  // 5 ads → 1990 gold
